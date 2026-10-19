@@ -35,8 +35,12 @@ percentage. A stated "yes" is weaker evidence than an actual replay, which is wh
 | 5. Join funnel                        | Waits for the room-screen session                                              |
 | 6. `/stats` page                      | Done. Needs `STATS_TOKEN` set in production                                    |
 
-Before deploying: run `npm run db:migrate` (adds the `test` column to live D1), otherwise the new Worker
-can't store events.
+Migration 0002 is applied to live D1 (2026-10-19), and the 13 playtest events from that day are marked `test = 1`.
+
+**Pre-launch rule:** until the game is published on its own domain, every event that reaches the Worker on
+`*.workers.dev` is stored as a test (`isPreviewHost` in `src/lib/events.ts`). Launch checklist: add the custom
+domain, then the events from that domain count as real automatically. Remove the rule only if `workers.dev` itself
+should ever count.
 
 ## What we build, in order
 
@@ -44,7 +48,8 @@ can't store events.
 
 - **Mark test games.** On `localhost`, or after opening any page with `?test=1` (remembered in `localStorage`
   as `cc:test`), events carry `test: true`. Migration `0002` adds `test INTEGER NOT NULL DEFAULT 0` to `events`,
-  and the Worker stores it. Every query in `scripts/metrics.sql` filters `test = 0`.
+  and the Worker stores it. Every query in `scripts/metrics.sql` filters `test = 0`. Before launch, the Worker
+  also marks every event on `*.workers.dev` as a test (see Status).
 - **One vote per person per game.** Today, changing a vote sends a second event. Send it with `trackOnce`
   (`vote:${gameId}`) so only the first tap counts. Changing it in the UI still works.
   _Touches `src/screens/room/FinalView.tsx`, so this waits for the room-screen session (see Coordination)._

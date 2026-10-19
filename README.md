@@ -38,6 +38,7 @@ and marked `noindex`.
 
 Your own playtests don't count: events from `localhost`, the dev server, or a device that
 opened any page with `?test=1` are stored with `test = 1` and left out of every query
-(`?test=0` turns it off again). The numbers are at `/stats` (password: the `STATS_TOKEN`
+(`?test=0` turns it off again). Until launch on a custom domain, everything on the
+`workers.dev` URL is stored as a test too. The numbers are at `/stats` (password: the `STATS_TOKEN`
 secret, set with `npx wrangler secret put STATS_TOKEN`) or via `npm run metrics`. What each
 number means: [docs/METRICS.md](docs/METRICS.md).

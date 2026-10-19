@@ -43,6 +43,13 @@ type EventBody =
 
 export const MAX_EVENT_BYTES = 1024
 
+/**
+ * Until the game launches on its own domain, every event (from the workers.dev preview URL) is
+ * a test. The Worker decides this by its own host name, so cached older clients are covered too.
+ */
+export const isPreviewHost = (hostname: string) =>
+  hostname === 'workers.dev' || hostname.endsWith('.workers.dev')
+
 const ID = /^[0-9a-f-]{36}$/
 const STATEMENT_ID = /^[a-z]{2}-\d{3}$/
 const CULTURE = /^[A-Z]{2}$/

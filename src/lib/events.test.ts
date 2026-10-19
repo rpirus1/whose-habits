@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseEvent } from './events'
+import { isPreviewHost, parseEvent } from './events'
 
 const gameId = '0b9c3a52-7d1e-4f6a-9c2b-1e2d3f4a5b6c'
 
@@ -88,5 +88,13 @@ describe('parseEvent', () => {
     ]) {
       expect(parseEvent(bad)).toBeNull()
     }
+  })
+})
+
+describe('isPreviewHost', () => {
+  it('treats the workers.dev preview URL as test traffic, and nothing else', () => {
+    expect(isPreviewHost('culture-clash.ruslan-pirus.workers.dev')).toBe(true)
+    expect(isPreviewHost('cultureclash.app')).toBe(false)
+    expect(isPreviewHost('notworkers.dev')).toBe(false)
   })
 })

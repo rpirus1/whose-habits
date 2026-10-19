@@ -1,7 +1,7 @@
 // Cloudflare Worker: serves the built app from dist/ (static assets) and handles the one
 // API route. Static files, SPA routing and the _headers file are handled by the assets
 // layer; only /api/* reaches this code (see run_worker_first in wrangler.toml).
-import { MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
+import { isPreviewHost, MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
 import { handleStats } from './stats'
 import type { StatsEnv } from './stats'
 
@@ -40,8 +40,9 @@ async function handleEvent(request: Request, env: Env): Promise<Response> {
   if (!event) return new Response(null, { status: 400 })
 
   const { type, gameId, test, ...data } = event
+  const isTest = test || isPreviewHost(new URL(request.url).hostname)
   await env.DB.prepare('INSERT INTO events (type, game_id, data, test) VALUES (?, ?, ?, ?)')
-    .bind(type, gameId, JSON.stringify(data), test ? 1 : 0)
+    .bind(type, gameId, JSON.stringify(data), isTest ? 1 : 0)
     .run()
   return new Response(null, { status: 204 })
 }
