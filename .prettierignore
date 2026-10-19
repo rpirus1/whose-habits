@@ -1,0 +1,4 @@
+dist
+node_modules
+src/content/statements.json
+content/*.csv

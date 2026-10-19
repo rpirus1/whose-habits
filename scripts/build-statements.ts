@@ -1,0 +1,26 @@
+// Validates content/statements.csv and writes src/content/statements.json.
+// Run: npm run content   (ONLY_REVIEWED=1 ships reviewed statements only)
+import { readFileSync, writeFileSync } from 'node:fs'
+import { coverageReport, parseStatementsCsv } from './statements-lib.ts'
+
+const SOURCE = 'content/statements.csv'
+const TARGET = 'src/content/statements.json'
+const onlyReviewed = ['1', 'true', 'yes'].includes(process.env.ONLY_REVIEWED ?? '')
+
+const { statements, errors, warnings } = parseStatementsCsv(readFileSync(SOURCE, 'utf8'))
+
+for (const w of warnings) console.warn(`  warning  row ${w.row}: ${w.message}`)
+if (errors.length) {
+  for (const e of errors) console.error(`  error    row ${e.row}: ${e.message}`)
+  console.error(`\n${SOURCE}: ${errors.length} error(s). Nothing was written.`)
+  process.exit(1)
+}
+
+const shipped = onlyReviewed ? statements.filter((s) => s.reviewed) : statements
+writeFileSync(TARGET, JSON.stringify(shipped, null, 1) + '\n')
+
+console.log(coverageReport(statements))
+console.log(
+  `Wrote ${shipped.length} statements to ${TARGET}` +
+    (onlyReviewed ? ' (reviewed only)' : ' (including unreviewed)'),
+)
