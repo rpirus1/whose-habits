@@ -21,7 +21,7 @@ export function Flag({ code, className }: { code: CultureCode; className?: strin
     <span
       aria-hidden
       className={cn(
-        'bg-muted text-muted-foreground inline-flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[0.6rem] font-semibold ring-1 ring-white/15',
+        'bg-muted text-muted-foreground inline-flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-full text-[0.6rem] font-semibold ring-1 ring-foreground/15',
         className,
       )}
     >

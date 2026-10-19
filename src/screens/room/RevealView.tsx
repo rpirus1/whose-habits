@@ -48,8 +48,8 @@ export function RevealView({
         <p className="text-muted-foreground text-sm">Most associated with</p>
         <p
           className={cn(
-            // Same look as an answer button on the Question screen: flag and name on a card.
-            'bg-card flex items-center gap-3 rounded-2xl py-3 pr-6 pl-4 text-[1.625rem] font-bold',
+            // Flag and name only, no box: the answer is the headline of this screen.
+            'flex items-center gap-3 text-[1.625rem] font-bold',
             enterHighlight,
           )}
         >
@@ -59,7 +59,7 @@ export function RevealView({
       </section>
 
       <div className="flex flex-col gap-1">
-        <p className="bg-card flex gap-3 rounded-2xl p-4 text-sm leading-snug">
+        <p className="border-border flex gap-3 rounded-2xl border border-dashed p-4 text-sm leading-snug">
           <Lightbulb className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />
           <span>{reveal.note}</span>
         </p>
@@ -112,14 +112,8 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
         : ['Not quite', `You picked ${getCulture(choice).name}.`]
 
   return (
-    <div
-      className={cn(
-        'rounded-2xl px-4 py-3 text-center',
-        // Correct is green text only, so it doesn't compete with the primary button.
-        correct ? 'bg-secondary' : 'bg-muted',
-      )}
-      role="status"
-    >
+    // Same card as Host controls; correct shows only as green text, not a fill.
+    <div className="bg-card rounded-2xl px-4 py-3 text-center" role="status">
       <p className={cn('text-xl font-bold', correct && 'text-success')}>{title}</p>
       {detail && <p className="text-muted-foreground text-sm">{detail}</p>}
     </div>
