@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Flag } from '@/components/Flag'
 import { CULTURES, MAX_CULTURES, MIN_CULTURES } from '@/content/cultures'
 import type { CultureCode } from '@/content/schema'
@@ -12,13 +13,28 @@ import { cn } from '@/lib/utils'
 export function SettingsForm({
   value,
   onChange,
+  keepMinimum = false,
 }: {
   value: Settings
   onChange: (settings: Settings) => void
+  /** Refuse to untick below the minimum (in the lobby, where the game must stay valid). */
+  keepMinimum?: boolean
 }) {
+  // The culture the host just tried to untick, and a counter so repeat taps shake again.
+  const [refused, setRefused] = useState<{ code: CultureCode; n: number } | null>(null)
+  useEffect(() => {
+    if (!refused) return
+    const id = window.setTimeout(() => setRefused(null), 2500)
+    return () => clearTimeout(id)
+  }, [refused])
+
   const toggleCulture = (code: CultureCode) => {
     const selected = value.cultures.includes(code)
     if (!selected && value.cultures.length >= MAX_CULTURES) return
+    if (selected && keepMinimum && value.cultures.length <= MIN_CULTURES) {
+      setRefused((r) => ({ code, n: (r?.n ?? 0) + 1 }))
+      return
+    }
     const cultures = selected ? value.cultures.filter((c) => c !== code) : [...value.cultures, code]
     // Keep the list in the canonical order so the answer buttons are always in the same place.
     onChange({
@@ -28,6 +44,11 @@ export function SettingsForm({
   }
 
   const enough = value.cultures.length >= MIN_CULTURES
+  const hint = refused
+    ? `Keep at least ${MIN_CULTURES} cultures.`
+    : enough
+      ? ''
+      : `Pick at least ${MIN_CULTURES} cultures.`
   const pool = enough ? eligibleStatements(STATEMENTS, value.cultures).length : 0
 
   return (
@@ -55,9 +76,18 @@ export function SettingsForm({
                     : 'border-border bg-card text-muted-foreground',
                 )}
               >
-                <Flag code={culture.code} className={cn(!selected && 'opacity-60')} />
-                <span className={cn('min-w-0 flex-1', selected && 'text-foreground')}>
-                  {culture.name}
+                <span
+                  // A new key restarts the shake on every refused tap.
+                  key={refused?.code === culture.code ? refused.n : 0}
+                  className={cn(
+                    'flex min-w-0 flex-1 items-center gap-3',
+                    refused?.code === culture.code && 'motion-safe:animate-shake',
+                  )}
+                >
+                  <Flag code={culture.code} className={cn(!selected && 'opacity-60')} />
+                  <span className={cn('min-w-0 flex-1', selected && 'text-foreground')}>
+                    {culture.name}
+                  </span>
                 </span>
                 {selected && (
                   <Check
@@ -69,9 +99,10 @@ export function SettingsForm({
             )
           })}
         </div>
-        {!enough && (
-          <p className="text-muted-foreground text-sm">Pick at least {MIN_CULTURES} cultures.</p>
-        )}
+        {/* Always rendered (sr-only when empty) so screen readers announce the hint. */}
+        <p className={cn('text-muted-foreground text-sm', !hint && 'sr-only')} aria-live="polite">
+          {hint}
+        </p>
       </fieldset>
 
       <OptionPicker

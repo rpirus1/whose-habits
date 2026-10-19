@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Flag } from '@/components/Flag'
 import { SplitBars } from '@/components/SplitBars'
+import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { getCulture } from '@/content/cultures'
@@ -78,7 +79,7 @@ export function RevealView({
         answer={reveal.answer}
       />
 
-      <div className="bg-background sticky bottom-0 mt-auto pt-2">
+      <StickyFooter>
         {onNext ? (
           <Button size="xl" className="w-full" onClick={onNext}>
             {snapshot.viewing && snapshot.phase === 'question'
@@ -90,7 +91,7 @@ export function RevealView({
         ) : (
           <p className="text-muted-foreground text-center text-sm">Waiting for the host…</p>
         )}
-      </div>
+      </StickyFooter>
     </div>
   )
 }

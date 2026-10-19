@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Flag } from '@/components/Flag'
+import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
 import { getCulture } from '@/content/cultures'
 import type { Snapshot } from '@/game/protocol'
@@ -101,7 +102,7 @@ export function FinalView({
         </section>
       )}
 
-      <div className="bg-background sticky bottom-0 mt-auto flex flex-col gap-2 pt-2">
+      <StickyFooter className="flex flex-col gap-2">
         {onPlayAgain ? (
           <Button size="xl" className="w-full" onClick={onPlayAgain}>
             Play again
@@ -120,7 +121,7 @@ export function FinalView({
         <Button size="xl" variant="ghost" className="w-full" onClick={tellAFriend}>
           <Share2 /> Tell a friend
         </Button>
-      </div>
+      </StickyFooter>
     </div>
   )
 }
