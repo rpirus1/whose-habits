@@ -13,9 +13,9 @@ export default defineConfig({
   server: {
     // Reachable from phones on the same Wi-Fi for playtesting.
     host: true,
-    // Analytics endpoint: run `npm run dev:api` (Pages Functions + local D1) alongside.
-    // The Function only accepts same-origin posts; through this proxy the browser's Origin
-    // (port 5173) differs from the Function's (8788), so drop it in dev.
+    // Analytics endpoint: run `npm run dev:api` (the Worker + local D1) alongside.
+    // The Worker only accepts same-origin posts; through this proxy the browser's Origin
+    // (port 5173) differs from the Worker's (8788), so drop it in dev.
     proxy: {
       '/api': {
         target: 'http://localhost:8788',

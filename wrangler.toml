@@ -1,7 +1,15 @@
-# Cloudflare Pages project: static site from dist/ plus Functions in functions/.
+# Cloudflare Worker: the built app (dist/) as static assets plus the /api/event route.
 name = "culture-clash"
-pages_build_output_dir = "dist"
+main = "worker/index.ts"
 compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+# Unknown paths like /r/<room> get index.html so the React router can handle them.
+not_found_handling = "single-page-application"
+# API calls go to the Worker before the assets layer looks at them.
+run_worker_first = ["/api/*"]
 
 [[d1_databases]]
 binding = "DB"
