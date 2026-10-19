@@ -49,7 +49,7 @@ export function RevealView({
           style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
           className={cn(
             // Same look as an answer button on the Question screen: outline plus a muted fill.
-            'rounded-2xl border-2 border-[var(--c)] bg-[color-mix(in_oklch,var(--c)_14%,transparent)] px-6 py-3 text-3xl font-bold',
+            'rounded-2xl border-2 border-[var(--c)] bg-[color-mix(in_oklch,var(--c)_14%,transparent)] px-6 py-3 text-[1.625rem] font-bold',
             enterHighlight,
           )}
         >
@@ -57,7 +57,7 @@ export function RevealView({
         </p>
       </section>
 
-      <p className="bg-card flex gap-3 rounded-2xl p-4 leading-snug">
+      <p className="bg-card flex gap-3 rounded-2xl p-4 text-sm leading-snug">
         <Lightbulb className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />
         <span>{reveal.note}</span>
       </p>
@@ -110,13 +110,13 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border-2 px-4 py-3 text-center',
-        // Correct gets only a green outline, so it doesn't compete with the primary button.
-        correct ? 'bg-secondary border-success' : 'bg-muted border-transparent',
+        'rounded-2xl px-4 py-3 text-center',
+        // Correct is green text only, so it doesn't compete with the primary button.
+        correct ? 'bg-secondary' : 'bg-muted',
       )}
       role="status"
     >
-      <p className="text-xl font-bold">{title}</p>
+      <p className={cn('text-xl font-bold', correct && 'text-success')}>{title}</p>
       {detail && <p className="text-muted-foreground text-sm">{detail}</p>}
     </div>
   )
