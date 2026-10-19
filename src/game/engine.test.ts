@@ -122,7 +122,12 @@ describe('lobby', () => {
 describe('question and reveal', () => {
   it('starts round 1 with an absolute deadline', () => {
     const h = harness()
-    expect(h.s).toMatchObject({ phase: 'question', totalRounds: 10, gameId: 'g1' })
+    expect(h.s).toMatchObject({
+      phase: 'question',
+      totalRounds: 10,
+      gameId: 'g1',
+      playersAtStart: 3,
+    })
     expect(h.round.index).toBe(0)
     expect(h.s.endsAt).toBe(h.ctx.now + 20_000)
     expect(h.s.queue).toHaveLength(23)

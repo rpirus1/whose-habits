@@ -7,6 +7,7 @@ import type { Action } from '@/game/engine'
 import { parseGuestMessage, toSnapshot } from '@/game/protocol'
 import type { HostMessage, Snapshot } from '@/game/protocol'
 import type { EngineContext, GameState } from '@/game/types'
+import { trackOnce } from '@/lib/analytics'
 import { saveHostGame } from '@/lib/savedRooms'
 import { keys, load, save } from '@/lib/storage'
 import { acquireRoom } from './connection'
@@ -144,6 +145,31 @@ export function useHostGame(initial: GameState): HostGame {
       release()
     }
   }, [initial.roomCode, initial.hostId, broadcast, dispatch])
+
+  // Game-level metrics, sent once per game from the host's device.
+  useEffect(() => {
+    const { gameId, phase } = state
+    if (!gameId || phase === 'lobby') return
+    trackOnce(`started:${gameId}`, {
+      type: 'game_started',
+      gameId,
+      players: state.playersAtStart ?? 0,
+      cultures: state.settings.cultures,
+      rounds: state.totalRounds,
+      seconds: state.settings.seconds,
+    })
+    if (phase === 'final') {
+      trackOnce(`finished:${gameId}`, {
+        type: 'game_finished',
+        gameId,
+        roundsPlayed: state.rounds.length,
+        totalRounds: state.totalRounds,
+        playersAtStart: state.playersAtStart ?? 0,
+        playersAtEnd: state.players.filter((p) => p.connected).length,
+        endedEarly: state.rounds.length < state.totalRounds,
+      })
+    }
+  }, [state])
 
   // Remember statements this device has shown, so the next game avoids them.
   useEffect(() => {

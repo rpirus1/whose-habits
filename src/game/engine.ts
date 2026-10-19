@@ -66,6 +66,7 @@ export function createGame(input: {
     ],
     kickedIds: [],
     totalRounds: 0,
+    playersAtStart: 0,
     queue: [],
     shownIds: [],
     rounds: [],
@@ -181,6 +182,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       s.queue = planGame(ctx.statements.values(), cultures, rounds, ctx.random, recent)
       if (!s.queue.length) return false
       s.totalRounds = Math.min(rounds, s.queue.length)
+      s.playersAtStart = s.players.filter((p) => p.connected).length
       s.gameId = action.gameId
       s.rounds = []
       for (const p of s.players) {

@@ -1,9 +1,12 @@
-import { Lightbulb } from 'lucide-react'
+import { Flag, Lightbulb } from 'lucide-react'
+import { useState } from 'react'
 import type { CSSProperties } from 'react'
+import { toast } from 'sonner'
 import { SplitBars } from '@/components/SplitBars'
 import { Button } from '@/components/ui/button'
 import { getCulture } from '@/content/cultures'
 import type { PublicReveal, Snapshot } from '@/game/protocol'
+import { alreadySent, trackOnce } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 
 export function RevealView({
@@ -60,6 +63,12 @@ export function RevealView({
         answer={reveal.answer}
       />
 
+      <ReportButton
+        key={reveal.statementId}
+        gameId={snapshot.gameId}
+        statementId={reveal.statementId}
+      />
+
       <div className="bg-background sticky bottom-0 mt-auto pt-2">
         {onNext ? (
           <Button size="xl" className="w-full" onClick={onNext}>
@@ -104,5 +113,27 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
       <p className="text-xl font-bold">{title}</p>
       {detail && <p className={cn('text-sm', !correct && 'text-muted-foreground')}>{detail}</p>}
     </div>
+  )
+}
+
+/** Flags a statement for review. Only the statement id is logged, once per device. */
+function ReportButton({ gameId, statementId }: { gameId: string; statementId: string }) {
+  const key = `report:${statementId}`
+  const [reported, setReported] = useState(() => alreadySent(key))
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="text-muted-foreground self-center"
+      disabled={reported}
+      onClick={() => {
+        trackOnce(key, { type: 'report', gameId, statementId })
+        setReported(true)
+        toast.success('Thanks! We’ll review this statement.')
+      }}
+    >
+      <Flag /> {reported ? 'Reported' : 'Report this statement'}
+    </Button>
   )
 }

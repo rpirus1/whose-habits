@@ -69,6 +69,8 @@ export interface GameState {
   kickedIds: string[]
   /** settings.rounds, capped to the eligible pool at Start. */
   totalRounds: number
+  /** Connected players when the game started (for the finish-rate metric). */
+  playersAtStart: number
   /** Unplayed eligible statement ids, in play order. The first (rounds left) are the plan; the rest are reserve. */
   queue: string[]
   /** Statements shown this game, including replaced ones (for "recently played"). */

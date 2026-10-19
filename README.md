@@ -12,14 +12,25 @@ cp .env.example .env.local   # then fill in the Supabase URL and publishable key
 npm run dev                  # also reachable from phones on the same Wi-Fi
 ```
 
-| Script                            | What it does                                                              |
-| --------------------------------- | ------------------------------------------------------------------------- |
-| `npm run dev`                     | Compile statements, start Vite                                            |
-| `npm run content`                 | Validate `content/statements.csv` and write `src/content/statements.json` |
-| `npm test`                        | Unit tests (Vitest)                                                       |
-| `npm run build`                   | Content + type check + production build                                   |
-| `npm run lint` / `npm run format` | Oxlint / Prettier                                                         |
+| Script                                      | What it does                                                                 |
+| ------------------------------------------- | ---------------------------------------------------------------------------- |
+| `npm run dev`                               | Compile statements, start Vite                                               |
+| `npm run dev:api`                           | Analytics Function with a local D1 database (port 8788; Vite proxies `/api`) |
+| `npm run db:migrate:local`                  | Create or update the local D1 tables (run once)                              |
+| `npm run metrics:local` / `npm run metrics` | Success-signal queries (`scripts/metrics.sql`) on local or live D1           |
+| `npm run content`                           | Validate `content/statements.csv` and write `src/content/statements.json`    |
+| `npm test`                                  | Unit tests (Vitest)                                                          |
+| `npm run build`                             | Content + type check + production build                                      |
+| `npm run lint` / `npm run format`           | Oxlint / Prettier                                                            |
 
 ## Editing statements
 
 Open `content/statements.csv` in Google Sheets or Excel, edit, export as CSV (UTF-8) over the same file, then run `npm run content`. Errors point to the row number.
+
+## Privacy and analytics
+
+No accounts, no cookies, no personal data. The app sends a few anonymous, game-level events
+(game started/finished, "play again?" vote, report a statement, share and host clicks) to
+`functions/api/event.ts`, which validates them (`src/lib/events.ts`) and stores them in
+Cloudflare D1. No names, player ids or IP addresses are stored. Room links are unguessable
+and marked `noindex`.
