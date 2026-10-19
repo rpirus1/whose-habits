@@ -13,8 +13,9 @@ import '@/theme-candidates.css'
 
 const THEMES = [
   { id: 'current', label: 'Now' },
+  { id: 'rabbit', label: 'Rabbit' },
+  { id: 'rabbit-n', label: 'Rabbit·N' },
   { id: 'nova', label: 'Nova' },
-  { id: 'hero', label: 'Hero' },
   { id: 'm3', label: 'M3' },
 ] as const
 

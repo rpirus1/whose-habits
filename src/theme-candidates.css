@@ -28,6 +28,66 @@
   --radius: 0.625rem;
 }
 
+/*
+ * HeroUI v3 "Rabbit" preset, dark mode, values read from heroui.com/themes
+ * (accent oklch(0.6678 0.2232 36.66), base chroma 0.01). HeroUI role -> our token:
+ * background -> background, surface -> card, overlay -> popover, accent -> primary,
+ * default -> secondary/accent, surface-secondary -> muted, muted -> muted-foreground,
+ * danger -> destructive, focus -> ring.
+ */
+.dark[data-theme='rabbit'] {
+  --background: oklch(0.12 0.01 36.66);
+  --foreground: oklch(0.9911 0.01 36.66);
+  --card: oklch(0.2103 0.02 36.66);
+  --card-foreground: oklch(0.9911 0.01 36.66);
+  --popover: oklch(0.2103 0.02 36.66);
+  --popover-foreground: oklch(0.9911 0.01 36.66);
+  --primary: oklch(0.6678 0.2232 36.66);
+  --primary-foreground: oklch(0.15 0.03 36.66);
+  --secondary: oklch(0.274 0.01 36.66);
+  --secondary-foreground: oklch(0.9911 0 0);
+  --muted: oklch(0.257 0.015 36.66);
+  --muted-foreground: oklch(0.705 0.02 36.66);
+  --accent: oklch(0.274 0.01 36.66);
+  --accent-foreground: oklch(0.9911 0 0);
+  --destructive: oklch(0.6291 0.2565 29.09);
+  --border: oklch(0.28 0.01 36.66);
+  --input: oklch(0.28 0.01 36.66);
+  --ring: oklch(0.6678 0.2232 36.66);
+  --radius: 0.75rem;
+}
+/*
+ * Rabbit with a neutral primary: same surfaces and radius, but buttons and highlights in
+ * warm cream, so the orange no longer competes with the Netherlands and Poland colours.
+ */
+.dark[data-theme='rabbit-n'] {
+  --background: oklch(0.12 0.01 36.66);
+  --foreground: oklch(0.9911 0.01 36.66);
+  --card: oklch(0.2103 0.02 36.66);
+  --card-foreground: oklch(0.9911 0.01 36.66);
+  --popover: oklch(0.2103 0.02 36.66);
+  --popover-foreground: oklch(0.9911 0.01 36.66);
+  --primary: oklch(0.95 0.02 36.66);
+  --primary-foreground: oklch(0.15 0.03 36.66);
+  --secondary: oklch(0.274 0.01 36.66);
+  --secondary-foreground: oklch(0.9911 0 0);
+  --muted: oklch(0.257 0.015 36.66);
+  --muted-foreground: oklch(0.705 0.02 36.66);
+  --accent: oklch(0.274 0.01 36.66);
+  --accent-foreground: oklch(0.9911 0 0);
+  --destructive: oklch(0.6291 0.2565 29.09);
+  --border: oklch(0.28 0.01 36.66);
+  --input: oklch(0.28 0.01 36.66);
+  --ring: oklch(0.6678 0.2232 36.66);
+  --radius: 0.75rem;
+}
+
+/* HeroUI buttons are pill-shaped. Preview only: in code this would move into button.tsx. */
+.dark[data-theme='rabbit'] [data-slot='button'],
+.dark[data-theme='rabbit-n'] [data-slot='button'] {
+  border-radius: 9999px;
+}
+
 /* HeroUI v3: near-black zinc surfaces, saturated blue accent, rounder corners. */
 .dark[data-theme='hero'] {
   --background: oklch(0.12 0.005 286);
