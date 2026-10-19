@@ -6,7 +6,5 @@ compatibility_date = "2025-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "culture-clash"
-# Placeholder for local development. Step 8 replaces it with the id from
-# `npx wrangler d1 create culture-clash`.
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "373adea5-17c9-4098-99b4-9f0917a4b076"
 migrations_dir = "migrations"
