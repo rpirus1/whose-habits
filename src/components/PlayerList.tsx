@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import type { PublicPlayer } from '@/game/protocol'
 import { MAX_PLAYERS } from '@/game/types'
 import { Button } from '@/components/ui/button'
+import { useConfirmTap } from '@/hooks/useConfirmTap'
 import { cn } from '@/lib/utils'
 
 export function PlayerList({
@@ -42,16 +43,7 @@ export function PlayerList({
                 .filter(Boolean)
                 .join(' · ')}
             </span>
-            {onKick && !p.isHost && (
-              <Button
-                variant="ghost"
-                size="icon-lg"
-                aria-label={`Remove ${p.name}`}
-                onClick={() => onKick(p)}
-              >
-                <X />
-              </Button>
-            )}
+            {onKick && !p.isHost && <RemoveButton player={p} onRemove={onKick} />}
           </li>
         ))}
       </ul>
@@ -62,5 +54,30 @@ export function PlayerList({
         </div>
       )}
     </section>
+  )
+}
+
+/** Two taps to remove: the first turns the X into "Remove?", the second confirms. */
+function RemoveButton({
+  player,
+  onRemove,
+}: {
+  player: PublicPlayer
+  onRemove: (player: PublicPlayer) => void
+}) {
+  const { armed, tap } = useConfirmTap(() => onRemove(player))
+  return armed ? (
+    <Button
+      variant="destructive"
+      size="lg"
+      onClick={tap}
+      aria-label={`Confirm removing ${player.name}`}
+    >
+      Remove?
+    </Button>
+  ) : (
+    <Button variant="ghost" size="icon-lg" onClick={tap} aria-label={`Remove ${player.name}`}>
+      <X />
+    </Button>
   )
 }

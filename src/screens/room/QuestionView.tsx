@@ -5,6 +5,7 @@ import type { Snapshot } from '@/game/protocol'
 import type { Choice } from '@/game/types'
 import { useCountdown } from '@/hooks/useCountdown'
 import { cn } from '@/lib/utils'
+import { enterScreen } from '@/lib/motion'
 
 export function QuestionView({
   snapshot,
@@ -33,7 +34,7 @@ export function QuestionView({
   const answered = answering.filter((p) => question.answeredIds.includes(p.id)).length
 
   return (
-    <div className="flex flex-1 flex-col gap-5">
+    <div className={cn('flex flex-1 flex-col gap-5', enterScreen)}>
       <div className="flex flex-col gap-3">
         <div className="text-muted-foreground flex justify-between text-sm">
           <span>

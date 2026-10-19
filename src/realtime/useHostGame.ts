@@ -57,6 +57,14 @@ export function useHostGame(initial: GameState): HostGame {
       setState(next)
       saveHostGame(next)
       broadcast(next)
+      // Tell a removed player directly, so their screen changes at once.
+      if (action.type === 'kick') {
+        connectionRef.current?.send({
+          type: 'rejected',
+          playerId: action.playerId,
+          reason: 'kicked',
+        } satisfies HostMessage)
+      }
     },
     [broadcast],
   )

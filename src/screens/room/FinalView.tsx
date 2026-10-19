@@ -11,6 +11,7 @@ import type { PlayAgainVote } from '@/lib/analytics'
 import { shareLink } from '@/lib/share'
 import { load, save } from '@/lib/storage'
 import { cn } from '@/lib/utils'
+import { enterScreen } from '@/lib/motion'
 
 export function FinalView({
   snapshot,
@@ -42,7 +43,7 @@ export function FinalView({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6">
+    <div className={cn('flex flex-1 flex-col gap-6', enterScreen)}>
       <header className="text-center">
         <p className="text-muted-foreground text-sm">
           {final.roundsPlayed} {final.roundsPlayed === 1 ? 'round' : 'rounds'} played

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,12 @@ import { Label } from '@/components/ui/label'
 import { MAX_NAME_LENGTH } from '@/game/types'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { keys, load, save } from '@/lib/storage'
-import { loadGuestIdentity, saveGuestIdentity, type GuestIdentity } from '@/lib/savedRooms'
+import {
+  loadGuestIdentity,
+  markGuestRemoved,
+  saveGuestIdentity,
+  type GuestIdentity,
+} from '@/lib/savedRooms'
 import { useGuestGame } from '@/realtime/useGuestGame'
 import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
@@ -28,7 +33,22 @@ export function GuestRoom({ roomCode }: { roomCode: string }) {
       />
     )
   }
+  // Removed earlier on this device: no need to reconnect just to be turned away again.
+  if (identity.removed === 'kicked') return <MessageScreen message={KICKED_MESSAGE} />
   return <GuestGame roomCode={roomCode} identity={identity} />
+}
+
+const KICKED_MESSAGE = 'The host removed you from this game.'
+
+function MessageScreen({ message }: { message: string }) {
+  return (
+    <Screen className="justify-center text-center">
+      <p className="text-lg">{message}</p>
+      <Button asChild size="xl" variant="secondary">
+        <Link to="/">Go home</Link>
+      </Button>
+    </Screen>
+  )
 }
 
 function JoinView({ onJoin }: { onJoin: (name: string) => void }) {
@@ -76,22 +96,20 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
   )
   // A sleeping phone drops its connection, so keep the screen on during play.
   useWakeLock(snapshot?.phase === 'question' || snapshot?.phase === 'reveal')
+  // Removed or turned away: remember it, so Home stops offering "Back to your game"
+  // and a refresh shows the same message instead of the join form.
+  useEffect(() => {
+    if (status === 'kicked' || status === 'full') markGuestRemoved(roomCode, status)
+  }, [status, roomCode])
 
   if (status === 'full' || status === 'kicked' || status === 'notFound') {
     const message = {
       full: 'This room is full. Ask the host to make space, or start your own game.',
-      kicked: 'The host removed you from this game.',
+      kicked: KICKED_MESSAGE,
       notFound:
         "Can't find this game. Check the link, or ask the host to open the game on their phone. Still trying…",
     }[status]
-    return (
-      <Screen className="justify-center text-center">
-        <p className="text-lg">{message}</p>
-        <Button asChild size="xl" variant="secondary">
-          <Link to="/">Go home</Link>
-        </Button>
-      </Screen>
-    )
+    return <MessageScreen message={message} />
   }
 
   if (status !== 'in' || !snapshot) {

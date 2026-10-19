@@ -2,6 +2,8 @@ import { CultureList } from '@/components/CultureList'
 import { PlayerList } from '@/components/PlayerList'
 import { QrShare } from '@/components/QrShare'
 import type { PublicPlayer, Snapshot } from '@/game/protocol'
+import { enterScreen } from '@/lib/motion'
+import { cn } from '@/lib/utils'
 
 export function LobbyView({
   snapshot,
@@ -18,7 +20,7 @@ export function LobbyView({
   const { cultures, rounds, seconds } = snapshot.settings
 
   return (
-    <>
+    <div className={cn('flex flex-col gap-6', enterScreen)}>
       {isHost ? (
         <QrShare roomCode={snapshot.roomCode} />
       ) : (
@@ -36,6 +38,6 @@ export function LobbyView({
       </section>
 
       <PlayerList players={snapshot.players} meId={meId} onKick={onKick} />
-    </>
+    </div>
   )
 }

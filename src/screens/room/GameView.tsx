@@ -36,7 +36,13 @@ export function GameView({
             Paused by the host
           </p>
         )}
-        <RevealView snapshot={snapshot} meId={meId} onNext={onNext} />
+        {/* Keyed so going Back to an earlier reveal animates in like a new screen. */}
+        <RevealView
+          key={`reveal-${snapshot.reveal.index}-${snapshot.viewing}`}
+          snapshot={snapshot}
+          meId={meId}
+          onNext={onNext}
+        />
       </>
     )
   }

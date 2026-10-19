@@ -111,6 +111,12 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
           }
           const wasListed = listed
           listed = snap.players.some((p) => p.id === identity.playerId)
+          if (wasListed && !listed) {
+            // Players only disappear from the list when the host removes them.
+            finalStatus = true
+            setStatus('kicked')
+            return
+          }
           if (listed && !wasListed) syncClock()
           currentRoundId = snap.question?.roundId
           setSnapshot(snap)

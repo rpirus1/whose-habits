@@ -1,5 +1,5 @@
 import { ChevronDown, Crown, Pause, Play, SkipBack, SkipForward } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { PlayerList } from '@/components/PlayerList'
 import { SettingsForm } from '@/components/SettingsForm'
 import { Badge } from '@/components/ui/badge'
@@ -9,8 +9,7 @@ import type { Action } from '@/game/engine'
 import { currentRound, validSettings } from '@/game/engine'
 import type { PublicPlayer } from '@/game/protocol'
 import type { GameState } from '@/game/types'
-
-const CONFIRM_MS = 3000
+import { useConfirmTap } from '@/hooks/useConfirmTap'
 
 /** Collapsible host-only controls, so the rest of the screen stays the same as a player's. */
 export function HostPanel({
@@ -115,23 +114,12 @@ function GameControls({
   )
 }
 
-/** Two taps to end, so a stray tap with a drink in hand doesn't finish the game. */
+/** Two taps to end, so a stray tap doesn't finish the game. */
 function EndGameButton({ onEnd }: { onEnd: () => void }) {
-  const [confirming, setConfirming] = useState(false)
-
-  useEffect(() => {
-    if (!confirming) return
-    const id = window.setTimeout(() => setConfirming(false), CONFIRM_MS)
-    return () => clearTimeout(id)
-  }, [confirming])
-
+  const { armed, tap } = useConfirmTap(onEnd)
   return (
-    <Button
-      variant="destructive"
-      size="xl"
-      onClick={() => (confirming ? onEnd() : setConfirming(true))}
-    >
-      {confirming ? 'Tap again to end the game' : 'End game'}
+    <Button variant="destructive" size="xl" onClick={tap}>
+      {armed ? 'Tap again to end the game' : 'End game'}
     </Button>
   )
 }

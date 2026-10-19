@@ -8,6 +8,7 @@ import { getCulture } from '@/content/cultures'
 import type { PublicReveal, Snapshot } from '@/game/protocol'
 import { alreadySent, trackOnce } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
+import { enterHighlight, enterScreen } from '@/lib/motion'
 
 export function RevealView({
   snapshot,
@@ -25,7 +26,7 @@ export function RevealView({
   const me = snapshot.players.find((p) => p.id === meId)
 
   return (
-    <div className="flex flex-1 flex-col gap-5">
+    <div className={cn('flex flex-1 flex-col gap-5', enterScreen)}>
       <div className="text-muted-foreground flex justify-between text-sm">
         <span>
           Round {reveal.index + 1} of {reveal.total}
@@ -46,7 +47,10 @@ export function RevealView({
         <p className="text-muted-foreground text-sm">Most associated with</p>
         <p
           style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
-          className="rounded-2xl bg-[var(--c)] px-6 py-3 text-3xl font-bold text-[oklch(0.18_0.02_270)]"
+          className={cn(
+            'rounded-2xl bg-[var(--c)] px-6 py-3 text-3xl font-bold text-[oklch(0.18_0.02_270)]',
+            enterHighlight,
+          )}
         >
           {culture.name}
         </p>
