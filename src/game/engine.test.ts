@@ -358,11 +358,18 @@ describe('host controls', () => {
     const h = harness()
     h.answerAll('right')
     const firstGame = [...h.s.shownIds]
+    expect(h.s.replay).toBeUndefined()
     h.run({ type: 'end' })
     h.run({ type: 'playAgain', gameId: 'g2' })
-    expect(h.s).toMatchObject({ phase: 'lobby', gameId: 'g2', rounds: [] })
+    expect(h.s).toMatchObject({ phase: 'lobby', gameId: 'g2', rounds: [], replay: true })
     expect(h.s.players.every((p) => p.score === 0)).toBe(true)
     h.run({ type: 'start', gameId: 'g2' })
     expect(firstGame).not.toContain(h.round.statementId)
+  })
+
+  it('remembers a room created from the guest CTA (metrics), and nothing otherwise', () => {
+    const base = { roomCode: 'BCDF', hostId: 'host', settings }
+    expect(createGame({ ...base, source: 'guest_cta' }).source).toBe('guest_cta')
+    expect(createGame(base)).not.toHaveProperty('source')
   })
 })

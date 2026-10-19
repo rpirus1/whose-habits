@@ -1,4 +1,5 @@
 import type { CultureCode, Statement } from '@/content/schema'
+import type { GameSource } from '@/lib/events'
 
 export type Phase = 'lobby' | 'question' | 'reveal' | 'final'
 
@@ -71,6 +72,10 @@ export interface GameState {
   totalRounds: number
   /** Connected players when the game started (for the finish-rate metric). */
   playersAtStart: number
+  /** Metrics: the current game came from "Play again in this room". */
+  replay?: boolean
+  /** Metrics: the host created this room via "Host your own game" after playing as a guest. */
+  source?: GameSource
   /** Unplayed eligible statement ids, in play order. The first (rounds left) are the plan; the rest are reserve. */
   queue: string[]
   /** Statements shown this game, including replaced ones (for "recently played"). */

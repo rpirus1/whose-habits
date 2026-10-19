@@ -4,8 +4,15 @@
 
 export type PlayAgainVote = 'yes' | 'maybe' | 'no'
 export type Role = 'host' | 'guest'
+/** How the host got to /new: on their own, or via "Host your own game" after playing as a guest. */
+export type GameSource = 'direct' | 'guest_cta'
 
-export type AnalyticsEvent =
+export type AnalyticsEvent = EventBody & {
+  /** Sent from a developer's device (localhost or ?test=1); the queries leave these out. */
+  test?: true
+}
+
+type EventBody =
   | {
       type: 'game_started'
       gameId: string
@@ -13,6 +20,9 @@ export type AnalyticsEvent =
       cultures: string[]
       rounds: number
       seconds: number
+      /** Started with "Play again in this room" after a finished game. */
+      replay: boolean
+      source: GameSource
     }
   | {
       type: 'game_finished'
@@ -33,6 +43,13 @@ export type AnalyticsEvent =
 
 export const MAX_EVENT_BYTES = 1024
 
+/**
+ * Until the game launches on its own domain, every event (from the workers.dev preview URL) is
+ * a test. The Worker decides this by its own host name, so cached older clients are covered too.
+ */
+export const isPreviewHost = (hostname: string) =>
+  hostname === 'workers.dev' || hostname.endsWith('.workers.dev')
+
 const ID = /^[0-9a-f-]{36}$/
 const STATEMENT_ID = /^[a-z]{2}-\d{3}$/
 const CULTURE = /^[A-Z]{2}$/
@@ -46,6 +63,12 @@ const oneOf = <T extends string>(v: unknown, values: readonly T[]): v is T =>
 export function parseEvent(input: unknown): AnalyticsEvent | null {
   if (!input || typeof input !== 'object') return null
   const e = input as Record<string, unknown>
+  const body = parseBody(e)
+  if (!body) return null
+  return e.test === true ? { ...body, test: true } : body
+}
+
+function parseBody(e: Record<string, unknown>): EventBody | null {
   if (typeof e.gameId !== 'string' || !ID.test(e.gameId)) return null
   const gameId = e.gameId
 
@@ -58,7 +81,10 @@ export function parseEvent(input: unknown): AnalyticsEvent | null {
         cultures.length > 6 ||
         !cultures.every((c) => typeof c === 'string' && CULTURE.test(c)) ||
         !int(e.rounds, 20) ||
-        !int(e.seconds, 30)
+        !int(e.seconds, 30) ||
+        // Optional, so a tab still running an older build doesn't lose its events.
+        (e.replay !== undefined && typeof e.replay !== 'boolean') ||
+        (e.source !== undefined && !oneOf(e.source, ['direct', 'guest_cta'] as const))
       )
         return null
       return {
@@ -68,6 +94,8 @@ export function parseEvent(input: unknown): AnalyticsEvent | null {
         cultures: cultures as string[],
         rounds: e.rounds,
         seconds: e.seconds,
+        replay: e.replay === true,
+        source: e.source === 'guest_cta' ? 'guest_cta' : 'direct',
       }
     }
     case 'game_finished':
