@@ -10,5 +10,7 @@
     "noEmit": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["."]
+  "include": ["."],
+  // Tests run in Node under Vitest, not in the Workers runtime.
+  "exclude": ["**/*.test.ts"]
 }

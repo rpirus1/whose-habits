@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { SettingsForm } from '@/components/SettingsForm'
 import { Screen } from '@/components/Screen'
@@ -13,11 +13,15 @@ import { createGame, DEFAULT_HOST_NAME } from '@/game/engine'
 import { generateRoomCode } from '@/game/roomCode'
 import type { Settings } from '@/game/types'
 import { DEFAULT_SETTINGS, MAX_NAME_LENGTH } from '@/game/types'
+import type { GameSource } from '@/lib/events'
 import { keys, load, save } from '@/lib/storage'
 import { saveHostGame } from '@/lib/savedRooms'
 
 export function SettingsScreen() {
   const navigate = useNavigate()
+  // "Host your own game" on a guest's final screen links here with ?from=cta (metrics only).
+  const [searchParams] = useSearchParams()
+  const source: GameSource = searchParams.get('from') === 'cta' ? 'guest_cta' : 'direct'
   const [hostName, setHostName] = useState(() => load<string>(keys.lastName) ?? '')
   const [settings, setSettings] = useState<Settings>(
     () => load<Settings>(keys.lastSettings) ?? DEFAULT_SETTINGS,
@@ -32,7 +36,7 @@ export function SettingsScreen() {
 
       save(keys.lastSettings, settings)
       save(keys.lastName, hostName.trim())
-      saveHostGame(createGame({ roomCode, hostId: newId(), hostName, settings }))
+      saveHostGame(createGame({ roomCode, hostId: newId(), hostName, settings, source }))
       navigate(`/r/${roomCode}`)
     } catch (error) {
       console.error(error)

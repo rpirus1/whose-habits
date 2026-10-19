@@ -157,6 +157,8 @@ export function useHostGame(initial: GameState): HostGame {
       cultures: state.settings.cultures,
       rounds: state.totalRounds,
       seconds: state.settings.seconds,
+      replay: state.replay === true,
+      source: state.source ?? 'direct',
     })
     if (phase === 'final') {
       trackOnce(`finished:${gameId}`, {

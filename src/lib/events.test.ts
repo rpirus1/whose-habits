@@ -41,6 +41,31 @@ describe('parseEvent', () => {
     })
   })
 
+  it('keeps the replay flag and source, with defaults for older clients', () => {
+    const started = {
+      type: 'game_started',
+      gameId,
+      players: 3,
+      cultures: ['PL'],
+      rounds: 10,
+      seconds: 20,
+    }
+    expect(parseEvent({ ...started, replay: true, source: 'guest_cta' })).toMatchObject({
+      replay: true,
+      source: 'guest_cta',
+    })
+    expect(parseEvent(started)).toMatchObject({ replay: false, source: 'direct' })
+    expect(parseEvent({ ...started, replay: 'yes' })).toBeNull()
+    expect(parseEvent({ ...started, source: 'ads' })).toBeNull()
+  })
+
+  it('keeps test: true and drops any other test value', () => {
+    const cta = { type: 'host_cta_click', gameId }
+    expect(parseEvent({ ...cta, test: true })).toEqual({ ...cta, test: true })
+    expect(parseEvent({ ...cta, test: 1 })).toEqual(cta)
+    expect(parseEvent({ ...cta, test: false })).toEqual(cta)
+  })
+
   it('rejects junk, unknown types and out-of-range values', () => {
     for (const bad of [
       null,

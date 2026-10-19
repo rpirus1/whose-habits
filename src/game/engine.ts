@@ -20,6 +20,7 @@ import {
   ROUND_OPTIONS,
   SECONDS_OPTIONS,
 } from './types'
+import type { GameSource } from '@/lib/events'
 import type { Choice, EngineContext, GameState, Player, Round, Settings } from './types'
 
 export type Action =
@@ -46,9 +47,11 @@ export function createGame(input: {
   hostId: string
   hostName?: string
   settings: Settings
+  source?: GameSource
 }): GameState {
   return {
     v: 1,
+    ...(input.source && { source: input.source }),
     roomCode: input.roomCode,
     hostId: input.hostId,
     gameId: '',
@@ -278,6 +281,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       if (s.phase !== 'final') return false
       s.phase = 'lobby'
       s.gameId = action.gameId
+      s.replay = true
       s.rounds = []
       s.queue = []
       s.totalRounds = 0

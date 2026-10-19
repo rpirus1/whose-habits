@@ -24,6 +24,20 @@ behavioural stories. We don't want a dashboard of everything.
 Caveats for the case study: these are small numbers (a handful of sessions), so we report counts next to every
 percentage. A stated "yes" is weaker evidence than an actual replay, which is why we track both.
 
+## Status
+
+| Step                                  | State                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| 1. Test flag, migration 0002, queries | Done. One-vote-per-game waits for `FinalView.tsx`                              |
+| 2. Replay flag                        | Done                                                                           |
+| 3. Guest → host                       | `/new?from=cta` → `source` done. The CTA link itself waits for `FinalView.tsx` |
+| 4. Web Analytics                      | To do (dashboard setting, no code)                                             |
+| 5. Join funnel                        | Waits for the room-screen session                                              |
+| 6. `/stats` page                      | Done. Needs `STATS_TOKEN` set in production                                    |
+
+Before deploying: run `npm run db:migrate` (adds the `test` column to live D1), otherwise the new Worker
+can't store events.
+
 ## What we build, in order
 
 ### 1. Fix what we already count (A)
