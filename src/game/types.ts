@@ -19,6 +19,8 @@ export interface Settings {
   seconds: (typeof SECONDS_OPTIONS)[number]
 }
 
+export const DEFAULT_SETTINGS: Settings = { cultures: [], rounds: 10, seconds: 20 }
+
 export interface Player {
   id: string
   name: string

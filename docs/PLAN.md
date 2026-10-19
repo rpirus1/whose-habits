@@ -157,7 +157,7 @@ These answer the success signals: sessions with 5 or more players, finish rate, 
 
 ## 7. Tech stack and making the UI easy to change
 
-- React + Vite + TypeScript, React Router, Zustand (small stores for host and guest).
+- React + Vite + TypeScript, React Router. State lives in two hooks (`useHostGame`, `useGuestGame`); no store library needed.
 - **Tailwind CSS + shadcn/ui** (component sources copied into `src/components/ui`, so you can edit any of them) and lucide icons. Animations later with Motion.
 - All colours, radii and font sizes are CSS variables in one file, `src/index.css` (shadcn expects it there). Culture colours are tokens too, so restyling is mostly editing one file.
 - Screens are thin: they read the snapshot and render components. All logic stays in `game/` and `realtime/`, so redesigns can't break the game.
@@ -171,7 +171,7 @@ functions/api/event.ts
 src/
   content/   cultures.ts, statements.json (generated)
   game/      types.ts, engine.ts, selection.ts, scoring.ts, protocol.ts
-  realtime/  supabase.ts, roomChannel.ts, clock.ts, useHost.ts, useGuest.ts
+  realtime/  supabase.ts, connection.ts, clock.ts, useHostGame.ts, useGuestGame.ts
   screens/   Home, Settings, Join, Lobby, Question, Reveal, Final
   components/ ui/ (shadcn), HostPanel, CultureButton, TimerBar, PlayerList, SplitBar, QrShare
   index.css   (theme tokens)

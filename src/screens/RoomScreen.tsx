@@ -1,13 +1,20 @@
 import { useParams } from 'react-router'
-import { Screen } from '@/components/Screen'
+import { normalizeRoomCode } from '@/game/roomCode'
+import { loadHostGame } from '@/realtime/useHostGame'
+import { GuestRoom } from './room/GuestRoom'
+import { HostRoom } from './room/HostRoom'
+import { NotFoundScreen } from './NotFoundScreen'
 
-// Built in steps 4–6: join, lobby, question, reveal and final views for host and guests.
+/** One route for everyone in a room: the device that created it (saved game state) is the host. */
 export function RoomScreen() {
-  const { code } = useParams()
-  return (
-    <Screen>
-      <h1 className="font-heading text-2xl font-bold">Room {code?.toUpperCase()}</h1>
-      <p className="text-muted-foreground">Coming in the lobby step.</p>
-    </Screen>
+  const roomCode = normalizeRoomCode(useParams().code ?? '')
+  if (!roomCode) return <NotFoundScreen />
+
+  const hostGame = loadHostGame(roomCode)
+  // Keyed by room so navigating between rooms remounts everything.
+  return hostGame ? (
+    <HostRoom key={roomCode} initial={hostGame} />
+  ) : (
+    <GuestRoom key={roomCode} roomCode={roomCode} />
   )
 }
