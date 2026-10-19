@@ -65,13 +65,13 @@ export function FinalView({
                 id === meId && 'ring-primary ring-2',
               )}
             >
-              <span className="text-muted-foreground w-6 font-mono text-lg">{rank}</span>
+              <span className="text-muted-foreground w-6 text-lg tabular-nums">{rank}</span>
               <span className="min-w-0 flex-1 truncate text-lg">
                 {p.name}
                 {id === meId && <span className="text-muted-foreground text-sm"> (you)</span>}
               </span>
               {rank === 1 && <Crown className="text-primary size-5" aria-label="Winner" />}
-              <span className="font-mono text-xl font-bold tabular-nums">{p.score}</span>
+              <span className="text-xl font-bold tabular-nums">{p.score}</span>
             </li>
           )
         })}

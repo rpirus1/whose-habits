@@ -35,7 +35,7 @@ export function QrShare({ roomCode }: { roomCode: string }) {
       </div>
       <div className="text-center">
         <p className="font-medium">Scan to join, or share the link</p>
-        <p className="text-muted-foreground mt-1 font-mono text-sm break-all">
+        <p className="text-muted-foreground mt-1 text-sm break-all">
           {url.replace(/^https?:\/\//, '')}
         </p>
       </div>

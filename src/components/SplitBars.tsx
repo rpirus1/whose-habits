@@ -54,7 +54,7 @@ export function SplitBars({
                 style={{ width: total ? `${(count / total) * 100}%` : 0 }}
               />
             </span>
-            <span className="w-6 text-right font-mono tabular-nums">{count}</span>
+            <span className="w-6 text-right tabular-nums">{count}</span>
           </li>
         )
       })}

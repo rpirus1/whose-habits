@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react'
 import { toast } from 'sonner'
 import { SplitBars } from '@/components/SplitBars'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { getCulture } from '@/content/cultures'
 import type { PublicReveal, Snapshot } from '@/game/protocol'
 import { alreadySent, trackOnce } from '@/lib/analytics'
@@ -57,21 +58,24 @@ export function RevealView({
         </p>
       </section>
 
-      <p className="bg-card flex gap-3 rounded-2xl p-4 text-sm leading-snug">
-        <Lightbulb className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />
-        <span>{reveal.note}</span>
-      </p>
+      <div className="flex flex-col gap-1">
+        <p className="bg-card flex gap-3 rounded-2xl p-4 text-sm leading-snug">
+          <Lightbulb className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />
+          <span>{reveal.note}</span>
+        </p>
+        <ReportButton
+          key={reveal.statementId}
+          gameId={snapshot.gameId}
+          statementId={reveal.statementId}
+        />
+      </div>
+
+      <Separator />
 
       <SplitBars
         cultures={snapshot.settings.cultures}
         split={reveal.split}
         answer={reveal.answer}
-      />
-
-      <ReportButton
-        key={reveal.statementId}
-        gameId={snapshot.gameId}
-        statementId={reveal.statementId}
       />
 
       <div className="bg-background sticky bottom-0 mt-auto pt-2">
