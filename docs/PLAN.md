@@ -67,8 +67,8 @@ Config flag `ONLY_REVIEWED`: off during development, on for the public launch.
 
 ## 3. Realtime architecture
 
-- **Transport:** one Supabase Realtime channel per room, `room:ABCD`. Broadcast carries messages and Presence tracks who is online. No tables.
-- **Room code:** 4 letters from an alphabet without look-alike characters (no I/L/O/0/1). On creation the host listens for about 1 second; if anyone is already present, it picks a new code.
+- **Transport:** one Supabase Realtime channel per room, `room:k7m2-x9qp-4tdv`. Broadcast carries messages and Presence tracks who is online. No tables.
+- **Room id:** 12 random characters (about 59 bits) from an alphabet without look-alikes, grouped as `xxxx-xxxx-xxxx`. Anyone who knows a room id can join, so it must be unguessable; it is shared only as a link or QR code. Room pages send `noindex, nofollow` and `no-referrer`. (Changed from a 4-letter code after the first phone test.)
 - **Identity:** each device gets a random `playerId`, stored in localStorage per room. The host also has a `hostId`. Guests ignore `state` messages that don't come from the hostId they first saw (a cheap guard against spoofing; the friends-at-home threat model accepts the rest).
 - **Authority:** the host's device holds the full `GameState` and runs the engine. Guests never compute game state.
 
@@ -136,7 +136,7 @@ any phase ──End game──▶ final
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `/`        | Home: **Create a game**                                                                                                                                      |
 | `/new`     | Settings: host name (optional, defaults to "Host"), cultures (2 to 6), rounds, timer → **Invite players**                                                    |
-| `/r/ABCD`  | Room. Everyone uses this route; the role comes from localStorage                                                                                             |
+| `/r/<id>`  | Room. Everyone uses this route; the role comes from localStorage                                                                                             |
 |            | • Join (guests without a saved name): name field, Join                                                                                                       |
 |            | • Lobby: share link, QR, copy button, player list (host first, marked "you · host"), empty state "Waiting for others to join…", **Start** (host, ≥2 players) |
 |            | • Question: statement, timer bar, culture buttons (name + colour), "I don't know", count of answered players                                                 |
@@ -182,7 +182,7 @@ src/
 1. **Scaffold:** git, Vite, Tailwind, shadcn, Vitest, Supabase env vars, an empty route skeleton.
 2. **Content pipeline:** cultures, CSV schema, build and validation script, content rules doc. **Statement drafting** (180, in per-country batches) can run in parallel from here.
 3. **Engine:** types, reducer, selection, scoring, plus unit tests. No UI yet.
-4. **Lobby:** Home → Settings → Invite → room code, link, QR, live player list via Presence. Test: phones join over local Wi-Fi (`vite --host`).
+4. **Lobby:** Home → Settings → Invite → link, QR, live player list via Presence. Test: phones join over local Wi-Fi (`vite --host`).
 5. **Round loop:** question, synced timer, answers, reveal, final.
 6. **Host panel and resilience:** pause/resume/back/skip/end, kick, reconnect for host and guests, host-offline state, wake lock.
 7. **Metrics:** Pages Function + D1, report link, play-again vote.
@@ -200,5 +200,5 @@ src/
 - Everyone except the host leaves mid-game.
 - Ties in the final ranking; ties for the first-correct bonus.
 - Settings that leave too few eligible statements.
-- A room code shared after the game ended.
+- A room link shared after the game ended.
 - Supabase limits reached (connection refused): what message to show.

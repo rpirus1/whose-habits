@@ -129,32 +129,3 @@ export function acquireRoom(roomCode: string, presenceKey: string) {
     },
   }
 }
-
-/**
- * Checks that nobody is in a room before the host claims its code.
- * Joins without tracking and waits for the first presence sync.
- */
-export function isRoomFree(roomCode: string, timeoutMs = 2500): Promise<boolean> {
-  return new Promise((resolve) => {
-    const client = createRealtimeClient()
-    const channel = client.channel(channelName(roomCode), {
-      config: { presence: { enabled: true } },
-    })
-    let settled = false
-    const finish = (free: boolean) => {
-      if (settled) return
-      settled = true
-      resolve(free)
-      void client.removeAllChannels().then(() => client.disconnect())
-    }
-    channel
-      .on('presence', { event: 'sync' }, () =>
-        finish(Object.keys(channel.presenceState()).length === 0),
-      )
-      .subscribe((status) => {
-        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') finish(true)
-      })
-    // An empty room may never send a sync; no news means free.
-    setTimeout(() => finish(true), timeoutMs)
-  })
-}

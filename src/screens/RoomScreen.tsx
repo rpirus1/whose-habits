@@ -11,10 +11,17 @@ export function RoomScreen() {
   if (!roomCode) return <NotFoundScreen />
 
   const hostGame = loadHostGame(roomCode)
-  // Keyed by room so navigating between rooms remounts everything.
-  return hostGame ? (
-    <HostRoom key={roomCode} initial={hostGame} />
-  ) : (
-    <GuestRoom key={roomCode} roomCode={roomCode} />
+  return (
+    <>
+      {/* Room links are private invitations (React hoists these into <head>). */}
+      <meta name="robots" content="noindex, nofollow" />
+      <meta name="referrer" content="no-referrer" />
+      {/* Keyed by room so navigating between rooms remounts everything. */}
+      {hostGame ? (
+        <HostRoom key={roomCode} initial={hostGame} />
+      ) : (
+        <GuestRoom key={roomCode} roomCode={roomCode} />
+      )}
+    </>
   )
 }

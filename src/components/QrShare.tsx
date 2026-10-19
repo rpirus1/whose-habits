@@ -2,27 +2,13 @@ import { Copy, Share2 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { canNativeShare, copyText } from '@/lib/share'
 
 const roomUrl = (roomCode: string) => `${window.location.origin}/r/${roomCode}`
 
-/** navigator.clipboard needs a secure page; the old execCommand path covers local http testing. */
-async function copyText(text: string) {
-  if (navigator.clipboard) return navigator.clipboard.writeText(text)
-  const field = document.createElement('textarea')
-  field.value = text
-  field.setAttribute('readonly', '')
-  field.style.position = 'fixed'
-  field.style.opacity = '0'
-  document.body.appendChild(field)
-  field.select()
-  const ok = document.execCommand('copy')
-  field.remove()
-  if (!ok) throw new Error('Copy failed')
-}
-
 export function QrShare({ roomCode }: { roomCode: string }) {
   const url = roomUrl(roomCode)
-  const canShare = typeof navigator.share === 'function'
+  const canShare = canNativeShare()
 
   async function share() {
     try {
@@ -48,9 +34,8 @@ export function QrShare({ roomCode }: { roomCode: string }) {
         <QRCodeSVG value={url} size={176} marginSize={0} aria-label={`QR code for ${url}`} />
       </div>
       <div className="text-center">
-        <p className="text-muted-foreground text-sm">Room code</p>
-        <p className="font-mono text-4xl font-bold tracking-[0.3em]">{roomCode}</p>
-        <p className="text-muted-foreground mt-1 text-sm break-all">
+        <p className="font-medium">Scan to join, or share the link</p>
+        <p className="text-muted-foreground mt-1 font-mono text-sm break-all">
           {url.replace(/^https?:\/\//, '')}
         </p>
       </div>

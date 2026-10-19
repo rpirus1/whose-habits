@@ -19,7 +19,6 @@ export function GuestRoom({ roomCode }: { roomCode: string }) {
   if (!identity) {
     return (
       <JoinView
-        roomCode={roomCode}
         onJoin={(name) => {
           const next: GuestIdentity = { playerId: newId(), name }
           saveGuestIdentity(roomCode, next)
@@ -32,15 +31,15 @@ export function GuestRoom({ roomCode }: { roomCode: string }) {
   return <GuestGame roomCode={roomCode} identity={identity} />
 }
 
-function JoinView({ roomCode, onJoin }: { roomCode: string; onJoin: (name: string) => void }) {
+function JoinView({ onJoin }: { onJoin: (name: string) => void }) {
   const [name, setName] = useState(() => load<string>(keys.lastName) ?? '')
   const trimmed = name.trim()
 
   return (
     <Screen className="justify-center">
       <div className="text-center">
-        <p className="text-muted-foreground">Joining room</p>
-        <p className="font-mono text-4xl font-bold tracking-[0.3em]">{roomCode}</p>
+        <h1 className="font-heading text-3xl font-bold">Culture Clash</h1>
+        <p className="text-muted-foreground">You're invited to a game. What should we call you?</p>
       </div>
       <form
         className="flex flex-col gap-4"
@@ -82,7 +81,8 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
     const message = {
       full: 'This room is full. Ask the host to make space, or start your own game.',
       kicked: 'The host removed you from this game.',
-      notFound: `Can't find room ${roomCode}. Check the link, or ask the host to open the game. Still trying…`,
+      notFound:
+        "Can't find this game. Check the link, or ask the host to open the game on their phone. Still trying…",
     }[status]
     return (
       <Screen className="justify-center text-center">
@@ -98,7 +98,7 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
     return (
       <Screen className="items-center justify-center">
         <span className="bg-primary size-3 animate-pulse rounded-full" aria-hidden />
-        <p className="text-muted-foreground">Joining room {roomCode}…</p>
+        <p className="text-muted-foreground">Joining the game…</p>
       </Screen>
     )
   }

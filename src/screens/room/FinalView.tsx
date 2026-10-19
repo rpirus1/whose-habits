@@ -1,8 +1,15 @@
-import { Crown } from 'lucide-react'
+import { Crown, Share2 } from 'lucide-react'
+import { useState } from 'react'
 import type { CSSProperties } from 'react'
+import { Link } from 'react-router'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { getCulture } from '@/content/cultures'
 import type { Snapshot } from '@/game/protocol'
+import { track } from '@/lib/analytics'
+import type { PlayAgainVote } from '@/lib/analytics'
+import { shareLink } from '@/lib/share'
+import { load, save } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 
 export function FinalView({
@@ -18,6 +25,21 @@ export function FinalView({
   const final = snapshot.final!
   const players = new Map(snapshot.players.map((p) => [p.id, p]))
   const myRank = final.ranking.find((r) => r.id === meId)?.rank
+  const role = onPlayAgain ? 'host' : 'guest'
+
+  async function tellAFriend() {
+    track({ type: 'share_click', gameId: snapshot.gameId, role })
+    try {
+      const result = await shareLink({
+        title: 'Culture Clash',
+        text: 'A party game: guess which culture each statement fits. Free, no app needed.',
+        url: window.location.origin,
+      })
+      if (result === 'copied') toast.success('Link copied')
+    } catch {
+      toast.error(`Couldn't share. The link is ${window.location.origin}`)
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6">
@@ -54,6 +76,8 @@ export function FinalView({
         })}
       </ol>
 
+      <PlayAgainPoll gameId={snapshot.gameId} role={role} />
+
       {final.surprising.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="font-medium">Most surprising</h2>
@@ -80,17 +104,71 @@ export function FinalView({
         </section>
       )}
 
-      <div className="bg-background sticky bottom-0 mt-auto pt-2">
+      <div className="bg-background sticky bottom-0 mt-auto flex flex-col gap-2 pt-2">
         {onPlayAgain ? (
           <Button size="xl" className="w-full" onClick={onPlayAgain}>
             Play again
           </Button>
         ) : (
-          <p className="text-muted-foreground text-center text-sm">
-            Thanks for playing! The host can start another game.
-          </p>
+          // Every guest just finished a game: the best moment to turn them into a host.
+          <Button asChild size="xl" className="w-full">
+            <Link
+              to="/new"
+              onClick={() => track({ type: 'host_cta_click', gameId: snapshot.gameId })}
+            >
+              Host your own game
+            </Link>
+          </Button>
         )}
+        <Button size="xl" variant="ghost" className="w-full" onClick={tellAFriend}>
+          <Share2 /> Tell a friend
+        </Button>
       </div>
     </div>
+  )
+}
+
+const VOTES: { value: PlayAgainVote; label: string }[] = [
+  { value: 'yes', label: 'Yes!' },
+  { value: 'maybe', label: 'Maybe' },
+  { value: 'no', label: 'Not really' },
+]
+
+/** One tap, anonymous: the "would you play again?" success signal. Remembered per game. */
+function PlayAgainPoll({ gameId, role }: { gameId: string; role: 'host' | 'guest' }) {
+  const key = `vote:${gameId}`
+  const [vote, setVote] = useState(() => load<PlayAgainVote>(key))
+
+  function choose(value: PlayAgainVote) {
+    setVote(value)
+    save(key, value)
+    track({ type: 'play_again_vote', gameId, vote: value, role })
+  }
+
+  return (
+    <section className="bg-card flex flex-col gap-3 rounded-2xl p-4 text-center">
+      <h2 className="font-medium">{vote ? 'Thanks for telling us!' : 'Would you play again?'}</h2>
+      <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Would you play again?">
+        {VOTES.map(({ value, label }) => (
+          <button
+            key={value}
+            type="button"
+            role="radio"
+            aria-checked={vote === value}
+            disabled={!!vote}
+            onClick={() => choose(value)}
+            className={cn(
+              'h-12 rounded-xl border-2 font-medium transition-colors',
+              vote === value
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border',
+              vote && vote !== value && 'opacity-40',
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    </section>
   )
 }

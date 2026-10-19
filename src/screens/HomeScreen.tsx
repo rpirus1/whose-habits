@@ -33,9 +33,7 @@ export function HomeScreen() {
               className="bg-card flex min-h-14 items-center gap-3 rounded-xl px-4"
             >
               <span className="flex-1">
-                <span className="block font-medium">
-                  Back to game <span className="font-mono tracking-widest">{room.roomCode}</span>
-                </span>
+                <span className="block font-medium">Back to your game</span>
                 <span className="text-muted-foreground text-sm">
                   {room.role === 'host' ? 'You are hosting' : `Playing as ${room.name}`}
                 </span>

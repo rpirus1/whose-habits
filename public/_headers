@@ -1,0 +1,5 @@
+# Cloudflare Pages response headers.
+# Room links are private invitations: keep them out of search engines and Referer headers.
+/r/*
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: no-referrer

@@ -14,10 +14,7 @@ import { generateRoomCode } from '@/game/roomCode'
 import type { Settings } from '@/game/types'
 import { DEFAULT_SETTINGS, MAX_NAME_LENGTH } from '@/game/types'
 import { keys, load, save } from '@/lib/storage'
-import { isRoomFree } from '@/realtime/connection'
 import { saveHostGame } from '@/lib/savedRooms'
-
-const CODE_ATTEMPTS = 5
 
 export function SettingsScreen() {
   const navigate = useNavigate()
@@ -27,15 +24,11 @@ export function SettingsScreen() {
   )
   const [creating, setCreating] = useState(false)
 
-  async function invite() {
+  function invite() {
     setCreating(true)
     try {
-      let roomCode: string | undefined
-      for (let i = 0; i < CODE_ATTEMPTS && !roomCode; i++) {
-        const candidate = generateRoomCode()
-        if (await isRoomFree(candidate)) roomCode = candidate
-      }
-      if (!roomCode) throw new Error('No free room code found')
+      // Random enough that collisions aren't a practical concern.
+      const roomCode = generateRoomCode()
 
       save(keys.lastSettings, settings)
       save(keys.lastName, hostName.trim())
@@ -43,7 +36,7 @@ export function SettingsScreen() {
       navigate(`/r/${roomCode}`)
     } catch (error) {
       console.error(error)
-      toast.error("Couldn't create a room. Check your connection and try again.")
+      toast.error("Couldn't create a game. Please try again.")
       setCreating(false)
     }
   }
