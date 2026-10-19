@@ -45,17 +45,17 @@ export function SettingsForm({
 
   const enough = value.cultures.length >= MIN_CULTURES
   const hint = refused
-    ? `Keep at least ${MIN_CULTURES} cultures.`
+    ? `Keep at least ${MIN_CULTURES} countries.`
     : enough
       ? ''
-      : `Pick at least ${MIN_CULTURES} cultures.`
+      : `Pick at least ${MIN_CULTURES} countries.`
   const pool = enough ? eligibleStatements(STATEMENTS, value.cultures).length : 0
 
   return (
     <div className="flex flex-col gap-6">
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-3 flex w-full items-baseline justify-between font-medium">
-          Cultures
+          Countries
           <span className="text-muted-foreground text-sm font-normal">
             {value.cultures.length} of {MIN_CULTURES}–{MAX_CULTURES}
           </span>
@@ -113,7 +113,7 @@ export function SettingsForm({
       />
       {enough && pool < value.rounds && (
         <p className="text-muted-foreground -mt-4 text-sm">
-          Only {pool} statements fit this mix of cultures, so the game will have {pool} rounds.
+          Only {pool} statements fit this mix of countries, so the game will have {pool} rounds.
         </p>
       )}
 

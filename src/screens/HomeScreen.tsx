@@ -18,9 +18,9 @@ export function HomeScreen() {
   return (
     <Screen className="justify-center text-center">
       <div className="space-y-3">
-        <h1 className="font-heading text-4xl font-bold tracking-tight">Culture Clash</h1>
+        <h1 className="font-heading text-4xl font-bold tracking-tight">Whose Habits</h1>
         <p className="text-muted-foreground text-lg">
-          Guess which culture each statement fits best. Play with friends, one phone each.
+          Guess whose habit it is. Play with friends, one phone each.
         </p>
       </div>
 

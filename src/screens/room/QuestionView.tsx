@@ -47,9 +47,7 @@ export function QuestionView({
         <TimerBar msLeft={msLeft} totalMs={totalMs} paused={snapshot.paused} />
       </div>
 
-      <p className="text-muted-foreground text-center text-sm">
-        Which culture is this most associated with?
-      </p>
+      <p className="text-muted-foreground text-center text-sm">Where is this most typical?</p>
       <blockquote className="bg-card flex min-h-36 items-center justify-center rounded-2xl p-5 text-center text-2xl leading-snug font-semibold text-balance">
         {question.text}
       </blockquote>

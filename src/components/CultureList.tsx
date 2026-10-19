@@ -7,7 +7,7 @@ export function CultureList({ cultures }: { cultures: CultureCode[] }) {
   return (
     <ul
       className="flex flex-wrap justify-center gap-x-4 gap-y-1"
-      aria-label="Cultures in this game"
+      aria-label="Countries in this game"
     >
       {cultures.map((code) => (
         <li key={code} className="flex items-center gap-2 py-1 text-sm font-medium">

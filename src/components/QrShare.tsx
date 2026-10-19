@@ -12,7 +12,7 @@ export function QrShare({ roomCode }: { roomCode: string }) {
 
   async function share() {
     try {
-      await navigator.share({ title: 'Join my Culture Clash game', url })
+      await navigator.share({ title: 'Join my Whose Habits game', url })
     } catch {
       // Cancelled by the user; nothing to do.
     }

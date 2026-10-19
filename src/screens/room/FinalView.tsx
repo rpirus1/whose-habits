@@ -33,8 +33,8 @@ export function FinalView({
     track({ type: 'share_click', gameId: snapshot.gameId, role })
     try {
       const result = await shareLink({
-        title: 'Culture Clash',
-        text: 'A party game: guess which culture each statement fits. Free, no app needed.',
+        title: 'Whose Habits',
+        text: 'A party game about the little habits that make every country feel like home. Free, no app, no sign-up.',
         url: window.location.origin,
       })
       if (result === 'copied') toast.success('Link copied')
