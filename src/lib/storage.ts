@@ -18,6 +18,20 @@ export function save(key: string, value: unknown): void {
   }
 }
 
+/** Keys (without the app prefix) that start with `start`. */
+export function listKeys(start: string): string[] {
+  try {
+    const out: string[] = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key?.startsWith(PREFIX + start)) out.push(key.slice(PREFIX.length))
+    }
+    return out
+  } catch {
+    return []
+  }
+}
+
 export function remove(key: string): void {
   try {
     localStorage.removeItem(PREFIX + key)

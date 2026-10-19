@@ -2,8 +2,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'
 import { Toaster } from '@/components/ui/sonner'
+import { pruneSavedRooms } from '@/lib/savedRooms'
 import { router } from './router'
 import './index.css'
+
+pruneSavedRooms()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

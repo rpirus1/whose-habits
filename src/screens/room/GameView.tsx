@@ -29,7 +29,16 @@ export function GameView({
   }
   // A reveal wins over the question: it's either the current one or the host looking back.
   if (snapshot.reveal) {
-    return <RevealView snapshot={snapshot} meId={meId} onNext={onNext} />
+    return (
+      <>
+        {snapshot.paused && !snapshot.viewing && (
+          <p role="status" className="bg-muted rounded-xl px-4 py-3 text-center text-sm">
+            Paused by the host
+          </p>
+        )}
+        <RevealView snapshot={snapshot} meId={meId} onNext={onNext} />
+      </>
+    )
   }
   if (snapshot.question) {
     return (

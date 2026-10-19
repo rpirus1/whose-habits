@@ -3,18 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GuestMessage, HostMessage, Snapshot } from '@/game/protocol'
 import type { Choice } from '@/game/types'
-import { keys, load, save } from '@/lib/storage'
+import { saveGuestIdentity } from '@/lib/savedRooms'
+import type { GuestIdentity } from '@/lib/savedRooms'
 import { CLOCK_SAMPLE_GAP_MS, CLOCK_SAMPLES, estimateOffset } from './clock'
 import type { ClockSample } from './clock'
 import { acquireRoom } from './connection'
 import type { RoomConnection } from './connection'
-
-export interface GuestIdentity {
-  playerId: string
-  name: string
-  /** The host this guest first heard from; snapshots from anyone else are ignored. */
-  hostId?: string
-}
 
 export type GuestStatus =
   | 'connecting'
@@ -36,14 +30,6 @@ export interface MyAnswer {
 const HELLO_RETRY_MS = 2000
 const ANSWER_RETRY_MS = 1000
 const NOT_FOUND_AFTER_MS = 8000
-
-export function loadGuestIdentity(roomCode: string) {
-  return load<GuestIdentity>(keys.guest(roomCode))
-}
-
-export function saveGuestIdentity(roomCode: string, identity: GuestIdentity) {
-  save(keys.guest(roomCode), identity)
-}
 
 export function useGuestGame(roomCode: string, identity: GuestIdentity) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null)

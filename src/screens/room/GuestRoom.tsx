@@ -5,13 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MAX_NAME_LENGTH } from '@/game/types'
+import { useWakeLock } from '@/hooks/useWakeLock'
 import { keys, load, save } from '@/lib/storage'
-import {
-  loadGuestIdentity,
-  saveGuestIdentity,
-  useGuestGame,
-  type GuestIdentity,
-} from '@/realtime/useGuestGame'
+import { loadGuestIdentity, saveGuestIdentity, type GuestIdentity } from '@/lib/savedRooms'
+import { useGuestGame } from '@/realtime/useGuestGame'
 import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
 
@@ -77,6 +74,8 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
     roomCode,
     identity,
   )
+  // A sleeping phone drops its connection, so keep the screen on during play.
+  useWakeLock(snapshot?.phase === 'question' || snapshot?.phase === 'reveal')
 
   if (status === 'full' || status === 'kicked' || status === 'notFound') {
     const message = {

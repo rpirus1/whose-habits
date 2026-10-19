@@ -1,6 +1,6 @@
 import { useParams } from 'react-router'
 import { normalizeRoomCode } from '@/game/roomCode'
-import { loadHostGame } from '@/realtime/useHostGame'
+import { loadHostGame } from '@/lib/savedRooms'
 import { GuestRoom } from './room/GuestRoom'
 import { HostRoom } from './room/HostRoom'
 import { NotFoundScreen } from './NotFoundScreen'

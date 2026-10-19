@@ -14,7 +14,7 @@ import type { Settings } from '@/game/types'
 import { DEFAULT_SETTINGS, MAX_NAME_LENGTH } from '@/game/types'
 import { keys, load, save } from '@/lib/storage'
 import { isRoomFree } from '@/realtime/connection'
-import { saveHostGame } from '@/realtime/useHostGame'
+import { saveHostGame } from '@/lib/savedRooms'
 
 const CODE_ATTEMPTS = 5
 

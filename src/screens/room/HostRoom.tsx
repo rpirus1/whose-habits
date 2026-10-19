@@ -3,6 +3,7 @@ import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
 import { canStart, currentRound } from '@/game/engine'
 import type { GameState } from '@/game/types'
+import { useWakeLock } from '@/hooks/useWakeLock'
 import { recentStatementIds, useHostGame } from '@/realtime/useHostGame'
 import { ConnectionBanner } from './ConnectionBanner'
 import { GameView } from './GameView'
@@ -11,10 +12,12 @@ import { LobbyView } from './LobbyView'
 export function HostRoom({ initial }: { initial: GameState }) {
   const { state, snapshot, status, dispatch } = useHostGame(initial)
   const round = currentRound(state)
+  // The host's phone runs the game: keep its screen on from the lobby to the end.
+  useWakeLock(state.phase !== 'final')
 
   return (
     <Screen>
-      <HostPanel state={state} dispatch={dispatch} />
+      <HostPanel state={state} players={snapshot.players} dispatch={dispatch} />
       {status !== 'connected' && <ConnectionBanner status={status} />}
 
       {state.phase === 'lobby' ? (

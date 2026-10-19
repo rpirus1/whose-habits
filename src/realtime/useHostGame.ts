@@ -7,6 +7,7 @@ import type { Action } from '@/game/engine'
 import { parseGuestMessage, toSnapshot } from '@/game/protocol'
 import type { HostMessage, Snapshot } from '@/game/protocol'
 import type { EngineContext, GameState } from '@/game/types'
+import { saveHostGame } from '@/lib/savedRooms'
 import { keys, load, save } from '@/lib/storage'
 import { acquireRoom } from './connection'
 import type { ConnectionStatus, RoomConnection } from './connection'
@@ -22,15 +23,6 @@ const context = (): EngineContext => ({
   statements: STATEMENT_MAP,
   random: Math.random,
 })
-
-export function loadHostGame(roomCode: string): GameState | undefined {
-  const state = load<GameState>(keys.hostGame(roomCode))
-  return state?.v === 1 ? state : undefined
-}
-
-export function saveHostGame(state: GameState) {
-  save(keys.hostGame(state.roomCode), state)
-}
 
 export interface HostGame {
   state: GameState
@@ -132,6 +124,14 @@ export function useHostGame(initial: GameState): HostGame {
 
     const tick = window.setInterval(() => dispatch({ type: 'tick' }), TICK_MS)
     const heartbeat = window.setInterval(() => broadcast(stateRef.current), HEARTBEAT_MS)
+    // Phones throttle timers in the background (e.g. while the host shares the link in a
+    // chat app). On return, close any expired round right away and re-send the state.
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return
+      dispatch({ type: 'tick' })
+      broadcast(stateRef.current)
+    }
+    document.addEventListener('visibilitychange', onVisible)
 
     return () => {
       offStatus()
@@ -139,6 +139,7 @@ export function useHostGame(initial: GameState): HostGame {
       offMessage()
       clearInterval(tick)
       clearInterval(heartbeat)
+      document.removeEventListener('visibilitychange', onVisible)
       connectionRef.current = null
       release()
     }

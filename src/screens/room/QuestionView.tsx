@@ -60,6 +60,7 @@ export function QuestionView({
           timeUp={msLeft <= 0}
           myChoice={myChoice}
           confirmed={confirmed}
+          answeredEarlier={question.answeredIds.includes(meId)}
         />
         <div
           className={cn(
@@ -97,12 +98,15 @@ function StatusLine({
   timeUp,
   myChoice,
   confirmed,
+  answeredEarlier,
 }: {
   canAnswer: boolean
   paused: boolean
   timeUp: boolean
   myChoice: Choice | null
   confirmed: boolean
+  /** The host has an answer from us that this device doesn't remember (after a refresh). */
+  answeredEarlier: boolean
 }) {
   const text = !canAnswer
     ? "You joined mid-round. You'll play from the next statement."
@@ -114,7 +118,9 @@ function StatusLine({
           ? confirmed
             ? 'Answer locked in. You can still change it.'
             : 'Sending…'
-          : 'Tap your answer'
+          : answeredEarlier
+            ? 'Your answer is in. Tap to change it.'
+            : 'Tap your answer'
   return (
     <p className="text-muted-foreground min-h-5 text-center text-sm" aria-live="polite">
       {text}
