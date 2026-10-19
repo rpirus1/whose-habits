@@ -20,6 +20,8 @@ export type HostMessage =
   | { type: 'state'; snapshot: Snapshot }
   | { type: 'pong'; playerId: string; t0: number; hostNow: number }
   | { type: 'rejected'; playerId: string; reason: 'full' | 'kicked' }
+  /** The host has this choice recorded; the guest stops re-sending it. */
+  | { type: 'ack'; playerId: string; roundId: string; choice: Choice }
 
 /** Everything on one broadcast event name; `type` tells the messages apart. */
 export const CHANNEL_EVENT = 'msg'

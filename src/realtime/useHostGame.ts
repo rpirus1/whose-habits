@@ -102,9 +102,23 @@ export function useHostGame(initial: GameState): HostGame {
           if (stateRef.current === before) broadcast(before)
           return
         }
-        case 'answer':
+        case 'answer': {
           dispatch(message)
+          // Ack whenever the host holds this choice, including re-sends it already had.
+          const round = stateRef.current.rounds.at(-1)
+          if (
+            round?.id === message.roundId &&
+            round.answers[message.playerId]?.choice === message.choice
+          ) {
+            connection.send({
+              type: 'ack',
+              playerId: message.playerId,
+              roundId: message.roundId,
+              choice: message.choice,
+            } satisfies HostMessage)
+          }
           return
+        }
         case 'ping':
           connection.send({
             type: 'pong',

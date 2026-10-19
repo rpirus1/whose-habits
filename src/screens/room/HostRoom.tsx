@@ -1,15 +1,16 @@
 import { HostPanel } from '@/components/HostPanel'
 import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
-import { canStart } from '@/game/engine'
+import { canStart, currentRound } from '@/game/engine'
 import type { GameState } from '@/game/types'
 import { recentStatementIds, useHostGame } from '@/realtime/useHostGame'
 import { ConnectionBanner } from './ConnectionBanner'
-import { GamePlaceholder } from './GamePlaceholder'
+import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
 
 export function HostRoom({ initial }: { initial: GameState }) {
   const { state, snapshot, status, dispatch } = useHostGame(initial)
+  const round = currentRound(state)
 
   return (
     <Screen>
@@ -43,22 +44,18 @@ export function HostRoom({ initial }: { initial: GameState }) {
           )}
         </>
       ) : (
-        <>
-          <GamePlaceholder snapshot={snapshot} />
-          {state.phase === 'reveal' && (
-            <Button size="xl" onClick={() => dispatch({ type: 'next' })}>
-              Next
-            </Button>
-          )}
-          {state.phase === 'final' && (
-            <Button
-              size="xl"
-              onClick={() => dispatch({ type: 'playAgain', gameId: crypto.randomUUID() })}
-            >
-              Play again
-            </Button>
-          )}
-        </>
+        <GameView
+          snapshot={snapshot}
+          meId={state.hostId}
+          myChoice={round?.answers[state.hostId]?.choice ?? null}
+          confirmed
+          clockOffset={0}
+          onChoose={(choice) =>
+            round && dispatch({ type: 'answer', playerId: state.hostId, roundId: round.id, choice })
+          }
+          onNext={() => dispatch({ type: 'next' })}
+          onPlayAgain={() => dispatch({ type: 'playAgain', gameId: crypto.randomUUID() })}
+        />
       )}
     </Screen>
   )

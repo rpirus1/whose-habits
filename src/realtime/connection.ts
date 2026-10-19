@@ -1,11 +1,11 @@
 // One Supabase Realtime channel per room: broadcast for messages, presence for who's online.
 //
-// supabase-js returns the *same* channel object for the same topic, so connections are shared
-// and closed with a short delay. That keeps React StrictMode's mount → unmount → mount
-// (and quick screen changes) from tearing the channel down and re-joining it.
-import type { RealtimeChannel } from '@supabase/supabase-js'
+// Each connection has its own Realtime client, so a closing room can never collide with a
+// new one on the same topic. Connections are shared and closed with a short delay, so React
+// StrictMode's mount → unmount → mount (and quick screen changes) don't re-join the room.
+import type { RealtimeChannel, RealtimeClient } from '@supabase/realtime-js'
 import { CHANNEL_EVENT, channelName } from '@/game/protocol'
-import { getSupabase } from './supabase'
+import { createRealtimeClient } from './supabase'
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'error'
 
@@ -19,6 +19,7 @@ export class RoomConnection {
   /** False until the first presence sync; before that, onlineIds is not meaningful. */
   presenceSynced = false
 
+  private client: RealtimeClient
   private channel: RealtimeChannel
   private meta: Record<string, unknown> = {}
   private messageListeners = new Set<Listener<unknown>>()
@@ -28,7 +29,8 @@ export class RoomConnection {
   constructor(roomCode: string, presenceKey: string) {
     this.roomCode = roomCode
     this.presenceKey = presenceKey
-    this.channel = getSupabase().channel(channelName(roomCode), {
+    this.client = createRealtimeClient()
+    this.channel = this.client.channel(channelName(roomCode), {
       config: { broadcast: { self: false }, presence: { key: presenceKey, enabled: true } },
     })
     this.channel
@@ -45,7 +47,7 @@ export class RoomConnection {
           void this.channel.track(this.meta)
           this.setStatus('connected')
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          // supabase-js keeps retrying; the UI shows "reconnecting" meanwhile.
+          // The client keeps retrying; the UI shows "reconnecting" meanwhile.
           this.setStatus('error')
         }
       })
@@ -81,7 +83,7 @@ export class RoomConnection {
   }
 
   close() {
-    void getSupabase().removeChannel(this.channel)
+    void this.client.removeAllChannels().then(() => this.client.disconnect())
   }
 
   private setStatus(status: ConnectionStatus) {
@@ -134,17 +136,16 @@ export function acquireRoom(roomCode: string, presenceKey: string) {
  */
 export function isRoomFree(roomCode: string, timeoutMs = 2500): Promise<boolean> {
   return new Promise((resolve) => {
-    const supabase = getSupabase()
-    const channel = supabase.channel(`${channelName(roomCode)}`, {
+    const client = createRealtimeClient()
+    const channel = client.channel(channelName(roomCode), {
       config: { presence: { enabled: true } },
     })
     let settled = false
     const finish = (free: boolean) => {
       if (settled) return
       settled = true
-      // Wait for removal: the host joins this same topic next, and supabase-js would
-      // otherwise hand back this half-closed channel.
-      void supabase.removeChannel(channel).finally(() => resolve(free))
+      resolve(free)
+      void client.removeAllChannels().then(() => client.disconnect())
     }
     channel
       .on('presence', { event: 'sync' }, () =>

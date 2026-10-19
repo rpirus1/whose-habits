@@ -12,7 +12,7 @@ import {
   useGuestGame,
   type GuestIdentity,
 } from '@/realtime/useGuestGame'
-import { GamePlaceholder } from './GamePlaceholder'
+import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
 
 export function GuestRoom({ roomCode }: { roomCode: string }) {
@@ -73,7 +73,10 @@ function JoinView({ roomCode, onJoin }: { roomCode: string; onJoin: (name: strin
 }
 
 function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestIdentity }) {
-  const { snapshot, status, hostOnline } = useGuestGame(roomCode, identity)
+  const { snapshot, status, hostOnline, clockOffset, myAnswer, answer } = useGuestGame(
+    roomCode,
+    identity,
+  )
 
   if (status === 'full' || status === 'kicked' || status === 'notFound') {
     const message = {
@@ -100,6 +103,8 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
     )
   }
 
+  const current = myAnswer?.roundId === snapshot.question?.roundId ? myAnswer : null
+
   return (
     <Screen>
       {!hostOnline && (
@@ -110,7 +115,14 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
       {snapshot.phase === 'lobby' ? (
         <LobbyView snapshot={snapshot} meId={identity.playerId} isHost={false} />
       ) : (
-        <GamePlaceholder snapshot={snapshot} />
+        <GameView
+          snapshot={snapshot}
+          meId={identity.playerId}
+          myChoice={current ? current.choice : null}
+          confirmed={current?.acked ?? false}
+          clockOffset={clockOffset}
+          onChoose={(choice) => snapshot.question && answer(snapshot.question.roundId, choice)}
+        />
       )}
     </Screen>
   )
