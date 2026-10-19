@@ -1,0 +1,19 @@
+# Free Supabase projects pause after about a week without activity. This pings the
+# project every 3 days. Supabase doesn't document exactly what counts as activity:
+# if the project still pauses, restore it from the dashboard or use Pro for launch weeks.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '17 6 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ping Supabase
+        run: |
+          set -a; . ./.env.production; set +a
+          curl -fsS "$VITE_SUPABASE_URL/auth/v1/health" -H "apikey: $VITE_SUPABASE_PUBLISHABLE_KEY"
