@@ -43,6 +43,10 @@ Added 2026-10-19. From earlier discussion.
 If the host's phone dies or leaves, another player takes over as host so the game continues.
 Added 2026-10-19. From earlier discussion (also listed in PLAN.md edge cases).
 
+### Player-submitted statements for the shared base
+Players can submit their own statements. Ruslan reviews them and adds the good ones to the general statement base, so the content grows with the community. Submitters can optionally add a nickname that is shown with the statement as credit. No personal details are collected.
+Added 2026-10-19. From Ruslan.
+
 ### Undecided edge cases from PLAN.md
 The open questions in [PLAN.md, section 9](PLAN.md): back pressed during a question, host leaving for good, disconnects mid-question, cultures changed in the lobby, two tabs with the same playerId, late joiners, everyone but the host leaving, ties in the ranking and first-correct bonus, settings leaving too few statements, a room link opened after the game ended, and the message when Supabase limits are hit.
 Added 2026-10-19. From the brief (PLAN.md).
