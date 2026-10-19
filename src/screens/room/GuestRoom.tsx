@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
+import { newId } from '@/lib/id'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MAX_NAME_LENGTH } from '@/game/types'
@@ -20,7 +21,7 @@ export function GuestRoom({ roomCode }: { roomCode: string }) {
       <JoinView
         roomCode={roomCode}
         onJoin={(name) => {
-          const next: GuestIdentity = { playerId: crypto.randomUUID(), name }
+          const next: GuestIdentity = { playerId: newId(), name }
           saveGuestIdentity(roomCode, next)
           save(keys.lastName, name)
           setIdentity(next)

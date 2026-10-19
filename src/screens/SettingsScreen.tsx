@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { SettingsForm } from '@/components/SettingsForm'
 import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
+import { newId } from '@/lib/id'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { MIN_CULTURES } from '@/content/cultures'
@@ -38,7 +39,7 @@ export function SettingsScreen() {
 
       save(keys.lastSettings, settings)
       save(keys.lastName, hostName.trim())
-      saveHostGame(createGame({ roomCode, hostId: crypto.randomUUID(), hostName, settings }))
+      saveHostGame(createGame({ roomCode, hostId: newId(), hostName, settings }))
       navigate(`/r/${roomCode}`)
     } catch (error) {
       console.error(error)

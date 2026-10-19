@@ -5,6 +5,21 @@ import { Button } from '@/components/ui/button'
 
 const roomUrl = (roomCode: string) => `${window.location.origin}/r/${roomCode}`
 
+/** navigator.clipboard needs a secure page; the old execCommand path covers local http testing. */
+async function copyText(text: string) {
+  if (navigator.clipboard) return navigator.clipboard.writeText(text)
+  const field = document.createElement('textarea')
+  field.value = text
+  field.setAttribute('readonly', '')
+  field.style.position = 'fixed'
+  field.style.opacity = '0'
+  document.body.appendChild(field)
+  field.select()
+  const ok = document.execCommand('copy')
+  field.remove()
+  if (!ok) throw new Error('Copy failed')
+}
+
 export function QrShare({ roomCode }: { roomCode: string }) {
   const url = roomUrl(roomCode)
   const canShare = typeof navigator.share === 'function'
@@ -19,7 +34,7 @@ export function QrShare({ roomCode }: { roomCode: string }) {
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(url)
+      await copyText(url)
       toast.success('Link copied')
     } catch {
       toast.error(`Couldn't copy. The link is ${url}`)

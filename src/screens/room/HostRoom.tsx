@@ -1,6 +1,7 @@
 import { HostPanel } from '@/components/HostPanel'
 import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
+import { newId } from '@/lib/id'
 import { canStart, currentRound } from '@/game/engine'
 import type { GameState } from '@/game/types'
 import { useWakeLock } from '@/hooks/useWakeLock'
@@ -36,7 +37,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
                 onClick={() =>
                   dispatch({
                     type: 'start',
-                    gameId: crypto.randomUUID(),
+                    gameId: newId(),
                     recentIds: recentStatementIds(),
                   })
                 }
@@ -57,7 +58,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
             round && dispatch({ type: 'answer', playerId: state.hostId, roundId: round.id, choice })
           }
           onNext={() => dispatch({ type: 'next' })}
-          onPlayAgain={() => dispatch({ type: 'playAgain', gameId: crypto.randomUUID() })}
+          onPlayAgain={() => dispatch({ type: 'playAgain', gameId: newId() })}
         />
       )}
     </Screen>
