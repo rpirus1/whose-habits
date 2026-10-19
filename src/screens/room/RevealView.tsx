@@ -48,7 +48,8 @@ export function RevealView({
         <p
           style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
           className={cn(
-            'rounded-2xl bg-[var(--c)] px-6 py-3 text-3xl font-bold text-[oklch(0.18_0.02_270)]',
+            // Same look as an answer button on the Question screen: outline plus a muted fill.
+            'rounded-2xl border-2 border-[var(--c)] bg-[color-mix(in_oklch,var(--c)_14%,transparent)] px-6 py-3 text-3xl font-bold',
             enterHighlight,
           )}
         >
@@ -109,13 +110,14 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
   return (
     <div
       className={cn(
-        'rounded-2xl px-4 py-3 text-center',
-        correct ? 'bg-primary text-primary-foreground' : 'bg-muted',
+        'rounded-2xl border-2 px-4 py-3 text-center',
+        // Correct gets only a green outline, so it doesn't compete with the primary button.
+        correct ? 'bg-secondary border-success' : 'bg-muted border-transparent',
       )}
       role="status"
     >
       <p className="text-xl font-bold">{title}</p>
-      {detail && <p className={cn('text-sm', !correct && 'text-muted-foreground')}>{detail}</p>}
+      {detail && <p className="text-muted-foreground text-sm">{detail}</p>}
     </div>
   )
 }
