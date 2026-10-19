@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import { Flag } from '@/components/Flag'
 import { CULTURES, MAX_CULTURES, MIN_CULTURES } from '@/content/cultures'
 import type { CultureCode } from '@/content/schema'
 import { STATEMENTS } from '@/content/statements'
@@ -48,23 +48,23 @@ export function SettingsForm({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => toggleCulture(culture.code)}
-                style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
                 className={cn(
-                  'flex min-h-14 items-center gap-3 rounded-xl border-2 px-3 text-left font-medium transition-colors',
+                  'relative flex min-h-14 items-center gap-3 rounded-xl border-2 px-3 text-left font-medium transition-colors',
                   selected
-                    ? 'border-[var(--c)] bg-[color-mix(in_oklch,var(--c)_18%,transparent)]'
+                    ? 'border-primary bg-primary/15'
                     : 'border-border bg-card text-muted-foreground',
                 )}
               >
-                <span
-                  className={cn(
-                    'flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-[var(--c)]',
-                    selected && 'bg-[var(--c)]',
-                  )}
-                >
-                  {selected && <Check className="text-background size-4" strokeWidth={3} />}
+                <Flag code={culture.code} className={cn(!selected && 'opacity-60')} />
+                <span className={cn('min-w-0 flex-1', selected && 'text-foreground')}>
+                  {culture.name}
                 </span>
-                <span className={cn(selected && 'text-foreground')}>{culture.name}</span>
+                {selected && (
+                  <Check
+                    className="text-primary absolute top-1.5 right-1.5 size-4"
+                    strokeWidth={3}
+                  />
+                )}
               </button>
             )
           })}
@@ -113,7 +113,7 @@ function OptionPicker<T extends number>({
   return (
     <fieldset>
       <legend className="mb-3 font-medium">{label}</legend>
-      <div className="bg-muted grid grid-flow-col gap-1 rounded-xl p-1" role="radiogroup">
+      <div className="bg-muted grid grid-flow-col gap-1 rounded-full p-1" role="radiogroup">
         {options.map((option) => (
           <button
             key={option}
@@ -122,7 +122,7 @@ function OptionPicker<T extends number>({
             aria-checked={option === value}
             onClick={() => onChange(option)}
             className={cn(
-              'h-12 rounded-lg text-lg font-medium transition-colors',
+              'h-12 rounded-full text-lg font-medium transition-colors',
               option === value
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:text-foreground',

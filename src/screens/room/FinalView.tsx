@@ -1,8 +1,8 @@
 import { Crown, Share2 } from 'lucide-react'
 import { useState } from 'react'
-import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
+import { Flag } from '@/components/Flag'
 import { Button } from '@/components/ui/button'
 import { getCulture } from '@/content/cultures'
 import type { Snapshot } from '@/game/protocol'
@@ -85,16 +85,12 @@ export function FinalView({
           {final.surprising.map((s) => {
             const culture = getCulture(s.answer)
             return (
-              <article
-                key={s.statementId}
-                style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
-                className="bg-card flex flex-col gap-2 rounded-2xl border-l-4 border-[var(--c)] p-4"
-              >
+              <article key={s.statementId} className="bg-card flex flex-col gap-2 rounded-2xl p-4">
                 <p className="leading-snug font-medium">“{s.text}”</p>
-                <p className="text-sm">
+                <p className="flex items-center gap-2 text-sm">
+                  <Flag code={culture.code} className="size-4" />
                   <span className="font-semibold">{culture.name}</span>
                   <span className="text-muted-foreground">
-                    {' '}
                     · {Math.round(s.percentCorrect * 100)}% got it right
                   </span>
                 </p>

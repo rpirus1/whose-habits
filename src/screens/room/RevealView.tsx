@@ -1,7 +1,7 @@
-import { Flag, Lightbulb } from 'lucide-react'
+import { Flag as FlagIcon, Lightbulb } from 'lucide-react'
 import { useState } from 'react'
-import type { CSSProperties } from 'react'
 import { toast } from 'sonner'
+import { Flag } from '@/components/Flag'
 import { SplitBars } from '@/components/SplitBars'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -47,13 +47,13 @@ export function RevealView({
         <p className="text-muted-foreground text-lg leading-snug text-balance">“{reveal.text}”</p>
         <p className="text-muted-foreground text-sm">Most associated with</p>
         <p
-          style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
           className={cn(
-            // Same look as an answer button on the Question screen: outline plus a muted fill.
-            'rounded-2xl border-2 border-[var(--c)] bg-[color-mix(in_oklch,var(--c)_14%,transparent)] px-6 py-3 text-[1.625rem] font-bold',
+            // Same look as an answer button on the Question screen: flag and name on a card.
+            'bg-card flex items-center gap-3 rounded-2xl py-3 pr-6 pl-4 text-[1.625rem] font-bold',
             enterHighlight,
           )}
         >
+          <Flag code={culture.code} className="size-9" />
           {culture.name}
         </p>
       </section>
@@ -143,7 +143,7 @@ function ReportButton({ gameId, statementId }: { gameId: string; statementId: st
         toast.success('Thanks! We’ll review this statement.')
       }}
     >
-      <Flag /> {reported ? 'Reported' : 'Report this statement'}
+      <FlagIcon /> {reported ? 'Reported' : 'Report this statement'}
     </Button>
   )
 }

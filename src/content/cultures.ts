@@ -3,17 +3,16 @@ import type { CultureCode } from './schema.ts'
 export interface Culture {
   code: CultureCode
   name: string
-  /** CSS variable from index.css; also available as Tailwind colour `culture-<code>`. */
-  colorVar: string
+  // The flag lives in components/Flag.tsx; cultures without one show their code.
 }
 
 export const CULTURES: readonly Culture[] = [
-  { code: 'PL', name: 'Poland', colorVar: '--culture-pl' },
-  { code: 'UA', name: 'Ukraine', colorVar: '--culture-ua' },
-  { code: 'NL', name: 'The Netherlands', colorVar: '--culture-nl' },
-  { code: 'BR', name: 'Brazil', colorVar: '--culture-br' },
-  { code: 'MX', name: 'Mexico', colorVar: '--culture-mx' },
-  { code: 'US', name: 'United States', colorVar: '--culture-us' },
+  { code: 'PL', name: 'Poland' },
+  { code: 'UA', name: 'Ukraine' },
+  { code: 'NL', name: 'The Netherlands' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'US', name: 'United States' },
 ]
 
 export const MIN_CULTURES = 2

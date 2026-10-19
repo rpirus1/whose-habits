@@ -11,12 +11,6 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-culture-pl: var(--culture-pl);
-  --color-culture-ua: var(--culture-ua);
-  --color-culture-nl: var(--culture-nl);
-  --color-culture-br: var(--culture-br);
-  --color-culture-mx: var(--culture-mx);
-  --color-culture-us: var(--culture-us);
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   /* One typeface everywhere: numbers use Geist's tabular figures (tabular-nums), not a mono font. */
@@ -63,13 +57,6 @@
 }
 
 :root {
-  /* Culture colours: chosen to be told apart, not to copy flags. */
-  --culture-pl: oklch(0.66 0.21 15);
-  --culture-ua: oklch(0.72 0.14 235);
-  --culture-nl: oklch(0.75 0.17 55);
-  --culture-br: oklch(0.72 0.17 150);
-  --culture-mx: oklch(0.65 0.2 305);
-  --culture-us: oklch(0.86 0.16 95);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
