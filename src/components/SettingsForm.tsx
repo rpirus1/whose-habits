@@ -89,7 +89,7 @@ export function SettingsForm({
       <OptionPicker
         label="Time to answer"
         options={SECONDS_OPTIONS}
-        format={(s) => `${s} s`}
+        format={(s) => `${s}s`}
         value={value.seconds}
         onChange={(seconds) => onChange({ ...value, seconds })}
       />
