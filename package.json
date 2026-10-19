@@ -15,6 +15,7 @@
     "format": "prettier --write .",
     "dev:api": "npm run build && wrangler dev --port 8788",
     "db:migrate:local": "wrangler d1 migrations apply culture-clash --local",
+    "db:migrate": "wrangler d1 migrations apply culture-clash --remote",
     "metrics:local": "wrangler d1 execute culture-clash --local --file scripts/metrics.sql",
     "metrics": "wrangler d1 execute culture-clash --remote --file scripts/metrics.sql"
   },

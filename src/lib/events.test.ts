@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseEvent } from './events'
+import { isPreviewHost, parseEvent } from './events'
 
 const gameId = '0b9c3a52-7d1e-4f6a-9c2b-1e2d3f4a5b6c'
 
@@ -41,6 +41,31 @@ describe('parseEvent', () => {
     })
   })
 
+  it('keeps the replay flag and source, with defaults for older clients', () => {
+    const started = {
+      type: 'game_started',
+      gameId,
+      players: 3,
+      cultures: ['PL'],
+      rounds: 10,
+      seconds: 20,
+    }
+    expect(parseEvent({ ...started, replay: true, source: 'guest_cta' })).toMatchObject({
+      replay: true,
+      source: 'guest_cta',
+    })
+    expect(parseEvent(started)).toMatchObject({ replay: false, source: 'direct' })
+    expect(parseEvent({ ...started, replay: 'yes' })).toBeNull()
+    expect(parseEvent({ ...started, source: 'ads' })).toBeNull()
+  })
+
+  it('keeps test: true and drops any other test value', () => {
+    const cta = { type: 'host_cta_click', gameId }
+    expect(parseEvent({ ...cta, test: true })).toEqual({ ...cta, test: true })
+    expect(parseEvent({ ...cta, test: 1 })).toEqual(cta)
+    expect(parseEvent({ ...cta, test: false })).toEqual(cta)
+  })
+
   it('rejects junk, unknown types and out-of-range values', () => {
     for (const bad of [
       null,
@@ -63,5 +88,13 @@ describe('parseEvent', () => {
     ]) {
       expect(parseEvent(bad)).toBeNull()
     }
+  })
+})
+
+describe('isPreviewHost', () => {
+  it('treats the workers.dev preview URL as test traffic, and nothing else', () => {
+    expect(isPreviewHost('culture-clash.ruslan-pirus.workers.dev')).toBe(true)
+    expect(isPreviewHost('cultureclash.app')).toBe(false)
+    expect(isPreviewHost('notworkers.dev')).toBe(false)
   })
 })
