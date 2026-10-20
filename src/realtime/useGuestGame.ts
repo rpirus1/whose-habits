@@ -9,16 +9,10 @@ import { CLOCK_SAMPLE_GAP_MS, CLOCK_SAMPLES, estimateOffset } from './clock'
 import type { ClockSample } from './clock'
 import { acquireRoom } from './connection'
 import type { RoomConnection } from './connection'
+import { statusWithoutReply } from './guestStatus'
+import type { GuestStatus } from './guestStatus'
 
-export type GuestStatus =
-  | 'connecting'
-  /** Connected, no answer from a host yet. */
-  | 'joining'
-  | 'in'
-  /** No host answered for a while: wrong code, or the host is gone. Keeps trying. */
-  | 'notFound'
-  | 'full'
-  | 'kicked'
+export type { GuestStatus }
 
 export interface MyAnswer {
   roundId: string
@@ -170,7 +164,8 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
       }
     }, ANSWER_RETRY_MS)
     const notFound = window.setTimeout(
-      () => setStatus((prev) => (prev === 'joining' || prev === 'connecting' ? 'notFound' : prev)),
+      // Keeps saying hello meanwhile, so the guest is back in as soon as the host is.
+      () => setStatus((prev) => statusWithoutReply(prev, Boolean(hostId.current))),
       NOT_FOUND_AFTER_MS,
     )
 

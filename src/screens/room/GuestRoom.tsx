@@ -159,12 +159,14 @@ function GuestGame({
     if (status === 'kicked' || status === 'full') markGuestRemoved(roomCode, status)
   }, [status, roomCode])
 
-  if (status === 'full' || status === 'kicked' || status === 'notFound') {
+  if (status === 'full' || status === 'kicked' || status === 'notFound' || status === 'hostAway') {
     const message = {
       full: 'This room is full. Ask the host to make space, or start your own game.',
       kicked: KICKED_MESSAGE,
       notFound:
         "Can't find this game. Check the link, or ask the host to open the game on their phone. Still trying…",
+      hostAway:
+        "The host's phone isn't answering. It may be locked, or the game was closed. Ask them to open it, and you'll be back in automatically. Still trying…",
     }[status]
     return <MessageScreen message={message} />
   }
