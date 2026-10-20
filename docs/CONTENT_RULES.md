@@ -21,6 +21,7 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 - One line, max 200 characters.
 - Explains **why** or **where it comes from**, or gives the local word. It should teach something even to someone who answered correctly.
+- If `fits` lists more than one culture, the note must make sense whichever of them is the answer: keep it neutral, or name the local version per culture ("Polish 'obiad', Ukrainian 'obid'").
 
 ## Topics (`topic` column)
 
