@@ -29,6 +29,8 @@ export interface Player {
   /** From Presence. The host is always connected from its own point of view. */
   connected: boolean
   isHost: boolean
+  /** Left from their menu mid-game: kept (with their score) until they rejoin. */
+  left?: boolean
   /** Index of the first round this player may answer (late joiners wait for the next one). */
   playsFrom: number
 }

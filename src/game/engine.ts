@@ -130,8 +130,9 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       const existing = s.players.find((p) => p.id === action.playerId)
       if (existing) {
         // Rejoin after refresh: keep name, score and slot.
-        if (existing.connected) return false
+        if (existing.connected && !existing.left) return false
         existing.connected = true
+        delete existing.left
         return true
       }
       s.players.push({
@@ -149,7 +150,8 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
     case 'presence': {
       let changed = false
       for (const p of s.players) {
-        const connected = p.isHost || action.onlineIds.includes(p.id)
+        // A player who left stays offline until they say hello again.
+        const connected = p.isHost || (!p.left && action.onlineIds.includes(p.id))
         if (p.connected !== connected) {
           p.connected = connected
           changed = true
@@ -264,10 +266,16 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
     case 'kick':
     case 'leave': {
       const player = s.players.find((p) => p.id === action.playerId)
-      if (!player || player.isHost) return false
-      s.players = s.players.filter((p) => p.id !== player.id)
-      // Kicked players can't come back; players who left can rejoin from the link.
-      if (action.type === 'kick') s.kickedIds.push(player.id)
+      if (!player || player.isHost || player.left) return false
+      if (action.type === 'leave' && s.phase !== 'lobby') {
+        // Mid-game, keep them (and their score) in the ranking. The link lets them rejoin.
+        player.left = true
+        player.connected = false
+      } else {
+        s.players = s.players.filter((p) => p.id !== player.id)
+        // Kicked players can't come back; players who left the lobby can rejoin.
+        if (action.type === 'kick') s.kickedIds.push(player.id)
+      }
       const round = currentRound(s)
       if (round && !round.result) delete round.answers[player.id]
       closeIfEveryoneAnswered(s, ctx)

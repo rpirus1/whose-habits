@@ -35,6 +35,8 @@ export interface PublicPlayer {
   score: number
   connected: boolean
   isHost: boolean
+  /** Left the game from their menu (their score still counts). */
+  left?: boolean
 }
 
 export interface PublicQuestion {
@@ -118,12 +120,13 @@ export function toSnapshot(
     phase: s.phase,
     paused: s.paused,
     settings: s.settings,
-    players: s.players.map(({ id, name, score, connected, isHost }) => ({
+    players: s.players.map(({ id, name, score, connected, isHost, left }) => ({
       id,
       name,
       score,
       connected,
       isHost,
+      ...(left && { left }),
     })),
     question:
       s.phase === 'question' && current

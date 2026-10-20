@@ -1,5 +1,5 @@
 import { Monitor, Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 
 const OPTIONS = [
@@ -10,7 +10,7 @@ const OPTIONS = [
 
 /** Light, dark or follow the phone. Saved on this device only. Same pill as Rounds and Time. */
 export function ThemeSwitcher() {
-  const { theme = 'system', setTheme } = useTheme()
+  const { theme, setTheme } = useTheme()
 
   return (
     <fieldset>

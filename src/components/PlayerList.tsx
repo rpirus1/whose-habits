@@ -50,7 +50,11 @@ export function PlayerList({
               {p.name}
             </span>
             <span className="text-muted-foreground text-sm">
-              {[p.id === meId && 'you', p.isHost && 'host', !p.connected && 'offline']
+              {[
+                p.id === meId && 'you',
+                p.isHost && 'host',
+                p.left ? 'left' : !p.connected && 'offline',
+              ]
                 .filter(Boolean)
                 .join(' · ')}
             </span>

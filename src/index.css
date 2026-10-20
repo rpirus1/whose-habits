@@ -1,7 +1,7 @@
 /*
  * Theme: every colour, radius and font lives here as a CSS variable.
  * Restyling the game is mostly editing this file. :root is light mode, .dark is dark mode
- * (class="dark" on <html>, set by next-themes from the player's choice or the system).
+ * (class="dark" on <html>, set from the player's choice or the system: src/lib/theme.ts).
  */
 @import 'tailwindcss';
 @import 'tw-animate-css';

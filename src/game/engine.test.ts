@@ -99,6 +99,25 @@ describe('lobby', () => {
     expect(h.s.players.map((p) => p.id)).toEqual(['host', 'bob', 'ann'])
   })
 
+  it('mid-game, a player who leaves keeps their score and can rejoin', () => {
+    const h = harness()
+    h.answerAll('right')
+    const score = h.s.players.find((p) => p.id === 'ann')!.score
+    h.run({ type: 'leave', playerId: 'ann' })
+    expect(h.s.players.find((p) => p.id === 'ann')).toMatchObject({
+      score,
+      left: true,
+      connected: false,
+    })
+    // Still listed as online until the channel drops: stays out of the round.
+    h.run({ type: 'presence', onlineIds: ['ann', 'bob'] })
+    expect(h.s.players.find((p) => p.id === 'ann')!.connected).toBe(false)
+    h.run({ type: 'join', playerId: 'ann', name: 'ann' })
+    const ann = h.s.players.find((p) => p.id === 'ann')!
+    expect(ann).toMatchObject({ score, connected: true })
+    expect(ann.left).toBeUndefined()
+  })
+
   it('the host cannot leave', () => {
     const h = harness({ start: false })
     const before = h.s

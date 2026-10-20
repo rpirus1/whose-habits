@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#090504" />
     <!-- Apply the saved or system theme before the first paint, so there's no flash.
-         Same key and values as next-themes (src/components/ThemeProvider.tsx). -->
+         Same key and values as src/lib/theme.ts. -->
     <script>
       try {
         var t = localStorage.getItem('cc:theme')
         var dark =
-          t === 'dark' ||
-          (t !== 'light' && !matchMedia('(prefers-color-scheme: light)').matches)
+          t === 'dark' || (t !== 'light' && !matchMedia('(prefers-color-scheme: light)').matches)
         document.documentElement.classList.add(dark ? 'dark' : 'light')
         document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
         if (!dark)
