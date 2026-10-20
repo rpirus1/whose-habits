@@ -58,7 +58,7 @@ function JoinView({ onJoin }: { onJoin: (name: string) => void }) {
   return (
     <Screen className="justify-center">
       <div className="text-center">
-        <h1 className="font-heading text-3xl font-bold">Culture Clash</h1>
+        <h1 className="font-heading text-3xl font-bold">Whose Habits</h1>
         <p className="text-muted-foreground">You're invited to a game. What should we call you?</p>
       </div>
       <form

@@ -1,5 +1,6 @@
 import { HostPanel } from '@/components/HostPanel'
 import { Screen } from '@/components/Screen'
+import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
 import { newId } from '@/lib/id'
 import { canStart, currentRound } from '@/game/engine'
@@ -30,7 +31,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
             onKick={(p) => dispatch({ type: 'kick', playerId: p.id })}
           />
           {canStart(state) && (
-            <div className="bg-background sticky bottom-0 mt-auto pt-2">
+            <StickyFooter>
               <Button
                 size="xl"
                 className="w-full"
@@ -44,7 +45,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
               >
                 Start game
               </Button>
-            </div>
+            </StickyFooter>
           )}
         </>
       ) : (

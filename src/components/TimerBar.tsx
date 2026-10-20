@@ -34,7 +34,7 @@ export function TimerBar({
       </div>
       <span
         className={cn(
-          'w-10 text-right font-mono text-xl font-bold tabular-nums',
+          'w-10 text-right text-xl font-bold tabular-nums',
           urgent && 'text-destructive',
         )}
       >

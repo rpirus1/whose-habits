@@ -1,8 +1,9 @@
 import { Crown, Share2 } from 'lucide-react'
 import { useState } from 'react'
-import type { CSSProperties } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
+import { Flag } from '@/components/Flag'
+import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
 import { getCulture } from '@/content/cultures'
 import type { Snapshot } from '@/game/protocol'
@@ -32,8 +33,8 @@ export function FinalView({
     track({ type: 'share_click', gameId: snapshot.gameId, role })
     try {
       const result = await shareLink({
-        title: 'Culture Clash',
-        text: 'A party game: guess which culture each statement fits. Free, no app needed.',
+        title: 'Whose Habits',
+        text: 'A party game about the little habits that make every country feel like home. Free, no app, no sign-up.',
         url: window.location.origin,
       })
       if (result === 'copied') toast.success('Link copied')
@@ -65,13 +66,13 @@ export function FinalView({
                 id === meId && 'ring-primary ring-2',
               )}
             >
-              <span className="text-muted-foreground w-6 font-mono text-lg">{rank}</span>
+              <span className="text-muted-foreground w-6 text-lg tabular-nums">{rank}</span>
               <span className="min-w-0 flex-1 truncate text-lg">
                 {p.name}
                 {id === meId && <span className="text-muted-foreground text-sm"> (you)</span>}
               </span>
               {rank === 1 && <Crown className="text-primary size-5" aria-label="Winner" />}
-              <span className="font-mono text-xl font-bold tabular-nums">{p.score}</span>
+              <span className="text-xl font-bold tabular-nums">{p.score}</span>
             </li>
           )
         })}
@@ -85,16 +86,12 @@ export function FinalView({
           {final.surprising.map((s) => {
             const culture = getCulture(s.answer)
             return (
-              <article
-                key={s.statementId}
-                style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
-                className="bg-card flex flex-col gap-2 rounded-2xl border-l-4 border-[var(--c)] p-4"
-              >
+              <article key={s.statementId} className="bg-card flex flex-col gap-2 rounded-2xl p-4">
                 <p className="leading-snug font-medium">“{s.text}”</p>
-                <p className="text-sm">
+                <p className="flex items-center gap-2 text-sm">
+                  <Flag code={culture.code} className="size-4" />
                   <span className="font-semibold">{culture.name}</span>
                   <span className="text-muted-foreground">
-                    {' '}
                     · {Math.round(s.percentCorrect * 100)}% got it right
                   </span>
                 </p>
@@ -105,7 +102,7 @@ export function FinalView({
         </section>
       )}
 
-      <div className="bg-background sticky bottom-0 mt-auto flex flex-col gap-2 pt-2">
+      <StickyFooter className="flex flex-col gap-2">
         {onPlayAgain ? (
           <Button size="xl" className="w-full" onClick={onPlayAgain}>
             Play again
@@ -124,7 +121,7 @@ export function FinalView({
         <Button size="xl" variant="ghost" className="w-full" onClick={tellAFriend}>
           <Share2 /> Tell a friend
         </Button>
-      </div>
+      </StickyFooter>
     </div>
   )
 }

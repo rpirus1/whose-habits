@@ -1,0 +1,19 @@
+{
+  "name": "Whose Habits",
+  "short_name": "Whose Habits",
+  "description": "A party game about the little habits that make every country feel like home.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090504",
+  "theme_color": "#090504",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

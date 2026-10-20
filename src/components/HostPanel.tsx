@@ -1,4 +1,4 @@
-import { ChevronDown, Crown, Pause, Play, SkipBack, SkipForward } from 'lucide-react'
+import { ChevronDown, Pause, Play, SkipBack, SkipForward, SlidersHorizontal } from 'lucide-react'
 import { useState } from 'react'
 import { PlayerList } from '@/components/PlayerList'
 import { SettingsForm } from '@/components/SettingsForm'
@@ -22,14 +22,12 @@ export function HostPanel({
   dispatch: (action: Action) => void
 }) {
   const [open, setOpen] = useState(false)
-  // Edits go through a draft so the host can pass through invalid states (e.g. 1 culture).
-  const [draft, setDraft] = useState(state.settings)
   const inGame = state.phase === 'question' || state.phase === 'reveal'
 
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="bg-card rounded-2xl">
       <CollapsibleTrigger className="flex min-h-12 w-full items-center gap-2 px-4 font-medium">
-        <Crown className="text-primary size-4" />
+        <SlidersHorizontal className="text-primary size-4" />
         Host controls
         {state.paused && <Badge variant="secondary">Paused</Badge>}
         <ChevronDown
@@ -39,9 +37,9 @@ export function HostPanel({
       <CollapsibleContent className="flex flex-col gap-4 px-4 pb-4">
         {state.phase === 'lobby' && (
           <SettingsForm
-            value={draft}
+            value={state.settings}
+            keepMinimum
             onChange={(settings) => {
-              setDraft(settings)
               if (validSettings(settings)) dispatch({ type: 'updateSettings', settings })
             }}
           />

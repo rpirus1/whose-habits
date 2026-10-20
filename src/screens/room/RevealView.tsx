@@ -1,9 +1,11 @@
-import { Flag, Lightbulb } from 'lucide-react'
+import { Flag as FlagIcon, Lightbulb } from 'lucide-react'
 import { useState } from 'react'
-import type { CSSProperties } from 'react'
 import { toast } from 'sonner'
+import { Flag } from '@/components/Flag'
 import { SplitBars } from '@/components/SplitBars'
+import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { getCulture } from '@/content/cultures'
 import type { PublicReveal, Snapshot } from '@/game/protocol'
 import { alreadySent, trackOnce } from '@/lib/analytics'
@@ -46,20 +48,30 @@ export function RevealView({
         <p className="text-muted-foreground text-lg leading-snug text-balance">“{reveal.text}”</p>
         <p className="text-muted-foreground text-sm">Most associated with</p>
         <p
-          style={{ '--c': `var(${culture.colorVar})` } as CSSProperties}
           className={cn(
-            'rounded-2xl bg-[var(--c)] px-6 py-3 text-3xl font-bold text-[oklch(0.18_0.02_270)]',
+            // Flag and name only, no box: the answer is the headline of this screen.
+            'flex items-center gap-3 text-[1.625rem] font-bold',
             enterHighlight,
           )}
         >
+          <Flag code={culture.code} className="size-9" />
           {culture.name}
         </p>
       </section>
 
-      <p className="bg-card flex gap-3 rounded-2xl p-4 leading-snug">
-        <Lightbulb className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />
-        <span>{reveal.note}</span>
-      </p>
+      <div className="flex flex-col gap-1">
+        <p className="border-border flex gap-3 rounded-2xl border border-dashed p-4 text-sm leading-snug">
+          <Lightbulb className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />
+          <span>{reveal.note}</span>
+        </p>
+        <ReportButton
+          key={reveal.statementId}
+          gameId={snapshot.gameId}
+          statementId={reveal.statementId}
+        />
+      </div>
+
+      <Separator />
 
       <SplitBars
         cultures={snapshot.settings.cultures}
@@ -67,13 +79,7 @@ export function RevealView({
         answer={reveal.answer}
       />
 
-      <ReportButton
-        key={reveal.statementId}
-        gameId={snapshot.gameId}
-        statementId={reveal.statementId}
-      />
-
-      <div className="bg-background sticky bottom-0 mt-auto pt-2">
+      <StickyFooter>
         {onNext ? (
           <Button size="xl" className="w-full" onClick={onNext}>
             {snapshot.viewing && snapshot.phase === 'question'
@@ -85,7 +91,7 @@ export function RevealView({
         ) : (
           <p className="text-muted-foreground text-center text-sm">Waiting for the host…</p>
         )}
-      </div>
+      </StickyFooter>
     </div>
   )
 }
@@ -107,15 +113,10 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
         : ['Not quite', `You picked ${getCulture(choice).name}.`]
 
   return (
-    <div
-      className={cn(
-        'rounded-2xl px-4 py-3 text-center',
-        correct ? 'bg-primary text-primary-foreground' : 'bg-muted',
-      )}
-      role="status"
-    >
-      <p className="text-xl font-bold">{title}</p>
-      {detail && <p className={cn('text-sm', !correct && 'text-muted-foreground')}>{detail}</p>}
+    // Same card as Host controls; correct shows only as green text, not a fill.
+    <div className="bg-card rounded-2xl px-4 py-3 text-center" role="status">
+      <p className={cn('text-xl font-bold', correct && 'text-success')}>{title}</p>
+      {detail && <p className="text-muted-foreground text-sm">{detail}</p>}
     </div>
   )
 }
@@ -137,7 +138,7 @@ function ReportButton({ gameId, statementId }: { gameId: string; statementId: st
         toast.success('Thanks! We’ll review this statement.')
       }}
     >
-      <Flag /> {reported ? 'Reported' : 'Report this statement'}
+      <FlagIcon /> {reported ? 'Reported' : 'Report this statement'}
     </Button>
   )
 }

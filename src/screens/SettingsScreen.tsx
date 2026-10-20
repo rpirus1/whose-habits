@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { SettingsForm } from '@/components/SettingsForm'
 import { Screen } from '@/components/Screen'
+import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
 import { newId } from '@/lib/id'
 import { Input } from '@/components/ui/input'
@@ -73,7 +74,7 @@ export function SettingsScreen() {
 
       <SettingsForm value={settings} onChange={setSettings} />
 
-      <div className="bg-background sticky bottom-0 mt-auto pt-2 pb-[env(safe-area-inset-bottom)]">
+      <StickyFooter>
         <Button
           size="xl"
           className="w-full"
@@ -82,7 +83,7 @@ export function SettingsScreen() {
         >
           {creating ? 'Creating room…' : 'Invite players'}
         </Button>
-      </div>
+      </StickyFooter>
     </Screen>
   )
 }

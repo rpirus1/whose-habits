@@ -12,7 +12,7 @@ export function QrShare({ roomCode }: { roomCode: string }) {
 
   async function share() {
     try {
-      await navigator.share({ title: 'Join my Culture Clash game', url })
+      await navigator.share({ title: 'Join my Whose Habits game', url })
     } catch {
       // Cancelled by the user; nothing to do.
     }
@@ -29,13 +29,21 @@ export function QrShare({ roomCode }: { roomCode: string }) {
 
   return (
     <section className="bg-card flex flex-col items-center gap-4 rounded-2xl p-5">
-      {/* QR codes need dark-on-light to scan reliably, whatever the theme. */}
-      <div className="rounded-xl bg-white p-3">
-        <QRCodeSVG value={url} size={176} marginSize={0} aria-label={`QR code for ${url}`} />
+      {/* QR codes need dark-on-light to scan reliably, whatever the theme. SVG fills can't
+          read CSS variables, so the dark modules use the theme's background colour as hex. */}
+      <div className="bg-foreground rounded-xl p-3">
+        <QRCodeSVG
+          value={url}
+          size={176}
+          marginSize={0}
+          fgColor="#090504"
+          bgColor="transparent"
+          aria-label={`QR code for ${url}`}
+        />
       </div>
       <div className="text-center">
         <p className="font-medium">Scan to join, or share the link</p>
-        <p className="text-muted-foreground mt-1 font-mono text-sm break-all">
+        <p className="text-muted-foreground mt-1 text-sm break-all">
           {url.replace(/^https?:\/\//, '')}
         </p>
       </div>

@@ -33,7 +33,7 @@ export function LobbyView({
       <section className="flex flex-col gap-2">
         <CultureList cultures={cultures} />
         <p className="text-muted-foreground text-center text-sm">
-          {rounds} rounds · {seconds} s to answer
+          {rounds} rounds · {seconds}s to answer
         </p>
       </section>
 
