@@ -253,3 +253,15 @@ Not touched: `src/screens/room/*`, SettingsScreen, game components, AppBar/menus
   hidden face is inert and focus follows the flip; no JS shows both faces. Band with faint question marks.
 - FAQ: a "how can I report a statement" entry; 60% wide and centred on desktop.
 - About: LinkedIn only.
+
+## 9. Feedback round 2 (2026-10-20)
+
+- Phone hero illustration removed; the maker will draw one in Figma and it goes back above the H1.
+- One "Back to the last game" link (tertiary, under the Host button) instead of a list of rooms.
+- Host button and join pill: 21rem on desktop, so the hint fits on one line.
+- Hero paragraph and section intros at 16px (3 lines on desktop, 4 on phones for the hero).
+- Harder examples (obviousness 3): hero br-010 (options MX, BR, IT, TR); samples nl-017, tr-022, br-027.
+- Step pictures are plain SVG files in src/lander/art/ (hex colours, open in Figma); the page
+  imports them, so editing a file is enough. The same file shows in both themes.
+- "Countries in the game"; footer order: Theme, Privacy, Credits (two columns on desktop), feedback
+  and copyright. The Theme legend has the same style as the Privacy and Credits headings.

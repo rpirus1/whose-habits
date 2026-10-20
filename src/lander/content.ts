@@ -11,29 +11,36 @@ export interface Sample {
   note: string
 }
 
+/** Hard ones (obviousness 3), so the game looks like a challenge. */
 export const SAMPLES: readonly Sample[] = [
   {
-    id: 'nl-038',
-    text: 'The lock on a bike is often worth more than the bike itself.',
+    id: 'nl-017',
+    text: 'Gifts come with a rhyming poem that gently roasts the person who receives them.',
     fits: ['NL'],
-    note: 'People ride cheap old bikes with heavy locks because bike theft is so common, and the bike still gets stolen.',
+    note: "Around 5 December, 'surprises' come with a Sinterklaas poem; everyone reads theirs aloud, and the teasing is half the fun.",
   },
   {
-    id: 'br-001',
-    text: 'Arriving 30 minutes late to a house party is normal; arriving on time can feel awkward.',
-    fits: ['BR', 'MX'],
-    note: 'Party start times are loose, and hosts are often still getting ready at the stated time.',
+    id: 'tr-022',
+    text: "Right after the vows, bride and groom race to step on each other's foot first.",
+    fits: ['TR'],
+    note: "Whoever steps first will 'have the last word' in the marriage.",
   },
   {
-    id: 'kr-013',
-    text: 'Couples celebrate their 100th day together, and often the 200th and 300th too.',
-    fits: ['KR'],
-    note: "Couples count days, not months; 'baegil' (100 days) brings gifts, letters and often matching rings.",
+    id: 'br-027',
+    text: 'Office workers brush their teeth in the office bathroom after lunch.',
+    fits: ['BR', 'KR'],
+    note: 'Brushing after every meal is a strong habit in Brazil and Korea, so desks hide toothbrush kits and office sinks get busy around 1 pm.',
   },
 ]
 
-/** The example question in the hero: the first sample, with three wrong options. */
-export const HERO_OPTIONS: readonly CultureCode[] = ['NL', 'IT', 'KR', 'BR']
+/** The example question in the hero, with three plausible wrong options. */
+export const HERO_QUESTION: Sample & { options: readonly CultureCode[] } = {
+  id: 'br-010',
+  text: 'Visitors at a house with a gate clap their hands to call the owner instead of knocking.',
+  fits: ['BR'],
+  note: "'Bater palmas' (clapping) works when the door is far behind a wall or gate; doorbells were long a luxury.",
+  options: ['MX', 'BR', 'IT', 'TR'],
+}
 
 export interface Faq {
   q: string

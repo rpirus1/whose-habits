@@ -19,8 +19,10 @@ import { CULTURES, getCulture } from '@/content/cultures'
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '@/game/types'
 import { listSavedRooms } from '@/lib/savedRooms'
 import { cn } from '@/lib/utils'
-import { HeroArt, StepArt } from './art'
-import { FAQ, HERO_OPTIONS, SAMPLES } from './content'
+import hostArt from './art/step-1-host.svg'
+import joinArt from './art/step-2-join.svg'
+import scoreArt from './art/step-3-score.svg'
+import { FAQ, HERO_QUESTION, SAMPLES } from './content'
 import { CountryCarousel } from './CountryCarousel'
 import { FlipCard } from './FlipCard'
 import { JoinWithCode } from './JoinWithCode'
@@ -106,7 +108,7 @@ function Section({
           <h2 id={`${id}-title`} className={h2}>
             {title}
           </h2>
-          {intro && <p className="text-muted-foreground mt-3 max-w-2xl text-lg">{intro}</p>}
+          {intro && <p className="text-muted-foreground mt-3 max-w-2xl text-base">{intro}</p>}
           <div className="mt-8 md:mt-10">{children}</div>
         </div>
       </div>
@@ -124,8 +126,6 @@ function Hero() {
       )}
     >
       <div className="flex flex-col gap-6">
-        {/* Phones get the illustration; desktop keeps the example question beside the text. */}
-        <HeroArt className="rounded-[1.75rem] md:hidden" />
         <div className="space-y-4">
           <Badge variant="soft" className="h-7 px-3 text-sm">
             Free party game · {PLAYERS} players
@@ -139,18 +139,20 @@ function Hero() {
           <p className="text-2xl font-semibold text-balance md:text-3xl">
             Guess whose habit it is.
           </p>
-          <p className="text-muted-foreground max-w-xl text-lg text-pretty">
+          <p className="text-muted-foreground max-w-xl text-base text-pretty">
             A party game for international friends. Read a small everyday habit, guess which country
             it comes from, and find out who knows their friends best. One phone each, no app.
           </p>
         </div>
 
-        {/* The Host button and the join pill share one width: full on phones, 18rem on desktop. */}
-        <div className="flex w-full max-w-md flex-col gap-6 md:w-72">
-          <ResumeGames />
-          <Button asChild size="xl" className="w-full">
-            <Link to="/new">Host a game</Link>
-          </Button>
+        {/* The Host button and the join pill share one width: full on phones, 21rem on desktop. */}
+        <div className="flex w-full max-w-md flex-col gap-6 md:w-[21rem]">
+          <div className="flex flex-col gap-2">
+            <Button asChild size="xl" className="w-full">
+              <Link to="/new">Host a game</Link>
+            </Button>
+            <ResumeGame />
+          </div>
           <JoinWithCode />
         </div>
       </div>
@@ -160,45 +162,28 @@ function Hero() {
   )
 }
 
-/** Closed the tab mid-game? Offer the way back in (as the old home screen did). */
-function ResumeGames() {
+/** Closed the tab mid-game? A quiet way back into the most recent room. */
+function ResumeGame() {
   const hydrated = useHydrated()
-  const rooms = useMemo(
-    () =>
-      hydrated
-        ? listSavedRooms()
-            .filter((r) => !r.finished)
-            .slice(0, 2)
-        : [],
+  const room = useMemo(
+    () => (hydrated ? listSavedRooms().find((r) => !r.finished) : undefined),
     [hydrated],
   )
-  if (rooms.length === 0) return null
+  if (!room) return null
 
   return (
-    <ul className="flex flex-col gap-2">
-      {rooms.map((room) => (
-        <li key={`${room.role}-${room.roomCode}`}>
-          <Link
-            to={`/r/${room.roomCode}`}
-            className="bg-card ring-border flex min-h-14 items-center gap-3 rounded-xl px-4 ring-1"
-          >
-            <span className="flex-1">
-              <span className="block font-medium">Back to your game</span>
-              <span className="text-muted-foreground text-sm">
-                {room.role === 'host' ? 'You are hosting' : `Playing as ${room.name}`}
-              </span>
-            </span>
-            <ChevronRight className="text-muted-foreground size-5" aria-hidden />
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <Button asChild variant="ghost" size="lg" className="text-primary-soft self-center">
+      <Link to={`/r/${room.roomCode}`}>
+        Back to the last game
+        <ChevronRight data-icon="inline-end" aria-hidden />
+      </Link>
+    </Button>
   )
 }
 
 /** A still of the question screen. Not interactive: the options are plain text. */
 function ExampleQuestion() {
-  const sample = SAMPLES[0]
+  const question = HERO_QUESTION
   return (
     <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-sm ring-1">
       <figcaption className="text-muted-foreground flex items-center justify-between text-sm">
@@ -209,11 +194,11 @@ function ExampleQuestion() {
         <div className="bg-primary h-full w-2/3 rounded-full" />
       </div>
       <blockquote className="mt-5 text-xl leading-snug font-semibold text-balance">
-        {sample.text}
+        {question.text}
       </blockquote>
       <p className="text-muted-foreground mt-5 mb-3 text-sm">Whose habit is it?</p>
       <ul className="grid grid-cols-2 gap-2">
-        {HERO_OPTIONS.map((code) => (
+        {question.options.map((code) => (
           <li
             key={code}
             className="bg-background flex min-h-14 items-center gap-2 rounded-2xl px-3 py-2 leading-tight font-semibold"
@@ -227,16 +212,20 @@ function ExampleQuestion() {
   )
 }
 
-const STEPS: { title: string; text: string }[] = [
+// Edit the pictures in src/lander/art/*.svg (plain SVG, opens in Figma).
+const STEPS: { title: string; text: string; art: string }[] = [
   {
+    art: hostArt,
     title: 'Host a game',
     text: 'Pick 2 to 6 countries, the number of rounds and the time per question.',
   },
   {
+    art: joinArt,
     title: 'Friends join',
     text: 'They scan the QR code or open the link on their own phone. No app, no account.',
   },
   {
+    art: scoreArt,
     title: 'Guess and score',
     text: 'Read the habit, pick the country. A point for every right answer, a bonus for the first one in.',
   },
@@ -251,10 +240,10 @@ function HowToPlay() {
       background="dots"
     >
       <ol className="grid gap-4 md:grid-cols-3">
-        {STEPS.map(({ title, text }, i) => (
+        {STEPS.map(({ title, text, art }, i) => (
           <li key={title} className="bg-card ring-border rounded-2xl p-5 ring-1">
             <div className="bg-muted flex justify-center rounded-xl py-3">
-              <StepArt step={i as 0 | 1 | 2} />
+              <img src={art} alt="" width={160} height={96} className="h-24 w-auto" />
             </div>
             <p className="text-muted-foreground mt-4 text-sm font-medium tabular-nums">
               Step {i + 1}
@@ -299,7 +288,7 @@ function WhyItsDifferent() {
       </ul>
 
       <div className="mt-14 flex items-center gap-3 md:mt-16">
-        <h3 className="font-semibold">The countries</h3>
+        <h3 className="font-semibold">Countries in the game</h3>
         <Badge variant="soft">More coming</Badge>
       </div>
       {/* Phones: a drifting row you can swipe. Desktop: all chips, wrapped. */}
@@ -418,14 +407,32 @@ const CREDITS = [
   { name: 'Geist font', license: 'OFL', href: 'https://vercel.com/font' },
 ]
 
+/** Footer headings: Theme, Privacy and Credits share this style. */
+const footerHeading = 'text-base font-semibold'
+
 function Footer() {
   const hydrated = useHydrated()
 
   return (
     <footer className="bg-card/50 border-t">
-      <div className={cn(container, 'grid gap-10 py-12 text-sm md:grid-cols-2')}>
+      <div className={cn(container, 'flex flex-col gap-10 py-12 text-sm')}>
+        {/* The switcher reads the saved theme, so it renders after hydration; the box keeps
+            its space meanwhile. Its legend gets the same look as the headings below. */}
+        <div
+          className={cn(
+            'min-h-[5.5rem] max-w-xs',
+            '[&_legend]:mb-3 [&_legend]:text-base [&_legend]:font-semibold',
+          )}
+        >
+          {hydrated && (
+            <Suspense>
+              <ThemeSwitcher />
+            </Suspense>
+          )}
+        </div>
+
         <section aria-labelledby="privacy-title" className="space-y-3">
-          <h2 id="privacy-title" className="text-base font-semibold">
+          <h2 id="privacy-title" className={footerHeading}>
             Privacy
           </h2>
           <p className="text-muted-foreground">
@@ -474,39 +481,29 @@ function Footer() {
           </details>
         </section>
 
-        <div className="space-y-8">
-          <section aria-labelledby="credits-title" className="space-y-3">
-            <h2 id="credits-title" className="text-base font-semibold">
-              Credits
-            </h2>
-            <ul className="text-muted-foreground space-y-1">
-              {CREDITS.map((c) => (
-                <li key={c.name}>
-                  <a href={c.href} className="text-foreground underline underline-offset-2">
-                    {c.name}
-                  </a>{' '}
-                  ({c.license})
-                </li>
-              ))}
-            </ul>
-          </section>
+        <section aria-labelledby="credits-title" className="space-y-3">
+          <h2 id="credits-title" className={footerHeading}>
+            Credits
+          </h2>
+          <ul className="text-muted-foreground grid gap-x-8 gap-y-1 md:grid-cols-2">
+            {CREDITS.map((c) => (
+              <li key={c.name}>
+                <a href={c.href} className="text-foreground underline underline-offset-2">
+                  {c.name}
+                </a>{' '}
+                ({c.license})
+              </li>
+            ))}
+          </ul>
+        </section>
 
-          {hydrated && (
-            <Suspense>
-              <div className="max-w-xs">
-                <ThemeSwitcher />
-              </div>
-            </Suspense>
-          )}
-
-          <p className="text-muted-foreground">
-            Feedback:{' '}
-            <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline">
-              {FEEDBACK_EMAIL}
-            </a>
-            <br />© 2026 Ruslan Pirus
-          </p>
-        </div>
+        <p className="text-muted-foreground">
+          Feedback:{' '}
+          <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline">
+            {FEEDBACK_EMAIL}
+          </a>
+          <br />© 2026 Ruslan Pirus
+        </p>
       </div>
     </footer>
   )
