@@ -1,9 +1,10 @@
 // Validates content/statements.csv and writes src/content/statements.json.
-// Run: npm run content   (ONLY_REVIEWED=1 ships reviewed statements only)
+// Run: npm run content   (ONLY_REVIEWED=1 ships reviewed statements only;
+// STATEMENTS=content/statements-extended.csv builds from another CSV)
 import { readFileSync, writeFileSync } from 'node:fs'
 import { coverageReport, parseStatementsCsv } from './statements-lib.ts'
 
-const SOURCE = 'content/statements.csv'
+const SOURCE = process.env.STATEMENTS || 'content/statements.csv'
 const TARGET = 'src/content/statements.json'
 const onlyReviewed = ['1', 'true', 'yes'].includes(process.env.ONLY_REVIEWED ?? '')
 
