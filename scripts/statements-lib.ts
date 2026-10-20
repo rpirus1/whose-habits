@@ -4,7 +4,16 @@ import Papa from 'papaparse'
 import { CULTURE_CODES, TOPICS } from '../src/content/schema.ts'
 import type { CultureCode, Obviousness, Statement, Topic } from '../src/content/schema.ts'
 
-export const REQUIRED_COLUMNS = ['id', 'text', 'fits', 'note', 'obviousness', 'topic', 'reviewed']
+export const REQUIRED_COLUMNS = [
+  'id',
+  'text',
+  'fits',
+  'note',
+  'obviousness',
+  'topic',
+  'source',
+  'reviewed',
+]
 export const MAX_TEXT_LENGTH = 160
 export const MIN_TEXT_LENGTH = 15
 export const MAX_NOTE_LENGTH = 200
@@ -94,6 +103,11 @@ export function parseStatementsCsv(csv: string): ParseResult {
     const topic = col(cells, 'topic').toLowerCase()
     if (!(TOPICS as readonly string[]).includes(topic))
       rowErrors.push(`topic "${topic}" must be one of: ${TOPICS.join(', ')}`)
+
+    // Internal only (not shipped): where the claim can be checked, or "AI-generated" when nothing verifiable was found.
+    const source = col(cells, 'source')
+    if (!/^https?:\/\/\S+$/.test(source) && source.toLowerCase() !== 'ai-generated')
+      rowErrors.push(`source must be a URL or "AI-generated"${source ? `, not "${source}"` : ''}`)
 
     const reviewedRaw = col(cells, 'reviewed').toLowerCase()
     if (!YES.has(reviewedRaw) && !NO.has(reviewedRaw))

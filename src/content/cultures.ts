@@ -13,6 +13,10 @@ export const CULTURES: readonly Culture[] = [
   { code: 'BR', name: 'Brazil' },
   { code: 'MX', name: 'Mexico' },
   { code: 'US', name: 'United States' },
+  { code: 'TR', name: 'Türkiye' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'FR', name: 'France' },
+  { code: 'KR', name: 'South Korea' },
 ]
 
 export const MIN_CULTURES = 2

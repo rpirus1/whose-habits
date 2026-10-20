@@ -4,9 +4,10 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 ## Target for launch
 
-- 6 cultures × 30 statements = 180 (PL, UA, NL, BR, MX, US)
-- Per culture, roughly: 10 × obviousness 1, 12 × obviousness 2, 8 × obviousness 3
-- Spread across all six topics, at least 3 per topic per culture
+- 10 cultures × 50 statements = 500 (PL, UA, NL, BR, MX, US, TR, IT, FR, KR)
+- Per culture, roughly: 15 × obviousness 1, 20 × obviousness 2, 15 × obviousness 3
+- Spread across all six topics, at least 5 per topic per culture
+- Every 2-culture pair keeps at least 30 eligible statements (`npm run content` prints the smallest pool)
 
 ## A good statement
 
@@ -20,6 +21,7 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 - One line, max 200 characters.
 - Explains **why** or **where it comes from**, or gives the local word. It should teach something even to someone who answered correctly.
+- If `fits` lists more than one culture, the note must make sense whichever of them is the answer: keep it neutral, or name the local version per culture ("Polish 'obiad', Ukrainian 'obid'").
 
 ## Topics (`topic` column)
 
@@ -34,11 +36,15 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 ## Off limits
 
-Politics, war, religion, ethnicity, bodies and appearance, alcohol stereotypes, and anything that ranks cultures or says one is better or worse. Also avoid flags, national food clichés and famous landmarks: they're too easy and they aren't what people actually live.
+Politics, war, religion, ethnicity, bodies and appearance, alcohol stereotypes, and anything that ranks cultures or says one is better or worse. Per culture, also: Soviet and Russian comparisons (UA), Atatürk and Kurdish or Armenian topics (TR), North Korea and military service (KR), mafia (IT), crime (BR, MX). Customs on religious holidays are fine when the text describes only the secular custom; flag them for review. Also avoid flags, national food clichés and famous landmarks: they're too easy and they aren't what people actually live.
 
 ## Ambiguity: the `fits` column
 
-List **every** culture in the six that the statement reasonably fits, e.g. `PL UA` for house slippers for guests. A game uses a statement only if exactly one of the selected cultures is in `fits`. So with `PL UA`, the statement appears in a Poland + Brazil game but never in a Poland + Ukraine game. When in doubt, add the culture: a statement that's held back loses less than a dispute at the table.
+List **every** culture of the ten that the statement reasonably fits, e.g. `PL UA` for house slippers for guests. A game uses a statement only if exactly one of the selected cultures is in `fits`. So with `PL UA`, the statement appears in a Poland + Brazil game but never in a Poland + Ukraine game. When in doubt, add the culture: a statement that's held back loses less than a dispute at the table.
+
+## Sources (`source` column)
+
+For internal use only; never shipped to players. Each row has one URL where the claim can be checked (an expat guide, a language blog, a news feature, Wikipedia as a last resort), or `AI-generated` when no verifiable source was found. Reviewers check `AI-generated` rows with extra care. Research notes behind the sources live in `docs/research/statements/`.
 
 ## Obviousness
 
