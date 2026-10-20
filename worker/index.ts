@@ -1,7 +1,9 @@
-// Cloudflare Worker: serves the built app from dist/ (static assets) and handles the one
-// API route. Static files, SPA routing and the _headers file are handled by the assets
-// layer; only /api/* reaches this code (see run_worker_first in wrangler.toml).
+// Cloudflare Worker: serves the built app from dist/ (static assets) and handles the API
+// route. Static files (including the prerendered lander at /) and the _headers file are
+// handled by the assets layer. This code sees /api/* and /stats first (run_worker_first in
+// wrangler.toml), and every request that matched no file: those get the app shell.
 import { isPreviewHost, MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
+import { PRIVATE_HEADERS, routeRequest, SHELL_PATH } from './routes'
 import { handleStats } from './stats'
 import type { StatsEnv } from './stats'
 
@@ -18,9 +20,25 @@ export default {
         : new Response(null, { status: 405, headers: { Allow: 'POST' } })
     }
     if (url.pathname === '/stats') return handleStats(request, env)
-    return env.ASSETS.fetch(request)
+    return serveApp(request, url, env)
   },
 } satisfies ExportedHandler<Env>
+
+/** Game routes and unknown pages get the app shell; /join redirects to the room. */
+async function serveApp(request: Request, url: URL, env: Env): Promise<Response> {
+  const route = routeRequest(url)
+  if (route.kind === 'redirect') return Response.redirect(new URL(route.location, url).href, 302)
+  if (route.kind === 'missing') return env.ASSETS.fetch(request)
+
+  const shell = await env.ASSETS.fetch(new URL(SHELL_PATH, url))
+  const headers = new Headers(shell.headers)
+  // _headers rules match the asset's path (/app), not this URL, so set these here.
+  if (route.private) for (const [k, v] of Object.entries(PRIVATE_HEADERS)) headers.set(k, v)
+  return new Response(request.method === 'HEAD' ? null : shell.body, {
+    status: route.status,
+    headers,
+  })
+}
 
 /** Stores one anonymous product event in D1. Only known, validated fields are kept. */
 async function handleEvent(request: Request, env: Env): Promise<Response> {

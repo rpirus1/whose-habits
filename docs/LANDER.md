@@ -1,7 +1,7 @@
 # Landing page plan
 
 The public one-pager at `/`. It replaces the temporary HomeScreen and is the way into the game.
-Status: **plan, waiting for sign-off.** Nothing here is built yet.
+Status: **built 2026-10-20** (agreed plan below; decisions in section 7). Lighthouse mobile: 97 / 100 / 100 / 100.
 
 ## 1. Goals
 
@@ -18,13 +18,13 @@ Today: Vite SPA, `createBrowserRouter`, Cloudflare Worker serving `dist/` as sta
 
 ### Options
 
-| | A. Own prerender script (react-dom/server) | B. React Router framework mode, `prerender: ['/']` | C. Headless-browser snapshot (Puppeteer, vite-prerender-plugin and the like) |
-|---|---|---|---|
-| How | After `vite build`, a small Node script builds an SSR bundle of the lander, renders it with `react-dom/server` and writes it into `dist/index.html`. The client hydrates it. | Switch from library mode (`createBrowserRouter`) to the React Router Vite plugin with `routes.ts`, `ssr: false`, `prerender: ['/']`. | Build the SPA, open `/` in headless Chrome, save the DOM. |
-| New dependencies | None (react-dom/server, Vite SSR build are already there) | `@react-router/dev`, a new app structure | Puppeteer/Chromium (~150 MB), or a plugin that may lag Vite 8 |
-| Touches game routes | No, only the entry point and router setup | Yes: every route moves to a route module; HostRoom/GuestRoom plumbing changes | No |
-| CI cost | A second, small Vite build (seconds) | Same as today | Downloads a browser on every CI run |
-| Risk | We own ~60 lines of build glue | Big migration for one static page; touches files owned by the UI session | Flaky; the snapshot can bake in client-only state (theme, saved rooms) |
+|                     | A. Own prerender script (react-dom/server)                                                                                                                                   | B. React Router framework mode, `prerender: ['/']`                                                                                   | C. Headless-browser snapshot (Puppeteer, vite-prerender-plugin and the like) |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| How                 | After `vite build`, a small Node script builds an SSR bundle of the lander, renders it with `react-dom/server` and writes it into `dist/index.html`. The client hydrates it. | Switch from library mode (`createBrowserRouter`) to the React Router Vite plugin with `routes.ts`, `ssr: false`, `prerender: ['/']`. | Build the SPA, open `/` in headless Chrome, save the DOM.                    |
+| New dependencies    | None (react-dom/server, Vite SSR build are already there)                                                                                                                    | `@react-router/dev`, a new app structure                                                                                             | Puppeteer/Chromium (~150 MB), or a plugin that may lag Vite 8                |
+| Touches game routes | No, only the entry point and router setup                                                                                                                                    | Yes: every route moves to a route module; HostRoom/GuestRoom plumbing changes                                                        | No                                                                           |
+| CI cost             | A second, small Vite build (seconds)                                                                                                                                         | Same as today                                                                                                                        | Downloads a browser on every CI run                                          |
+| Risk                | We own ~60 lines of build glue                                                                                                                                               | Big migration for one static page; touches files owned by the UI session                                                             | Flaky; the snapshot can bake in client-only state (theme, saved rooms)       |
 
 **Recommendation: A.** It's the smallest change that gives real HTML, has no new dependencies, and
 leaves the game code alone. B is the "proper" framework answer but is a migration of the whole app
@@ -100,6 +100,7 @@ Landmarks: `header` (logo + theme toggle), `main` with one `h1` and an `h2` per 
 ### 3.2 How to play (3 steps)
 
 Numbered list (`ol`), each with a Lucide icon:
+
 1. **Host a game.** Pick the countries and the number of rounds. (Icon: `Settings2`)
 2. **Friends join.** They scan the QR code or open the link on their own phone. (Icon: `QrCode`)
 3. **Guess and score.** Read the habit, pick the country, see who knew. Fastest right answers get a bonus. (Icon: `Trophy`)
@@ -109,6 +110,7 @@ Copy to be checked against the actual scoring before writing.
 ### 3.3 Why it's different
 
 Five short items in a grid, each an icon + a few words:
+
 - **Free.** No ads, no paywall.
 - **No app.** Runs in the browser on any phone.
 - **No sign-up.** Type a name, that's it.
@@ -121,6 +123,7 @@ Five short items in a grid, each an icon + a few words:
 Three cards, read from `STATEMENTS` by id at build time (text never copied by hand), each with a
 **Show answer** toggle (`<details>/<summary>`, works without JS) revealing the flag(s), country name
 and the note. Candidates, chosen for being fun, safe under CONTENT_RULES and covering 3 regions:
+
 - `nl-038` "The lock on a bike is often worth more than the bike itself." → the Netherlands
 - `br-001` "Arriving 30 minutes late to a house party is normal…" → Brazil and Mexico (shows that one habit can fit several countries)
 - `kr-013` "Couples celebrate their 100th day together…" → South Korea
@@ -132,6 +135,7 @@ build if an id disappears.
 
 `h2` + a list of `<details>` items, plus `FAQPage` JSON-LD generated from the **same array**, so the
 two can't drift. Draft questions:
+
 - Is it really free? Yes, no ads, no in-app purchases.
 - Do we need to download an app or sign up? No.
 - Does everyone need a phone? Yes, one each, including the host.
@@ -147,7 +151,7 @@ two can't drift. Draft questions:
 Two or three sentences, first person, plus one link. Draft:
 "Hi, I'm Ruslan, a product person in Amsterdam. I made Whose Habits for game nights with friends
 from all over, where the best stories start with 'wait, you do that too?'."
-**Needs from you:** wording, and which link (LinkedIn, personal site, GitHub?).
+Link: LinkedIn.
 
 ### 3.7 Footer
 
@@ -164,9 +168,8 @@ from all over, where the best stories start with 'wait, you do that too?'."
   - Your phone keeps your theme choice and rooms you can rejoin in `localStorage` (rooms expire after 12 hours).
   - Hosting: Cloudflare serves the site and, like any web host, sees IP addresses to deliver pages.
   - Wording aimed at an EU visitor: what, why (to see if people enjoy the game and which settings
-    work), no profiling, contact for questions. **Open question:** which Supabase region the project
-    runs in (worth saying "EU" if it is).
-- **Feedback / contact:** **needs from you**: an address (a dedicated mailbox, a Tally/Google form, or GitHub issues).
+    work), no profiling, contact for questions. Supabase runs in the EU (Ireland).
+- **Feedback / contact:** contact@whosehabits.com.
 - **Credits:** HeroUI "Rabbit" theme (MIT), country-flag-icons (MIT), Lucide icons (ISC), Geist font (OFL).
   Each name links to its project.
 - © 2026 Ruslan Pirus (or no copyright line; your call).
@@ -194,24 +197,24 @@ one-line change; it updates canonical, og:url, og:image, sitemap, robots and JSO
     "Web browser", `playMode` "MultiPlayer", `numberOfPlayers` 2–12, `offers` price 0 EUR,
     `author` Person Ruslan Pirus, `inLanguage` en);
   - `FAQPage` from the FAQ array.
-- **Keyword angle**, worked into headings and copy naturally (no stuffing): *expat game night*,
-  *party game for international friends*, *culture quiz*, *guess the country*, *game night with
-  friends from different countries*, *no app party game*. The FAQ and "Why it's different" carry
+- **Keyword angle**, worked into headings and copy naturally (no stuffing): _expat game night_,
+  _party game for international friends_, _culture quiz_, _guess the country_, _game night with
+  friends from different countries_, _no app party game_. The FAQ and "Why it's different" carry
   most of the long-tail terms.
 - Later, once the domain is live: Google Search Console + submit sitemap.
 
 ## 5. Quality targets and how they're checked
 
-| Target | How |
-|---|---|
-| Lighthouse 95+ on Performance, Accessibility, Best Practices, SEO (mobile) | Run once locally with `npx lighthouse` against `npm run preview` (needs Chrome on this machine), report saved in the PR. Perf levers: prerendered HTML, lazy game routes, preloaded Geist woff2, no images above the fold apart from inline SVG flags. |
-| WCAG 2.2 AA | axe-core run in the browser pane on the built page, both themes; manual pass: focus order, visible focus, 24×24 px targets (2.5.8), contrast of muted text and orange on both backgrounds, `lang="en"`, skip link. |
-| Semantic structure | One `h1`, `h2` per section, `header`/`main`/`footer`, lists for steps and FAQ. |
-| Works without JS | Everything is in the HTML; FAQ and answers use `<details>`; join form posts to `/join`. Checked with JS disabled. |
-| Reduced motion | Only `motion-safe:` animations (from `src/lib/motion.ts`); no scroll-jacking. |
-| Light and dark | Uses the existing tokens only; checked at 375 px in both. |
-| Prerender didn't silently break | `scripts/check-dist.ts`, run at the end of `npm run build` (so CI runs it): `dist/index.html` contains the `h1`, the FAQ JSON-LD and the canonical; `dist/app.html` has an empty `#root`; `sitemap.xml`/`robots.txt` exist; the sample statement ids exist. |
-| Worker routing | Unit tests for the new routing function (`/` untouched, `/new`, `/r/x` → shell, `/join?code=` → redirect, unknown → 404, `/r/*` headers). |
+| Target                                                                     | How                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Lighthouse 95+ on Performance, Accessibility, Best Practices, SEO (mobile) | Run once locally with `npx lighthouse` against `npm run preview` (needs Chrome on this machine), report saved in the PR. Perf levers: prerendered HTML, lazy game routes, preloaded Geist woff2, no images above the fold apart from inline SVG flags.      |
+| WCAG 2.2 AA                                                                | axe-core run in the browser pane on the built page, both themes; manual pass: focus order, visible focus, 24×24 px targets (2.5.8), contrast of muted text and orange on both backgrounds, `lang="en"`, skip link.                                          |
+| Semantic structure                                                         | One `h1`, `h2` per section, `header`/`main`/`footer`, lists for steps and FAQ.                                                                                                                                                                              |
+| Works without JS                                                           | Everything is in the HTML; FAQ and answers use `<details>`; join form posts to `/join`. Checked with JS disabled.                                                                                                                                           |
+| Reduced motion                                                             | Only `motion-safe:` animations (from `src/lib/motion.ts`); no scroll-jacking.                                                                                                                                                                               |
+| Light and dark                                                             | Uses the existing tokens only; checked at 375 px in both.                                                                                                                                                                                                   |
+| Prerender didn't silently break                                            | `scripts/check-dist.ts`, run at the end of `npm run build` (so CI runs it): `dist/index.html` contains the `h1`, the FAQ JSON-LD and the canonical; `dist/app.html` has an empty `#root`; `sitemap.xml`/`robots.txt` exist; the sample statement ids exist. |
+| Worker routing                                                             | Unit tests for the new routing function (`/` untouched, `/new`, `/r/x` → shell, `/join?code=` → redirect, unknown → 404, `/r/*` headers).                                                                                                                   |
 
 Lighthouse/axe in CI would need a browser download on every run; I'd leave that out and offer it as
 a follow-up.
@@ -227,11 +230,12 @@ Removed: `src/screens/HomeScreen.tsx` (its rejoin list moves to the lander).
 Not touched: `src/screens/room/*`, SettingsScreen, game components, AppBar/menus, theme tokens in
 `index.css`. The lander reuses `Button`, `Card`, `Badge`, `Flag`, `ThemeSwitcher`.
 
-## 7. Decisions needed from you
+## 7. Decisions (2026-10-20)
 
-1. Rendering: OK with option A (own prerender script, Worker serves `app.html` for game routes)?
-2. Join with a code: OK with the inline form on the lander, and may I ask the UI session to show the
-   code as text in the lobby?
-3. The three sample statements (or others).
-4. Contact/feedback channel, the "About" text and its link.
-5. Supabase region, for the privacy note.
+1. Rendering: option A. Revisit B (React Router framework mode) if we add more content pages.
+2. Join with a code: inline form on the lander, and the UI session is asked to show the room code as
+   text in the lobby.
+3. Sample statements: nl-038, br-001, kr-013.
+4. About links to LinkedIn (https://www.linkedin.com/in/ruslanpirus/). Contact: contact@whosehabits.com.
+   It only works once the domain is bought and its email routing is set up.
+5. Supabase runs in eu-west-1 (Ireland), so the privacy note says game traffic stays in the EU.

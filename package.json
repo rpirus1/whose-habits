@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run content && tsc -b && tsc -p worker && vite build",
+    "build": "npm run content && tsc -b && tsc -p worker && vite build && vite build --ssr src/lander/entry-server.tsx --outDir dist-ssr && node scripts/prerender.ts && node scripts/check-dist.ts",
     "lint": "oxlint",
     "preview": "vite preview",
     "content": "node scripts/build-statements.ts",

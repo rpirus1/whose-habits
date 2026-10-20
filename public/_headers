@@ -1,5 +1,10 @@
-# Cloudflare Pages response headers.
+# Response headers for static assets (Cloudflare Workers static assets).
 # Room links are private invitations: keep them out of search engines and Referer headers.
+# (The Worker serves /r/* itself and sets the same headers there: see worker/routes.ts.)
 /r/*
   X-Robots-Tag: noindex, nofollow
   Referrer-Policy: no-referrer
+
+# The app shell, served by the Worker for game routes. Not a page of its own.
+/app
+  X-Robots-Tag: noindex

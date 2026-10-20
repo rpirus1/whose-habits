@@ -1,14 +1,24 @@
 import { createBrowserRouter } from 'react-router'
-import { HomeScreen } from '@/screens/HomeScreen'
+import { Lander } from '@/lander/Lander'
 import { NotFoundScreen } from '@/screens/NotFoundScreen'
-import { RoomScreen } from '@/screens/RoomScreen'
-import { SettingsScreen } from '@/screens/SettingsScreen'
 
 export const router = createBrowserRouter([
-  { path: '/', element: <HomeScreen /> },
-  { path: '/new', element: <SettingsScreen /> },
+  // Prerendered at build time; must match src/lander/entry-server.tsx.
+  { path: '/', element: <Lander /> },
+  // The game loads on demand, so the landing page doesn't carry it.
+  {
+    path: '/new',
+    lazy: async () => ({
+      Component: (await import('@/screens/SettingsScreen')).SettingsScreen,
+    }),
+  },
   // One route for everyone in a room; the role (host or guest) comes from localStorage.
-  { path: '/r/:code', element: <RoomScreen /> },
+  {
+    path: '/r/:code',
+    lazy: async () => ({
+      Component: (await import('@/screens/RoomScreen')).RoomScreen,
+    }),
+  },
   // Dev server only: game screens with made-up data, for UI work. Left out of builds.
   ...(import.meta.env.DEV
     ? [

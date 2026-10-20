@@ -23,6 +23,9 @@ export default defineConfig({
       },
     },
   },
+  // The build-time prerender (src/lander/entry-server.tsx) runs in plain Node: bundle its
+  // dependencies so ESM/CJS quirks in packages don't matter there.
+  ssr: { noExternal: true },
   test: {
     include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'worker/**/*.test.ts'],
   },

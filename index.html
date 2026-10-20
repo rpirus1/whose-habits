@@ -17,14 +17,14 @@
           document.querySelector('meta[name="theme-color"]').setAttribute('content', '#fcf3f0')
       } catch (e) {}
     </script>
-    <title>Whose Habits: guess whose habit it is</title>
+    <title>Whose Habits: a free party game for international friends</title>
     <meta
       name="description"
-      content="A party game about the little habits that make every country feel like home. No app, no sign-up, just your phones."
+      content="Guess which country an everyday habit comes from. A free culture quiz for expat game nights and international friends. No app, no sign-up, one phone each."
     />
 
     <!-- Link previews (WhatsApp, iMessage, Telegram, LinkedIn). og:url and og:image must be
-         absolute: switch them to https://whosehabits.com/ once the domain is connected. -->
+         absolute: they come from VITE_SITE_URL in .env (switch it once the domain is connected). -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Whose Habits" />
     <meta property="og:title" content="Whose Habits: guess whose habit it is" />
@@ -32,18 +32,22 @@
       property="og:description"
       content="A party game about the little habits that make every country feel like home. No app, no sign-up, just your phones."
     />
-    <meta property="og:url" content="https://culture-clash.ruslan-pirus.workers.dev/" />
-    <meta
-      property="og:image"
-      content="https://culture-clash.ruslan-pirus.workers.dev/og-image.png"
-    />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:image" content="%VITE_SITE_URL%/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
       content="Whose Habits: a statement card with six country flags to choose from."
     />
+    <meta property="og:locale" content="en_GB" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Whose Habits: guess whose habit it is" />
+    <meta
+      name="twitter:description"
+      content="A party game about the little habits that make every country feel like home. No app, no sign-up, just your phones."
+    />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
