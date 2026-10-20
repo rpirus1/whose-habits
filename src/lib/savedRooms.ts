@@ -11,7 +11,10 @@ export interface GuestIdentity {
   name: string
   /** The host this guest first heard from; snapshots from anyone else are ignored. */
   hostId?: string
-  /** Removed by the host, turned away (room full) or left: don't offer the room on Home. */
+  /**
+   * Removed by the host or turned away (room full): don't offer the room on Home.
+   * Left: offered, and the room screen asks before rejoining.
+   */
   removed?: 'kicked' | 'full' | 'left'
 }
 
@@ -57,10 +60,26 @@ export interface SavedRoom {
   name: string
   savedAt: number
   finished: boolean
+  /** Kicked, or the room was full: never offered again. */
+  turnedAway: boolean
 }
 
 /** Rooms this device can rejoin, newest first. */
 export function listSavedRooms(now = Date.now()): SavedRoom[] {
+  return allSavedRooms(now).filter((r) => !r.turnedAway)
+}
+
+/**
+ * The room to offer as "Back to the last game": the newest one, if it's still going.
+ * Never an older room instead: its host has most likely moved on, so the link would dead-end.
+ */
+export function lastRoom(now = Date.now()): SavedRoom | undefined {
+  const [latest] = allSavedRooms(now)
+  return latest && !latest.turnedAway && !latest.finished ? latest : undefined
+}
+
+/** Every fresh room entry, newest first, including rooms this device was turned away from. */
+function allSavedRooms(now: number): SavedRoom[] {
   const rooms: SavedRoom[] = []
   for (const key of listKeys(keys.hostGame(''))) {
     const saved = fresh(load<Saved<GameState>>(key), now)
@@ -72,17 +91,20 @@ export function listSavedRooms(now = Date.now()): SavedRoom[] {
       name: state.players.find((p) => p.isHost)?.name ?? '',
       savedAt: saved.savedAt,
       finished: state.phase === 'final',
+      turnedAway: false,
     })
   }
   for (const key of listKeys(keys.guest(''))) {
     const saved = fresh(load<Saved<GuestIdentity>>(key), now)
-    if (!saved || saved.value.removed) continue
+    if (!saved) continue
+    const { removed } = saved.value
     rooms.push({
       roomCode: key.slice(keys.guest('').length),
       role: 'guest',
       name: saved.value.name,
       savedAt: saved.savedAt,
       finished: false,
+      turnedAway: removed === 'kicked' || removed === 'full',
     })
   }
   return rooms.sort((a, b) => b.savedAt - a.savedAt)

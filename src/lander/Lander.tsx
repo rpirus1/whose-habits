@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CULTURES, getCulture } from '@/content/cultures'
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '@/game/types'
-import { listSavedRooms } from '@/lib/savedRooms'
+import { lastRoom } from '@/lib/savedRooms'
 import { cn } from '@/lib/utils'
 import hostArt from './art/step-1-host.svg'
 import joinArt from './art/step-2-join.svg'
@@ -166,10 +166,7 @@ function Hero() {
 /** Closed the tab mid-game? A quiet way back into the most recent room. */
 function ResumeGame() {
   const hydrated = useHydrated()
-  const room = useMemo(
-    () => (hydrated ? listSavedRooms().find((r) => !r.finished) : undefined),
-    [hydrated],
-  )
+  const room = useMemo(() => (hydrated ? lastRoom() : undefined), [hydrated])
   if (!room) return null
 
   return (

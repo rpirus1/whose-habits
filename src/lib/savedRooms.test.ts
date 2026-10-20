@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createGame } from '@/game/engine'
 import {
+  lastRoom,
   listSavedRooms,
   loadGuestIdentity,
   loadHostGame,
+  markGuestRemoved,
   pruneSavedRooms,
   ROOM_TTL_MS,
   saveGuestIdentity,
@@ -60,6 +62,30 @@ describe('saved rooms', () => {
       ['GHJK', 'guest', 'Anna'],
       ['BCDF', 'host', 'Alex'],
     ])
+  })
+
+  it('offers a room you left, but not one you were kicked from or turned away by', () => {
+    saveGuestIdentity('BCDF', { playerId: 'p1', name: 'Anna', removed: 'left' })
+    saveGuestIdentity('GHJK', { playerId: 'p1', name: 'Anna', removed: 'kicked' })
+    saveGuestIdentity('MNPQ', { playerId: 'p1', name: 'Anna', removed: 'full' })
+    expect(listSavedRooms().map((r) => r.roomCode)).toEqual(['BCDF'])
+  })
+
+  it('offers only the newest room as the last game, never an older one', () => {
+    saveGuestIdentity('BCDF', { playerId: 'p1', name: 'Anna' })
+    vi.advanceTimersByTime(1000)
+    saveGuestIdentity('GHJK', { playerId: 'p2', name: 'Anna' })
+    vi.advanceTimersByTime(1000)
+    markGuestRemoved('GHJK', 'left')
+    expect(lastRoom()?.roomCode).toBe('GHJK')
+
+    vi.advanceTimersByTime(1000)
+    markGuestRemoved('GHJK', 'kicked')
+    expect(lastRoom()).toBeUndefined()
+
+    vi.advanceTimersByTime(1000)
+    saveHostGame({ ...game('MNPQ'), phase: 'final' })
+    expect(lastRoom()).toBeUndefined()
   })
 
   it('treats entries older than the TTL as gone and prunes them', () => {
