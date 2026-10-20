@@ -1,5 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
-import { BR, MX, NL, PL, UA, US } from 'country-flag-icons/react/1x1'
+import { BR, FR, IT, KR, MX, NL, PL, TR, UA, US } from 'country-flag-icons/react/1x1'
 import type { CultureCode } from '@/content/schema'
 import { cn } from '@/lib/utils'
 
@@ -12,6 +12,10 @@ const FLAGS: Partial<Record<CultureCode, (props: ComponentProps<typeof PL>) => R
   BR,
   MX,
   US,
+  TR,
+  IT,
+  FR,
+  KR,
 }
 
 /** A round flag. Size it with className (default size-6). Decorative: pair it with the name. */

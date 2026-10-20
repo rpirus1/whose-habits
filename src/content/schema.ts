@@ -1,7 +1,7 @@
 // Shared by the app and by scripts/build-statements.ts (run with plain Node),
 // so this file and cultures.ts use relative imports with .ts extensions only.
 
-export const CULTURE_CODES = ['PL', 'UA', 'NL', 'BR', 'MX', 'US'] as const
+export const CULTURE_CODES = ['PL', 'UA', 'NL', 'BR', 'MX', 'US', 'TR', 'IT', 'FR', 'KR'] as const
 export type CultureCode = (typeof CULTURE_CODES)[number]
 
 export const TOPICS = ['daily', 'hosting', 'family', 'humour', 'work', 'language'] as const
