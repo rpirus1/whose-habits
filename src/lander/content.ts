@@ -2,6 +2,7 @@
 // can't drift. Sample statements are copied from content/statements.csv; a test checks they
 // still match it.
 import type { CultureCode } from '../content/schema.ts'
+import { FEEDBACK_EMAIL } from './contact.ts'
 
 export interface Sample {
   id: string
@@ -66,7 +67,7 @@ export const FAQ: readonly Faq[] = [
   },
   {
     q: 'Which countries are in it?',
-    a: 'Poland, Ukraine, the Netherlands, Brazil, Mexico, the United States, Türkiye, Italy, France and South Korea. The host picks 2 to 6 of them for each game. More countries are planned.',
+    a: 'Brazil, France, Italy, Mexico, the Netherlands, Poland, South Korea, Türkiye, Ukraine and the United States. The host picks 2 to 6 of them for each game. More countries are coming.',
   },
   {
     q: 'Can a habit belong to more than one country?',
@@ -75,6 +76,10 @@ export const FAQ: readonly Faq[] = [
   {
     q: 'Isn’t this about stereotypes?',
     a: 'It is about small everyday things: how people greet, shop, host and celebrate. The game stays away from politics, religion, appearance and national clichés.',
+  },
+  {
+    q: 'I don’t agree with a statement. How can I report it?',
+    a: `Tap Report on the answer screen during the game, or write to ${FEEDBACK_EMAIL} with the statement and what you’d change. Every report gets read, and statements get fixed or removed.`,
   },
   {
     q: 'What language is it in?',

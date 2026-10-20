@@ -38,7 +38,11 @@ export function JoinWithCode() {
       <label htmlFor={`${id}-code`} className="mb-2 block font-medium">
         Join with a code
       </label>
-      <div className="flex gap-2">
+      {/* One pill: the field with the Join button inside it, as wide as the Host button. */}
+      <div
+        data-invalid={invalid || undefined}
+        className="border-input bg-card focus-within:border-ring focus-within:ring-ring/50 data-invalid:border-destructive data-invalid:ring-destructive/20 flex h-14 items-center rounded-full border p-1.5 pl-1 transition-colors focus-within:ring-3 data-invalid:ring-3 dark:bg-input/30"
+      >
         <Input
           ref={inputRef}
           id={`${id}-code`}
@@ -52,9 +56,9 @@ export function JoinWithCode() {
           aria-invalid={invalid || undefined}
           aria-describedby={`${id}-hint`}
           onChange={() => setInvalid(false)}
-          className="h-14 flex-1 rounded-full px-5 text-lg tabular-nums md:text-lg"
+          className="h-full min-w-0 flex-1 rounded-full border-0 bg-transparent px-4 text-lg tabular-nums focus-visible:ring-0 aria-invalid:ring-0 md:text-lg dark:bg-transparent"
         />
-        <Button type="submit" size="xl" variant="secondary">
+        <Button type="submit" size="lg" className="h-full px-5 text-base" variant="secondary">
           Join
         </Button>
       </div>

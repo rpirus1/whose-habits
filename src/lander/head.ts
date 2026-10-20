@@ -2,7 +2,8 @@
 // (title, description, Open Graph) live in index.html, so room links keep their previews.
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '../game/types'
 import { FAQ } from './content'
-import { MAKER_NAME, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './site'
+import { MAKER_NAME } from './contact'
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './site'
 
 export function structuredData() {
   const url = `${SITE_URL}/`

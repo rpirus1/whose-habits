@@ -4,10 +4,7 @@
 import {
   ChevronRight,
   Globe,
-  QrCode,
-  Settings2,
   Smartphone,
-  Trophy,
   UserRoundCheck,
   Users,
   Wallet,
@@ -22,10 +19,14 @@ import { CULTURES, getCulture } from '@/content/cultures'
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '@/game/types'
 import { listSavedRooms } from '@/lib/savedRooms'
 import { cn } from '@/lib/utils'
+import { HeroArt, StepArt } from './art'
 import { FAQ, HERO_OPTIONS, SAMPLES } from './content'
+import { CountryCarousel } from './CountryCarousel'
+import { FlipCard } from './FlipCard'
 import { JoinWithCode } from './JoinWithCode'
-import { CONTACT_EMAIL, LINKEDIN_URL } from './site'
+import { FEEDBACK_EMAIL, LINKEDIN_URL } from './contact'
 import { useHydrated } from './useHydrated'
+import './lander.css'
 
 // theme.ts touches window when imported, so the switcher loads in the browser only.
 const ThemeSwitcher = lazy(async () => ({
@@ -33,6 +34,10 @@ const ThemeSwitcher = lazy(async () => ({
 }))
 
 const PLAYERS = `${MIN_PLAYERS_TO_START}–${MAX_PLAYERS}`
+/** A–Z, with "The Netherlands" under N. */
+const COUNTRIES = [...CULTURES].sort((a, b) =>
+  a.name.replace(/^The /, '').localeCompare(b.name.replace(/^The /, ''), 'en'),
+)
 const container = 'mx-auto w-full max-w-5xl px-4'
 const h2 = 'font-heading text-2xl font-bold tracking-tight text-balance md:text-3xl'
 
@@ -69,26 +74,42 @@ export function Lander() {
   )
 }
 
+/** A full-width section. `background` gives it a tinted band and pattern (lander.css). */
 function Section({
   id,
   title,
   intro,
   children,
-  className,
+  background,
+  narrow = false,
 }: {
   id: string
   title: string
   intro?: string
   children: ReactNode
-  className?: string
+  background?: 'dots' | 'marks'
+  /** Desktop: a centred column, 60% of the container. */
+  narrow?: boolean
 }) {
   return (
-    <section aria-labelledby={`${id}-title`} className={cn(container, 'py-12 md:py-16', className)}>
-      <h2 id={`${id}-title`} className={h2}>
-        {title}
-      </h2>
-      {intro && <p className="text-muted-foreground mt-3 max-w-2xl text-lg">{intro}</p>}
-      <div className="mt-8">{children}</div>
+    <section
+      aria-labelledby={`${id}-title`}
+      className={cn(
+        'py-14 md:py-20',
+        background && 'lander-band',
+        background === 'dots' && 'lander-dots',
+        background === 'marks' && 'lander-marks',
+      )}
+    >
+      <div className={container}>
+        <div className={cn(narrow && 'md:mx-auto md:w-3/5')}>
+          <h2 id={`${id}-title`} className={h2}>
+            {title}
+          </h2>
+          {intro && <p className="text-muted-foreground mt-3 max-w-2xl text-lg">{intro}</p>}
+          <div className="mt-8 md:mt-10">{children}</div>
+        </div>
+      </div>
     </section>
   )
 }
@@ -99,10 +120,12 @@ function Hero() {
       aria-labelledby="hero-title"
       className={cn(
         container,
-        'grid items-center gap-10 pt-6 pb-12 md:grid-cols-[1fr_minmax(0,24rem)] md:gap-16 md:pt-12 md:pb-16',
+        'grid items-center gap-10 pt-2 pb-14 md:grid-cols-[1fr_minmax(0,24rem)] md:gap-16 md:pt-12 md:pb-20',
       )}
     >
       <div className="flex flex-col gap-6">
+        {/* Phones get the illustration; desktop keeps the example question beside the text. */}
+        <HeroArt className="rounded-[1.75rem] md:hidden" />
         <div className="space-y-4">
           <Badge variant="soft" className="h-7 px-3 text-sm">
             Free party game · {PLAYERS} players
@@ -122,13 +145,12 @@ function Hero() {
           </p>
         </div>
 
-        <ResumeGames />
-
-        <Button asChild size="xl" className="w-full sm:w-fit sm:px-10">
-          <Link to="/new">Host a game</Link>
-        </Button>
-
-        <div className="max-w-md">
+        {/* The Host button and the join pill share one width: full on phones, 18rem on desktop. */}
+        <div className="flex w-full max-w-md flex-col gap-6 md:w-72">
+          <ResumeGames />
+          <Button asChild size="xl" className="w-full">
+            <Link to="/new">Host a game</Link>
+          </Button>
           <JoinWithCode />
         </div>
       </div>
@@ -153,7 +175,7 @@ function ResumeGames() {
   if (rooms.length === 0) return null
 
   return (
-    <ul className="flex max-w-md flex-col gap-2">
+    <ul className="flex flex-col gap-2">
       {rooms.map((room) => (
         <li key={`${room.role}-${room.roomCode}`}>
           <Link
@@ -205,39 +227,39 @@ function ExampleQuestion() {
   )
 }
 
-const STEPS: { title: string; text: string; Icon: LucideIcon }[] = [
+const STEPS: { title: string; text: string }[] = [
   {
     title: 'Host a game',
     text: 'Pick 2 to 6 countries, the number of rounds and the time per question.',
-    Icon: Settings2,
   },
   {
     title: 'Friends join',
     text: 'They scan the QR code or open the link on their own phone. No app, no account.',
-    Icon: QrCode,
   },
   {
     title: 'Guess and score',
     text: 'Read the habit, pick the country. A point for every right answer, a bonus for the first one in.',
-    Icon: Trophy,
   },
 ]
 
 function HowToPlay() {
   return (
-    <Section id="how" title="How to play" intro="Set up in a minute, play in ten.">
+    <Section
+      id="how"
+      title="How to play"
+      intro="Set up in a minute, play in ten."
+      background="dots"
+    >
       <ol className="grid gap-4 md:grid-cols-3">
-        {STEPS.map(({ title, text, Icon }, i) => (
+        {STEPS.map(({ title, text }, i) => (
           <li key={title} className="bg-card ring-border rounded-2xl p-5 ring-1">
-            <div className="flex items-center gap-3">
-              <span className="bg-primary/15 text-primary-soft flex size-10 items-center justify-center rounded-full">
-                <Icon className="size-5" aria-hidden />
-              </span>
-              <span className="text-muted-foreground text-sm font-medium tabular-nums">
-                Step {i + 1}
-              </span>
+            <div className="bg-muted flex justify-center rounded-xl py-3">
+              <StepArt step={i as 0 | 1 | 2} />
             </div>
-            <h3 className="mt-4 text-lg font-semibold">{title}</h3>
+            <p className="text-muted-foreground mt-4 text-sm font-medium tabular-nums">
+              Step {i + 1}
+            </p>
+            <h3 className="mt-1 text-lg font-semibold">{title}</h3>
             <p className="text-muted-foreground mt-1">{text}</p>
           </li>
         ))}
@@ -250,7 +272,7 @@ const PERKS: { title: string; text: string; Icon: LucideIcon }[] = [
   { title: 'Free', text: 'No ads, no paywall.', Icon: Wallet },
   { title: 'No app', text: 'Runs in the browser on any phone.', Icon: Smartphone },
   { title: 'No sign-up', text: 'Type a name, that’s it.', Icon: UserRoundCheck },
-  { title: `${CULTURES.length} countries`, text: 'From Poland to South Korea.', Icon: Globe },
+  { title: `${CULTURES.length} countries`, text: 'From Brazil to South Korea.', Icon: Globe },
   { title: `${PLAYERS} players`, text: 'A dinner table or a full living room.', Icon: Users },
 ]
 
@@ -261,18 +283,31 @@ function WhyItsDifferent() {
       title="Made for game night with friends from everywhere"
       intro="A culture quiz for expat get-togethers, mixed friend groups and anyone who has ever said “wait, you do that too?”"
     >
-      <ul className="grid grid-cols-2 gap-4 md:grid-cols-5">
+      {/* Phones: one benefit per row, icon on the left. Desktop: five columns. */}
+      <ul className="grid gap-6 md:grid-cols-5 md:gap-4">
         {PERKS.map(({ title, text, Icon }) => (
-          <li key={title} className="flex flex-col gap-2">
-            <Icon className="text-primary-soft size-6" aria-hidden />
-            <h3 className="font-semibold">{title}</h3>
-            <p className="text-muted-foreground text-sm">{text}</p>
+          <li key={title} className="flex items-start gap-4 md:flex-col md:gap-3">
+            <span className="bg-primary/15 text-primary-soft flex size-11 shrink-0 items-center justify-center rounded-full">
+              <Icon className="size-5" aria-hidden />
+            </span>
+            <div>
+              <h3 className="font-semibold">{title}</h3>
+              <p className="text-muted-foreground mt-0.5 text-sm">{text}</p>
+            </div>
           </li>
         ))}
       </ul>
-      <h3 className="mt-10 font-semibold">The countries</h3>
-      <ul className="mt-4 flex flex-wrap gap-2">
-        {CULTURES.map((c) => (
+
+      <div className="mt-14 flex items-center gap-3 md:mt-16">
+        <h3 className="font-semibold">The countries</h3>
+        <Badge variant="soft">More coming</Badge>
+      </div>
+      {/* Phones: a drifting row you can swipe. Desktop: all chips, wrapped. */}
+      <div className="mt-5 md:hidden">
+        <CountryCarousel countries={COUNTRIES} />
+      </div>
+      <ul className="mt-5 hidden flex-wrap gap-2 md:flex">
+        {COUNTRIES.map((c) => (
           <li
             key={c.code}
             className="bg-card ring-border flex items-center gap-2 rounded-full py-1.5 pr-3.5 pl-1.5 text-sm font-medium ring-1"
@@ -291,32 +326,12 @@ function Samples() {
     <Section
       id="samples"
       title="Try a few"
-      intro="Every game has habits like these. Guess first, then check."
+      intro="Every game has habits like these. Guess first, then flip the card."
+      background="marks"
     >
       <ul className="grid gap-4 md:grid-cols-3">
         {SAMPLES.map((s) => (
-          <li key={s.id} className="bg-card ring-border flex flex-col rounded-2xl p-5 ring-1">
-            <p className="text-lg leading-snug font-semibold text-balance">{s.text}</p>
-            <details className="group mt-auto pt-5">
-              <summary className="text-primary-soft flex min-h-11 cursor-pointer list-none items-center gap-1 font-medium [&::-webkit-details-marker]:hidden">
-                <ChevronRight
-                  className="size-4 transition-transform group-open:rotate-90 motion-reduce:transition-none"
-                  aria-hidden
-                />
-                <span className="group-open:hidden">Show answer</span>
-                <span className="hidden group-open:inline">Answer</span>
-              </summary>
-              <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-semibold">
-                {s.fits.map((code) => (
-                  <span key={code} className="flex items-center gap-2">
-                    <Flag code={code} />
-                    {getCulture(code).name}
-                  </span>
-                ))}
-              </p>
-              <p className="text-muted-foreground mt-2 text-sm">{s.note}</p>
-            </details>
-          </li>
+          <FlipCard key={s.id} sample={s} />
         ))}
       </ul>
     </Section>
@@ -325,8 +340,8 @@ function Samples() {
 
 function FaqSection() {
   return (
-    <Section id="faq" title="Questions">
-      <div className="divide-border max-w-3xl divide-y border-y">
+    <Section id="faq" title="Questions" narrow>
+      <div className="divide-border divide-y border-y">
         {FAQ.map(({ q, a }) => (
           <details key={q} className="group">
             <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-3 text-lg font-medium [&::-webkit-details-marker]:hidden">
@@ -336,11 +351,28 @@ function FaqSection() {
                 aria-hidden
               />
             </summary>
-            <p className="text-muted-foreground pb-4">{a}</p>
+            <p className="text-muted-foreground pb-4">
+              <WithEmailLink text={a} />
+            </p>
           </details>
         ))}
       </div>
     </Section>
+  )
+}
+
+/** Plain text with the feedback address turned into a mailto link. */
+function WithEmailLink({ text }: { text: string }) {
+  const [before, after] = text.split(FEEDBACK_EMAIL)
+  if (after === undefined) return text
+  return (
+    <>
+      {before}
+      <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline underline-offset-2">
+        {FEEDBACK_EMAIL}
+      </a>
+      {after}
+    </>
   )
 }
 
@@ -356,22 +388,16 @@ function About() {
           It’s a side project, built in the open and free to play. Ideas, bugs and habits from your
           country are very welcome.
         </p>
-        <p className="flex flex-wrap gap-x-6 gap-y-2">
+        <p>
           <a
             href={LINKEDIN_URL}
             className="text-primary-soft font-medium underline underline-offset-4"
           >
             Ruslan on LinkedIn
           </a>
-          <a
-            href={`mailto:${CONTACT_EMAIL}`}
-            className="text-primary-soft font-medium underline underline-offset-4"
-          >
-            {CONTACT_EMAIL}
-          </a>
         </p>
       </div>
-      <div className="bg-card ring-border mt-12 flex flex-col items-start gap-4 rounded-3xl p-6 ring-1 md:flex-row md:items-center md:justify-between md:p-8">
+      <div className="bg-card ring-border lander-dots mt-12 flex flex-col items-start gap-4 rounded-3xl p-6 ring-1 md:flex-row md:items-center md:justify-between md:p-8">
         <p className="font-heading text-2xl font-bold text-balance">Got friends over tonight?</p>
         <Button asChild size="xl" className="w-full md:w-fit md:px-10">
           <Link to="/new">Host a game</Link>
@@ -440,8 +466,8 @@ function Footer() {
             </ul>
             <p className="text-muted-foreground mt-2">
               Questions or a request? Write to{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground underline">
-                {CONTACT_EMAIL}
+              <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline">
+                {FEEDBACK_EMAIL}
               </a>
               .
             </p>
@@ -475,8 +501,8 @@ function Footer() {
 
           <p className="text-muted-foreground">
             Feedback:{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-foreground underline">
-              {CONTACT_EMAIL}
+            <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline">
+              {FEEDBACK_EMAIL}
             </a>
             <br />© 2026 Ruslan Pirus
           </p>

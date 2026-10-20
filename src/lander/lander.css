@@ -1,0 +1,152 @@
+/*
+ * Landing page only: illustration colours, section patterns, flip cards and the country
+ * carousel. The game's theme tokens stay in src/index.css; this file adds to them.
+ */
+
+/* Illustration palette: a warm living room in the evening. Orange stays a small highlight. */
+:root {
+  --art-wall: oklch(0.93 0.03 60);
+  --art-night: oklch(0.42 0.08 265);
+  --art-frame: oklch(0.99 0.01 60);
+  --art-moon: oklch(0.96 0.06 95);
+  --art-cord: oklch(0.45 0.03 40);
+  --art-yellow: oklch(0.86 0.15 90);
+  --art-teal: oklch(0.72 0.11 190);
+  --art-pink: oklch(0.76 0.12 350);
+  --art-glow: oklch(0.9 0.13 85);
+  --art-lamp: oklch(0.86 0.12 85);
+  --art-pole: oklch(0.35 0.02 40);
+  --art-sofa: oklch(0.55 0.09 205);
+  --art-sofa-dark: oklch(0.48 0.09 205);
+  --art-rug: oklch(0.86 0.06 30);
+  --art-wood: oklch(0.58 0.08 55);
+  --art-leaf: oklch(0.62 0.12 150);
+  --art-leaf-dark: oklch(0.52 0.11 155);
+  --art-pot: oklch(0.66 0.12 40);
+  --art-picture: oklch(0.88 0.05 220);
+  --art-phone: oklch(0.26 0.01 40);
+  --art-screen: oklch(0.94 0.05 200);
+  --art-ink: oklch(0.25 0.02 40);
+  --art-skin-1: oklch(0.86 0.05 60);
+  --art-skin-2: oklch(0.58 0.08 50);
+  --art-skin-3: oklch(0.72 0.08 55);
+  --art-hair-1: oklch(0.32 0.03 40);
+  --art-hair-2: oklch(0.2 0.02 40);
+  --art-hair-3: oklch(0.7 0.12 75);
+  --art-shirt-1: oklch(0.84 0.12 90);
+  --art-shirt-2: oklch(0.6 0.12 330);
+  --art-shirt-3: oklch(0.7 0.09 145);
+  --art-paper: oklch(1 0 0);
+}
+
+.dark {
+  --art-wall: oklch(0.24 0.03 40);
+  --art-night: oklch(0.22 0.06 265);
+  --art-frame: oklch(0.33 0.03 40);
+  --art-cord: oklch(0.6 0.03 40);
+  --art-glow: oklch(0.82 0.14 80);
+  --art-pole: oklch(0.6 0.02 40);
+  --art-sofa: oklch(0.44 0.07 205);
+  --art-sofa-dark: oklch(0.38 0.07 205);
+  --art-rug: oklch(0.32 0.05 30);
+  --art-wood: oklch(0.45 0.06 55);
+  --art-picture: oklch(0.36 0.05 220);
+  --art-phone: oklch(0.14 0.01 40);
+  --art-paper: oklch(0.3 0.02 40);
+}
+
+/* Section backgrounds: a tinted band, with a dot grid or a scatter of question marks. */
+.lander-band {
+  background-color: color-mix(in oklch, var(--card) 55%, var(--background));
+}
+
+.lander-dots {
+  background-image: radial-gradient(
+    color-mix(in oklch, var(--foreground) 11%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 20px 20px;
+}
+
+.lander-marks {
+  position: relative;
+  isolation: isolate;
+}
+.lander-marks::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--primary);
+  opacity: 0.08;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='black' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M14 16a7 7 0 1 1 10.5 6c-2.5 1.5-3.5 3-3.5 6'/%3E%3Cpath d='M62 58a5 5 0 1 1 7.5 4.3c-1.8 1-2.5 2.2-2.5 4.3' stroke-width='2.4'/%3E%3C/g%3E%3Ccircle cx='21' cy='34' r='2'/%3E%3Ccircle cx='67' cy='71' r='1.6'/%3E%3C/svg%3E")
+    0 0 / 96px 96px repeat;
+}
+
+/* Flip cards (sample statements): both faces share one grid cell, so a card never changes
+   height. Without JS (html lacks .js) both faces show, one under the other. */
+.flip {
+  perspective: 1200px;
+}
+.flip-inner {
+  display: grid;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.flip-inner > * {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+.flip[data-flipped='true'] .flip-inner {
+  transform: rotateY(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner,
+  .flip[data-flipped='true'] .flip-inner {
+    transform: none;
+    transition: none;
+  }
+  .flip-inner > * {
+    backface-visibility: visible;
+    transition: opacity 0.2s;
+  }
+  .flip-back {
+    transform: none;
+    opacity: 0;
+  }
+  .flip[data-flipped='true'] .flip-front {
+    opacity: 0;
+  }
+  .flip[data-flipped='true'] .flip-back {
+    opacity: 1;
+  }
+}
+html:not(.js) .flip-inner > * {
+  grid-area: auto;
+  backface-visibility: visible;
+}
+html:not(.js) .flip-back {
+  transform: none;
+}
+html:not(.js) .flip button {
+  display: none;
+}
+
+/* Country carousel (phones): a native horizontal scroller, edges faded, no scrollbar. */
+.lander-carousel {
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 1.5rem,
+    black calc(100% - 1.5rem),
+    transparent
+  );
+}
+.lander-carousel::-webkit-scrollbar {
+  display: none;
+}

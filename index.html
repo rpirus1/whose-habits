@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#090504" />
     <!-- Apply the saved or system theme before the first paint, so there's no flash.
-         Same key and values as src/lib/theme.ts. -->
+         Same key and values as src/lib/theme.ts. The js class lets CSS tell a no-JS visit apart. -->
     <script>
+      document.documentElement.classList.add('js')
       try {
         var t = localStorage.getItem('cc:theme')
         var dark =

@@ -1,7 +1,7 @@
 # Landing page plan
 
 The public one-pager at `/`. It replaces the temporary HomeScreen and is the way into the game.
-Status: **built 2026-10-20** (agreed plan below; decisions in section 7). Lighthouse mobile: 97 / 100 / 100 / 100.
+Status: **built 2026-10-20** (agreed plan below; decisions in section 7). Lighthouse mobile after the first feedback round: 96 / 100 / 100 / 100.
 
 ## 1. Goals
 
@@ -169,7 +169,7 @@ Link: LinkedIn.
   - Hosting: Cloudflare serves the site and, like any web host, sees IP addresses to deliver pages.
   - Wording aimed at an EU visitor: what, why (to see if people enjoy the game and which settings
     work), no profiling, contact for questions. Supabase runs in the EU (Ireland).
-- **Feedback / contact:** contact@whosehabits.com.
+- **Feedback / contact:** feedback@whosehabits.com (also for reports and privacy questions).
 - **Credits:** HeroUI "Rabbit" theme (MIT), country-flag-icons (MIT), Lucide icons (ISC), Geist font (OFL).
   Each name links to its project.
 - © 2026 Ruslan Pirus (or no copyright line; your call).
@@ -236,6 +236,20 @@ Not touched: `src/screens/room/*`, SettingsScreen, game components, AppBar/menus
 2. Join with a code: inline form on the lander, and the UI session is asked to show the room code as
    text in the lobby.
 3. Sample statements: nl-038, br-001, kr-013.
-4. About links to LinkedIn (https://www.linkedin.com/in/ruslanpirus/). Contact: contact@whosehabits.com.
-   It only works once the domain is bought and its email routing is set up.
+4. About links to LinkedIn (https://www.linkedin.com/in/ruslanpirus/) only. Email: feedback@whosehabits.com
+   (footer, privacy note, FAQ). It only works once the domain is bought and its email routing is set up.
 5. Supabase runs in eu-west-1 (Ireland), so the privacy note says game traffic stays in the EU.
+
+## 8. Feedback round 1 (2026-10-20)
+
+- Hero: the Join button sits inside the code field (one pill). Host button and pill share one width:
+  full width on phones, 18rem on desktop. Phones get an illustration above the H1 (src/lander/art.tsx,
+  inline SVG coloured by --art-* variables in src/lander/lander.css); desktop keeps the example question.
+- How to play: small step illustrations instead of icons; dotted band behind the section.
+- Why it's different: one benefit per row on phones; more space between the three parts; countries
+  sorted A–Z (the Netherlands under N) with a "More coming" chip. Phones: a slowly drifting, swipeable
+  row with a Pause button (WCAG 2.2.2), no drift with reduced motion; desktop keeps the wrapped chips.
+- Try a few: flip cards on all screens (both faces in one grid cell, so heights never change); the
+  hidden face is inert and focus follows the flip; no JS shows both faces. Band with faint question marks.
+- FAQ: a "how can I report a statement" entry; 60% wide and centred on desktop.
+- About: LinkedIn only.
