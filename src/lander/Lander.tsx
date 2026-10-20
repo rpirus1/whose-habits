@@ -2,6 +2,7 @@
 // hydrated in the browser, so the first render must not read localStorage, window or the
 // theme: anything device-specific appears after mount.
 import {
+  ArrowUpRight,
   ChevronRight,
   Globe,
   Smartphone,
@@ -350,6 +351,25 @@ function FaqSection() {
   )
 }
 
+/** A link to another site: opens in a new tab, and says so (icon, and text for screen readers). */
+function ExternalLink({
+  href,
+  className,
+  children,
+}: {
+  href: string
+  className?: string
+  children: ReactNode
+}) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+      {children}
+      <ArrowUpRight className="ml-0.5 inline size-[0.9em] align-[-0.1em]" aria-hidden />
+      <span className="sr-only"> (opens in a new tab)</span>
+    </a>
+  )
+}
+
 /** Plain text with the feedback address turned into a mailto link. */
 function WithEmailLink({ text }: { text: string }) {
   const [before, after] = text.split(FEEDBACK_EMAIL)
@@ -378,12 +398,12 @@ function About() {
           country are very welcome.
         </p>
         <p>
-          <a
+          <ExternalLink
             href={LINKEDIN_URL}
             className="text-primary-soft font-medium underline underline-offset-4"
           >
             Ruslan on LinkedIn
-          </a>
+          </ExternalLink>
         </p>
       </div>
       <div className="bg-card ring-border lander-dots mt-12 flex flex-col items-start gap-4 rounded-3xl p-6 ring-1 md:flex-row md:items-center md:justify-between md:p-8">
@@ -488,9 +508,12 @@ function Footer() {
           <ul className="text-muted-foreground grid gap-x-8 gap-y-1 md:grid-cols-2">
             {CREDITS.map((c) => (
               <li key={c.name}>
-                <a href={c.href} className="text-foreground underline underline-offset-2">
+                <ExternalLink
+                  href={c.href}
+                  className="text-foreground underline underline-offset-2"
+                >
                   {c.name}
-                </a>{' '}
+                </ExternalLink>{' '}
                 ({c.license})
               </li>
             ))}
