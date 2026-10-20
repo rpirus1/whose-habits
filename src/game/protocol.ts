@@ -13,6 +13,8 @@ export type GuestMessage =
   | { type: 'answer'; playerId: string; roundId: string; choice: Choice }
   /** Clock sync: the guest's send time. */
   | { type: 'ping'; playerId: string; t0: number }
+  /** The player left from their menu. Unlike a kick, they may rejoin. */
+  | { type: 'leave'; playerId: string }
 
 // ── Host → guests ───────────────────────────────────────────────────────────
 
@@ -217,6 +219,8 @@ export function parseGuestMessage(payload: unknown): GuestMessage | null {
       return typeof m.t0 === 'number' && Number.isFinite(m.t0)
         ? { type: 'ping', playerId: m.playerId, t0: m.t0 }
         : null
+    case 'leave':
+      return { type: 'leave', playerId: m.playerId }
     default:
       return null
   }

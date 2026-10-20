@@ -1,62 +1,67 @@
-import { ChevronDown, Pause, Play, SkipBack, SkipForward, SlidersHorizontal } from 'lucide-react'
-import { useState } from 'react'
+import { Pause, Play, SkipBack, SkipForward } from 'lucide-react'
 import { PlayerList } from '@/components/PlayerList'
 import { SettingsForm } from '@/components/SettingsForm'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Separator } from '@/components/ui/separator'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 import type { Action } from '@/game/engine'
 import { currentRound, validSettings } from '@/game/engine'
 import type { PublicPlayer } from '@/game/protocol'
 import type { GameState } from '@/game/types'
 import { useConfirmTap } from '@/hooks/useConfirmTap'
 
-/** Collapsible host-only controls, so the rest of the screen stays the same as a player's. */
-export function HostPanel({
+/**
+ * The host's menu, top to bottom by how often it's needed: game settings (lobby) or game
+ * controls and players (in game), then the theme, then End game, kept last and apart so
+ * a quick tap on Pause can't land on it.
+ */
+export function HostMenu({
   state,
   players,
   dispatch,
+  close,
 }: {
   state: GameState
   players: PublicPlayer[]
   dispatch: (action: Action) => void
+  close: () => void
 }) {
-  const [open, setOpen] = useState(false)
   const inGame = state.phase === 'question' || state.phase === 'reveal'
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="bg-card rounded-2xl">
-      <CollapsibleTrigger className="flex min-h-12 w-full items-center gap-2 px-4 font-medium">
-        <SlidersHorizontal className="text-primary size-4" />
-        Host controls
-        {state.paused && <Badge variant="secondary">Paused</Badge>}
-        <ChevronDown
-          className={`text-muted-foreground ml-auto size-5 transition-transform ${open ? 'rotate-180' : ''}`}
+    <>
+      {state.phase === 'lobby' && (
+        <SettingsForm
+          value={state.settings}
+          keepMinimum
+          onChange={(settings) => {
+            if (validSettings(settings)) dispatch({ type: 'updateSettings', settings })
+          }}
         />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="flex flex-col gap-4 px-4 pb-4">
-        {state.phase === 'lobby' && (
-          <SettingsForm
-            value={state.settings}
-            keepMinimum
-            onChange={(settings) => {
-              if (validSettings(settings)) dispatch({ type: 'updateSettings', settings })
+      )}
+      {inGame && <GameControls state={state} dispatch={dispatch} />}
+      {inGame && (
+        <PlayerList
+          players={players}
+          meId={state.hostId}
+          compact
+          onKick={(p) => dispatch({ type: 'kick', playerId: p.id })}
+        />
+      )}
+      {state.phase !== 'final' && <Separator />}
+      <ThemeSwitcher />
+      {inGame && (
+        <>
+          <Separator />
+          <EndGameButton
+            onEnd={() => {
+              close()
+              dispatch({ type: 'end' })
             }}
           />
-        )}
-        {inGame && <GameControls state={state} dispatch={dispatch} />}
-        {inGame && (
-          <PlayerList
-            players={players}
-            meId={state.hostId}
-            onKick={(p) => dispatch({ type: 'kick', playerId: p.id })}
-          />
-        )}
-        {state.phase === 'final' && (
-          <p className="text-muted-foreground text-sm">The game is over.</p>
-        )}
-      </CollapsibleContent>
-    </Collapsible>
+        </>
+      )}
+    </>
   )
 }
 
@@ -107,7 +112,6 @@ function GameControls({
       <p className="text-muted-foreground text-xs">
         Back shows earlier answers (view only). Skip swaps the statement for a new one.
       </p>
-      <EndGameButton onEnd={() => dispatch({ type: 'end' })} />
     </div>
   )
 }

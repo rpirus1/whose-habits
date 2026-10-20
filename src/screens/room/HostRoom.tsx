@@ -1,4 +1,5 @@
-import { HostPanel } from '@/components/HostPanel'
+import { AppBar } from '@/components/AppBar'
+import { HostMenu } from '@/components/HostMenu'
 import { Screen } from '@/components/Screen'
 import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
@@ -19,7 +20,13 @@ export function HostRoom({ initial }: { initial: GameState }) {
 
   return (
     <Screen>
-      <HostPanel state={state} players={snapshot.players} dispatch={dispatch} />
+      <AppBar
+        menuLabel="Host menu"
+        dot={state.paused}
+        menu={(close) => (
+          <HostMenu state={state} players={snapshot.players} dispatch={dispatch} close={close} />
+        )}
+      />
       {status !== 'connected' && <ConnectionBanner status={status} />}
 
       {state.phase === 'lobby' ? (

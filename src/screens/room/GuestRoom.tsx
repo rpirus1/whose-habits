@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { AppBar } from '@/components/AppBar'
+import { PlayerMenu } from '@/components/PlayerMenu'
 import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
 import { newId } from '@/lib/id'
@@ -35,19 +37,66 @@ export function GuestRoom({ roomCode }: { roomCode: string }) {
   }
   // Removed earlier on this device: no need to reconnect just to be turned away again.
   if (identity.removed === 'kicked') return <MessageScreen message={KICKED_MESSAGE} />
-  return <GuestGame roomCode={roomCode} identity={identity} />
+  if (identity.removed === 'left') {
+    return (
+      <MessageScreen message="You left the game.">
+        <Button
+          size="xl"
+          onClick={() => {
+            const next = { ...identity, removed: undefined }
+            saveGuestIdentity(roomCode, next)
+            setIdentity(next)
+          }}
+        >
+          Rejoin
+        </Button>
+      </MessageScreen>
+    )
+  }
+  return (
+    <GuestGame
+      roomCode={roomCode}
+      identity={identity}
+      onLeft={() => setIdentity({ ...identity, removed: 'left' })}
+    />
+  )
+}
+
+/** Every guest screen: the bar on top, the content below (centred when it's a message). */
+function GuestScreen({
+  children,
+  menu,
+  center = false,
+}: {
+  children: ReactNode
+  menu?: ReactNode
+  center?: boolean
+}) {
+  return (
+    <Screen>
+      <AppBar menu={() => menu ?? <PlayerMenu />} />
+      {center ? (
+        <div className="flex flex-1 flex-col justify-center gap-6 text-center">{children}</div>
+      ) : (
+        children
+      )}
+    </Screen>
+  )
 }
 
 const KICKED_MESSAGE = 'The host removed you from this game.'
 
-function MessageScreen({ message }: { message: string }) {
+function MessageScreen({ message, children }: { message: string; children?: ReactNode }) {
   return (
-    <Screen className="justify-center text-center">
+    <GuestScreen center>
       <p className="text-lg">{message}</p>
-      <Button asChild size="xl" variant="secondary">
-        <Link to="/">Go home</Link>
-      </Button>
-    </Screen>
+      <div className="flex flex-col gap-2">
+        {children}
+        <Button asChild size="xl" variant="secondary">
+          <Link to="/">Go home</Link>
+        </Button>
+      </div>
+    </GuestScreen>
   )
 }
 
@@ -56,13 +105,13 @@ function JoinView({ onJoin }: { onJoin: (name: string) => void }) {
   const trimmed = name.trim()
 
   return (
-    <Screen className="justify-center">
-      <div className="text-center">
-        <h1 className="font-heading text-3xl font-bold">Whose Habits</h1>
-        <p className="text-muted-foreground">You're invited to a game. What should we call you?</p>
+    <GuestScreen center>
+      <div>
+        <h1 className="font-heading text-3xl font-bold">You're invited!</h1>
+        <p className="text-muted-foreground">What should we call you?</p>
       </div>
       <form
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-4 text-left"
         onSubmit={(e) => {
           e.preventDefault()
           if (trimmed) onJoin(trimmed)
@@ -85,12 +134,20 @@ function JoinView({ onJoin }: { onJoin: (name: string) => void }) {
           Join game
         </Button>
       </form>
-    </Screen>
+    </GuestScreen>
   )
 }
 
-function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestIdentity }) {
-  const { snapshot, status, hostOnline, clockOffset, myAnswer, answer } = useGuestGame(
+function GuestGame({
+  roomCode,
+  identity,
+  onLeft,
+}: {
+  roomCode: string
+  identity: GuestIdentity
+  onLeft: () => void
+}) {
+  const { snapshot, status, hostOnline, clockOffset, myAnswer, answer, leave } = useGuestGame(
     roomCode,
     identity,
   )
@@ -114,17 +171,29 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
 
   if (status !== 'in' || !snapshot) {
     return (
-      <Screen className="items-center justify-center">
-        <span className="bg-primary size-3 animate-pulse rounded-full" aria-hidden />
+      <GuestScreen center>
+        <span className="bg-primary size-3 animate-pulse self-center rounded-full" aria-hidden />
         <p className="text-muted-foreground">Joining the game…</p>
-      </Screen>
+      </GuestScreen>
     )
   }
 
   const current = myAnswer?.roundId === snapshot.question?.roundId ? myAnswer : null
 
   return (
-    <Screen>
+    <GuestScreen
+      menu={
+        <PlayerMenu
+          name={identity.name}
+          onLeave={() => {
+            leave()
+            // Home stops offering this room; the link still works to rejoin.
+            markGuestRemoved(roomCode, 'left')
+            onLeft()
+          }}
+        />
+      }
+    >
       {!hostOnline && (
         <p role="status" className="bg-muted rounded-xl px-4 py-3 text-center text-sm">
           The host's phone is offline. Waiting for them to come back…
@@ -142,6 +211,6 @@ function GuestGame({ roomCode, identity }: { roomCode: string; identity: GuestId
           onChoose={(choice) => snapshot.question && answer(snapshot.question.roundId, choice)}
         />
       )}
-    </Screen>
+    </GuestScreen>
   )
 }

@@ -36,6 +36,7 @@ export type Action =
   | { type: 'skip' }
   | { type: 'end' }
   | { type: 'kick'; playerId: string }
+  | { type: 'leave'; playerId: string }
   | { type: 'updateSettings'; settings: Settings }
   | { type: 'playAgain'; gameId: string }
 
@@ -260,11 +261,13 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       return true
     }
 
-    case 'kick': {
+    case 'kick':
+    case 'leave': {
       const player = s.players.find((p) => p.id === action.playerId)
       if (!player || player.isHost) return false
       s.players = s.players.filter((p) => p.id !== player.id)
-      s.kickedIds.push(player.id)
+      // Kicked players can't come back; players who left can rejoin from the link.
+      if (action.type === 'kick') s.kickedIds.push(player.id)
       const round = currentRound(s)
       if (round && !round.result) delete round.answers[player.id]
       closeIfEveryoneAnswered(s, ctx)

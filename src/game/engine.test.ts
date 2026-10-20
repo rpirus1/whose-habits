@@ -90,6 +90,21 @@ describe('lobby', () => {
     expect(h.s).toBe(before)
   })
 
+  it('a player who leaves is removed but may rejoin', () => {
+    const h = harness({ start: false })
+    h.run({ type: 'leave', playerId: 'ann' })
+    expect(h.s.players.map((p) => p.id)).toEqual(['host', 'bob'])
+    expect(joinRejection(h.s, 'ann')).toBeNull()
+    h.run({ type: 'join', playerId: 'ann', name: 'ann' })
+    expect(h.s.players.map((p) => p.id)).toEqual(['host', 'bob', 'ann'])
+  })
+
+  it('the host cannot leave', () => {
+    const h = harness({ start: false })
+    const before = h.s
+    expect(h.run({ type: 'leave', playerId: 'host' })).toBe(before)
+  })
+
   it('cannot kick the host', () => {
     const h = harness({ start: false })
     const before = h.s
@@ -352,6 +367,13 @@ describe('host controls', () => {
     h.run({ type: 'kick', playerId: 'bob' })
     expect(h.s.phase).toBe('reveal')
     expect(h.s.players.map((p) => p.id)).toEqual(['host', 'ann'])
+  })
+
+  it('the last missing player leaving reveals the round', () => {
+    const h = harness()
+    h.answerAll('right', ['host', 'ann'])
+    h.run({ type: 'leave', playerId: 'bob' })
+    expect(h.s.phase).toBe('reveal')
   })
 
   it('play again returns to the lobby with scores reset and avoids repeats', () => {

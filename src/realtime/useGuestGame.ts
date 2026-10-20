@@ -51,6 +51,12 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
     setMyAnswer(answer)
   }
 
+  /** Tells the host this player is leaving. The caller then unmounts the game. */
+  const leave = useCallback(
+    () => send({ type: 'leave', playerId: identity.playerId }),
+    [identity.playerId, send],
+  )
+
   const answer = useCallback(
     (roundId: string, choice: Choice) => {
       updateMyAnswer({ roundId, choice, acked: false })
@@ -184,5 +190,5 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
   // Until the first presence sync arrives (the list includes ourselves), assume the host is there.
   const hostOnline = !snapshot || !onlineIds.length || onlineIds.includes(snapshot.hostId)
 
-  return { snapshot, status, hostOnline, clockOffset, myAnswer, answer }
+  return { snapshot, status, hostOnline, clockOffset, myAnswer, answer, leave }
 }

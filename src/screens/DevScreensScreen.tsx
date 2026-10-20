@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { AppBar } from '@/components/AppBar'
+import { PlayerMenu } from '@/components/PlayerMenu'
 import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
 import type { Snapshot } from '@/game/protocol'
@@ -89,6 +91,7 @@ export function DevScreensScreen() {
 
   return (
     <Screen>
+      <AppBar menu={() => <PlayerMenu name="Anna" onLeave={() => {}} />} />
       <div className="flex flex-col gap-2 border-b pb-3">
         <Segmented options={VIEWS} value={view} onChange={(v) => set('view', v)} />
       </div>

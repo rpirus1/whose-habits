@@ -29,9 +29,9 @@ export function QrShare({ roomCode }: { roomCode: string }) {
 
   return (
     <section className="bg-card flex flex-col items-center gap-4 rounded-2xl p-5">
-      {/* QR codes need dark-on-light to scan reliably, whatever the theme. SVG fills can't
-          read CSS variables, so the dark modules use the theme's background colour as hex. */}
-      <div className="bg-foreground rounded-xl p-3">
+      {/* QR codes need dark-on-light to scan reliably, so this stays light in both themes:
+          the dark theme's text colour behind, its background colour (as hex) for the modules. */}
+      <div className="rounded-xl bg-[oklch(0.9911_0.01_36.66)] p-3 ring-border ring-1">
         <QRCodeSVG
           value={url}
           size={176}

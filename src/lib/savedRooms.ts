@@ -11,8 +11,8 @@ export interface GuestIdentity {
   name: string
   /** The host this guest first heard from; snapshots from anyone else are ignored. */
   hostId?: string
-  /** The host removed this player (or the room was full): don't offer to rejoin. */
-  removed?: 'kicked' | 'full'
+  /** Removed by the host, turned away (room full) or left: don't offer the room on Home. */
+  removed?: 'kicked' | 'full' | 'left'
 }
 
 interface Saved<T> {
@@ -40,7 +40,7 @@ export function saveGuestIdentity(roomCode: string, identity: GuestIdentity) {
 }
 
 /** Remembers that this device was turned away, so Home stops offering the room. */
-export function markGuestRemoved(roomCode: string, reason: 'kicked' | 'full') {
+export function markGuestRemoved(roomCode: string, reason: 'kicked' | 'full' | 'left') {
   const identity = loadGuestIdentity(roomCode)
   if (identity && identity.removed !== reason) {
     saveGuestIdentity(roomCode, { ...identity, removed: reason })

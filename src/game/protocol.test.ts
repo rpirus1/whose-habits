@@ -105,6 +105,10 @@ describe('parseGuestMessage', () => {
       name: 'Ann',
     })
     expect(parseGuestMessage({ type: 'ping', playerId: 'p', t0: 5 })).toMatchObject({ t0: 5 })
+    expect(parseGuestMessage({ type: 'leave', playerId: 'p' })).toEqual({
+      type: 'leave',
+      playerId: 'p',
+    })
   })
 
   it('rejects junk', () => {

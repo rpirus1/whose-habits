@@ -120,6 +120,9 @@ export function useHostGame(initial: GameState): HostGame {
           }
           return
         }
+        case 'leave':
+          dispatch(message)
+          return
         case 'ping':
           connection.send({
             type: 'pong',

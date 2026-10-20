@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Flag } from '@/components/Flag'
 import { SplitBars } from '@/components/SplitBars'
 import { StickyFooter } from '@/components/StickyFooter'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { getCulture } from '@/content/cultures'
@@ -29,11 +30,15 @@ export function RevealView({
 
   return (
     <div className={cn('flex flex-1 flex-col gap-5', enterScreen)}>
-      <div className="text-muted-foreground flex justify-between text-sm">
+      <div className="text-muted-foreground flex items-center justify-between text-sm">
         <span>
           Round {reveal.index + 1} of {reveal.total}
         </span>
-        {me && <span>Your score: {me.score}</span>}
+        {me && (
+          <Badge variant="soft" className="h-7 px-3 text-sm font-semibold tabular-nums">
+            Score: {me.score}
+          </Badge>
+        )}
       </div>
 
       {snapshot.viewing ? (
