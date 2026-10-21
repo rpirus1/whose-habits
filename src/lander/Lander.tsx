@@ -183,7 +183,7 @@ function ExampleQuestion() {
   return (
     // Tilted in 3D like a product shot, so it reads as a picture of the game, not a control.
     // Still real text (crisp, translatable, read by screen readers); only the transform is new.
-    <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-2xl ring-1 select-none [transform:perspective(1200px)_rotateY(-16deg)_rotateX(6deg)_rotateZ(-3deg)] md:[transform:perspective(1200px)_rotateY(-20deg)_rotateX(8deg)_rotateZ(-3deg)]">
+    <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-2xl ring-1 select-none [transform:perspective(1200px)_rotateX(8deg)_rotateY(-14deg)_rotateZ(2deg)]">
       <figcaption className="text-muted-foreground flex items-center justify-between text-sm">
         <span>Example question</span>
         <span className="tabular-nums">Round 3 of 10</span>
