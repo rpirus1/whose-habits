@@ -272,9 +272,17 @@ function WhyItsDifferent() {
     >
       {/* Phones: one benefit per row, icon on the left. Desktop: five columns. */}
       <ul className="grid gap-6 md:grid-cols-5 md:gap-4">
-        {PERKS.map(({ title, text, Icon }) => (
+        {PERKS.map(({ title, text, Icon }, i) => (
           <li key={title} className="flex items-start gap-4 md:flex-col md:gap-3">
-            <span className="bg-primary/15 text-primary-soft flex size-11 shrink-0 items-center justify-center rounded-full">
+            {/* Icons alternate between the two brand colours: orchid and sunflower. */}
+            <span
+              className={cn(
+                'flex size-11 shrink-0 items-center justify-center rounded-full',
+                i % 2
+                  ? 'bg-highlight text-highlight-foreground'
+                  : 'bg-primary/15 text-primary-soft',
+              )}
+            >
               <Icon className="size-5" aria-hidden />
             </span>
             <div>
@@ -414,14 +422,18 @@ function About() {
 }
 
 const CREDITS = [
-  { name: 'HeroUI “Rabbit” theme', license: 'MIT', href: 'https://heroui.com' },
+  { name: 'HeroUI components', license: 'MIT', href: 'https://heroui.com' },
   {
     name: 'country-flag-icons',
     license: 'MIT',
     href: 'https://gitlab.com/catamphetamine/country-flag-icons',
   },
   { name: 'Lucide icons', license: 'ISC', href: 'https://lucide.dev' },
-  { name: 'Geist font', license: 'OFL', href: 'https://vercel.com/font' },
+  {
+    name: 'Bricolage Grotesque font',
+    license: 'OFL',
+    href: 'https://github.com/ateliertriay/bricolage',
+  },
 ]
 
 /** Footer headings: Theme, Privacy and Credits share this style. */

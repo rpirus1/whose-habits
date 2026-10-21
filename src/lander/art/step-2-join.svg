@@ -1,60 +1,60 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="96" viewBox="0 0 160 96">
 <g transform="rotate(-12 29 56)">
-<rect x="14" y="30" width="30" height="52" rx="6" fill="#292220">
+<rect x="14" y="30" width="30" height="52" rx="6" fill="#1d1520">
 </rect>
 <rect x="17" y="35" width="24" height="42" rx="3.75" fill="#ffffff">
 </rect>
 </g>
 <g transform="rotate(12 131 56)">
-<rect x="116" y="30" width="30" height="52" rx="6" fill="#292220">
+<rect x="116" y="30" width="30" height="52" rx="6" fill="#1d1520">
 </rect>
 <rect x="119" y="35" width="24" height="42" rx="3.75" fill="#ffffff">
 </rect>
 </g>
 <g transform="rotate(0 80 48)">
-<rect x="56" y="6" width="48" height="84" rx="9.6" fill="#292220">
+<rect x="56" y="6" width="48" height="84" rx="9.6" fill="#1d1520">
 </rect>
-<rect x="59" y="11" width="42" height="74" rx="6" fill="#c5f6f8">
+<rect x="59" y="11" width="42" height="74" rx="6" fill="#f7e3fd">
 </rect>
 </g>
-<rect x="64" y="28" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="64" y="28" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="70.4" y="28" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="70.4" y="28" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="76.8" y="28" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="76.8" y="28" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="89.6" y="28" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="89.6" y="28" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="70.4" y="34.4" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="70.4" y="34.4" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="83.2" y="34.4" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="83.2" y="34.4" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="64" y="40.8" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="64" y="40.8" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="70.4" y="40.8" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="70.4" y="40.8" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="76.8" y="40.8" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="76.8" y="40.8" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="89.6" y="40.8" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="89.6" y="40.8" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="64" y="47.2" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="64" y="47.2" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="76.8" y="47.2" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="76.8" y="47.2" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="89.6" y="47.2" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="89.6" y="47.2" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="64" y="53.6" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="64" y="53.6" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="70.4" y="53.6" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="70.4" y="53.6" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="83.2" y="53.6" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="83.2" y="53.6" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
-<rect x="89.6" y="53.6" width="5.4" height="5.4" rx="1" fill="#2a1e1a">
+<rect x="89.6" y="53.6" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
 <path d="M44 40q8-14 18-14M116 40q-8-14-18-14" stroke="#39bab4" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 6" fill="none">
 </path>
-<circle cx="29" cy="58" r="6" fill="#ea91bc">
+<circle cx="29" cy="58" r="6" fill="#e5abf7">
 </circle>
-<circle cx="131" cy="58" r="6" fill="#f7cc4b">
+<circle cx="131" cy="58" r="6" fill="#fdca3a">
 </circle>
 </svg>

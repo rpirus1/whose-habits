@@ -71,7 +71,12 @@ export function FinalView({
                 {p.name}
                 {id === meId && <span className="text-muted-foreground text-sm"> (you)</span>}
               </span>
-              {rank === 1 && <Crown className="text-primary size-5" aria-label="Winner" />}
+              {rank === 1 && (
+                <Crown
+                  className="fill-highlight text-highlight-foreground dark:text-highlight size-5"
+                  aria-label="Winner"
+                />
+              )}
               <span className="text-xl font-bold tabular-nums">{p.score}</span>
             </li>
           )
