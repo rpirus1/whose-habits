@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="96" viewBox="0 0 160 96">
 <rect x="30" y="16" width="7" height="3.5" rx="1" fill="#e5abf7" transform="rotate(20 30 16)">
 </rect>
-<rect x="48" y="30" width="7" height="3.5" rx="1" fill="#39bab4" transform="rotate(-30 48 30)">
+<rect x="48" y="30" width="7" height="3.5" rx="1" fill="#d358f5" transform="rotate(-30 48 30)">
 </rect>
 <rect x="114" y="14" width="7" height="3.5" rx="1" fill="#fdca3a" transform="rotate(15 114 14)">
 </rect>
 <rect x="128" y="34" width="7" height="3.5" rx="1" fill="#e5abf7" transform="rotate(-20 128 34)">
 </rect>
-<rect x="96" y="8" width="7" height="3.5" rx="1" fill="#39bab4" transform="rotate(40 96 8)">
+<rect x="96" y="8" width="7" height="3.5" rx="1" fill="#d358f5" transform="rotate(40 96 8)">
 </rect>
 <rect x="62" y="10" width="7" height="3.5" rx="1" fill="#fdca3a" transform="rotate(-10 62 10)">
 </rect>
-<rect x="34" y="62" width="30" height="28" rx="4" fill="#39bab4">
+<rect x="34" y="62" width="30" height="28" rx="4" fill="#e5abf7">
 </rect>
 <rect x="65" y="48" width="30" height="42" rx="4" fill="#d358f5">
 </rect>

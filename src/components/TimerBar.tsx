@@ -1,4 +1,4 @@
-import { Pause } from 'lucide-react'
+import { Pause, Play } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const URGENT_MS = 5000
@@ -7,10 +7,13 @@ export function TimerBar({
   msLeft,
   totalMs,
   paused,
+  onResume,
 }: {
   msLeft: number
   totalMs: number
   paused: boolean
+  /** Host only: while paused, the icon becomes a Play button that resumes the game. */
+  onResume?: () => void
 }) {
   const fraction = totalMs ? Math.min(1, msLeft / totalMs) : 0
   const urgent = msLeft <= URGENT_MS && msLeft > 0 && !paused
@@ -41,7 +44,17 @@ export function TimerBar({
           urgent && 'text-destructive',
         )}
       >
-        {paused ? (
+        {paused && onResume ? (
+          // The thing the host taps instinctively: make it work, in the accent colour.
+          <button
+            type="button"
+            onClick={onResume}
+            aria-label="Resume game"
+            className="bg-primary text-primary-foreground focus-visible:ring-ring/50 -my-1.5 flex size-10 items-center justify-center rounded-full outline-none focus-visible:ring-3"
+          >
+            <Play className="size-5 translate-x-px fill-current" />
+          </button>
+        ) : paused ? (
           // An icon, not the ⏸ emoji, so it looks the same on every phone.
           <Pause className="text-muted-foreground size-5 fill-current" aria-label="Paused" />
         ) : (

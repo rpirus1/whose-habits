@@ -67,6 +67,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
           }
           onNext={() => dispatch({ type: 'next' })}
           onPlayAgain={() => dispatch({ type: 'playAgain', gameId: newId() })}
+          onResume={() => dispatch({ type: 'resume' })}
         />
       )}
     </Screen>

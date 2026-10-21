@@ -6,7 +6,7 @@
 </rect>
 </g>
 <g>
-<circle cx="67" cy="22" r="4" fill="#39bab4">
+<circle cx="67" cy="22" r="4" fill="#d358f5">
 </circle>
 <rect x="74" y="20" width="20" height="4" rx="2" fill="#6b5e6f" opacity="0.35">
 </rect>
@@ -33,6 +33,6 @@
 </path>
 <path d="M124 57Q124 62 129 62Q124 62 124 67Q124 62 119 62Q124 62 124 57Z" fill="#e5abf7">
 </path>
-<path d="M122 18.5Q122 22 125.5 22Q122 22 122 25.5Q122 22 118.5 22Q122 22 122 18.5Z" fill="#39bab4">
+<path d="M122 18.5Q122 22 125.5 22Q122 22 122 25.5Q122 22 118.5 22Q122 22 122 18.5Z" fill="#d358f5">
 </path>
 </svg>

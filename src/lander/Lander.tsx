@@ -57,6 +57,9 @@ export function Lander() {
         <Link to="/" className="flex items-center gap-2 font-heading text-lg font-bold">
           <img src="/favicon.svg" alt="" width={28} height={28} className="size-7" />
           Whose Habits
+          <Badge variant="soft" className="ml-0.5 font-sans">
+            Beta
+          </Badge>
         </Link>
         <Button asChild variant="ghost" size="lg" className="-mr-2.5">
           <Link to="/new">Host a game</Link>
@@ -128,7 +131,7 @@ function Hero() {
     >
       <div className="flex flex-col gap-6">
         <div className="space-y-4">
-          <Badge variant="soft" className="h-7 px-3 text-sm">
+          <Badge variant="highlight" className="h-7 px-3 text-sm">
             Free party game · {PLAYERS} players
           </Badge>
           <h1
@@ -272,17 +275,9 @@ function WhyItsDifferent() {
     >
       {/* Phones: one benefit per row, icon on the left. Desktop: five columns. */}
       <ul className="grid gap-6 md:grid-cols-5 md:gap-4">
-        {PERKS.map(({ title, text, Icon }, i) => (
+        {PERKS.map(({ title, text, Icon }) => (
           <li key={title} className="flex items-start gap-4 md:flex-col md:gap-3">
-            {/* Icons alternate between the two brand colours: orchid and sunflower. */}
-            <span
-              className={cn(
-                'flex size-11 shrink-0 items-center justify-center rounded-full',
-                i % 2
-                  ? 'bg-highlight text-highlight-foreground'
-                  : 'bg-primary/15 text-primary-soft',
-              )}
-            >
+            <span className="bg-primary/15 text-primary-soft flex size-11 shrink-0 items-center justify-center rounded-full">
               <Icon className="size-5" aria-hidden />
             </span>
             <div>
@@ -295,7 +290,7 @@ function WhyItsDifferent() {
 
       <div className="mt-14 flex items-center gap-3 md:mt-16">
         <h3 className="font-semibold">Countries in the game</h3>
-        <Badge variant="soft">More coming</Badge>
+        <Badge variant="highlight">More coming</Badge>
       </div>
       {/* Phones: a drifting row you can swipe. Desktop: all chips, wrapped. */}
       <div className="mt-5 md:hidden">

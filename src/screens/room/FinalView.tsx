@@ -26,6 +26,13 @@ export function FinalView({
 }) {
   const final = snapshot.final!
   const players = new Map(snapshot.players.map((p) => [p.id, p]))
+  // Nobody scored: no winner, no places. Everyone is listed, host first, then in join order.
+  const nobodyScored = final.ranking.every((r) => !players.get(r.id)?.score)
+  const rows = nobodyScored
+    ? [...snapshot.players]
+        .sort((a, b) => Number(b.isHost) - Number(a.isHost))
+        .map((p) => ({ id: p.id, rank: 0 }))
+    : final.ranking
   const myRank = final.ranking.find((r) => r.id === meId)?.rank
   const role = onPlayAgain ? 'host' : 'guest'
 
@@ -50,12 +57,15 @@ export function FinalView({
           {final.roundsPlayed} {final.roundsPlayed === 1 ? 'round' : 'rounds'} played
         </p>
         <h1 className="font-heading text-3xl font-bold">
-          {myRank === 1 ? 'You won!' : 'Final scores'}
+          {nobodyScored ? 'Zero all round' : myRank === 1 ? 'You won!' : 'Final scores'}
         </h1>
+        {nobodyScored && (
+          <p className="text-muted-foreground mt-1">Those habits were trickier than they looked.</p>
+        )}
       </header>
 
       <ol className="flex flex-col gap-2">
-        {final.ranking.map(({ id, rank }) => {
+        {rows.map(({ id, rank }) => {
           const p = players.get(id)
           if (!p) return null
           return (
@@ -66,18 +76,20 @@ export function FinalView({
                 id === meId && 'ring-primary ring-2',
               )}
             >
-              <span className="text-muted-foreground w-6 text-lg tabular-nums">{rank}</span>
+              {!nobodyScored && (
+                <span className="text-muted-foreground w-6 text-lg tabular-nums">{rank}</span>
+              )}
               <span className="min-w-0 flex-1 truncate text-lg">
                 {p.name}
                 {id === meId && <span className="text-muted-foreground text-sm"> (you)</span>}
               </span>
-              {rank === 1 && (
+              {rank === 1 && !nobodyScored && (
                 <Crown
                   className="fill-highlight text-highlight-foreground dark:text-highlight size-5"
                   aria-label="Winner"
                 />
               )}
-              <span className="text-xl font-bold tabular-nums">{p.score}</span>
+              {!nobodyScored && <span className="text-xl font-bold tabular-nums">{p.score}</span>}
             </li>
           )
         })}

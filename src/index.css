@@ -139,6 +139,28 @@
   }
 }
 
+/* Sticky footer backdrop (StickyFooter): solid background behind the buttons, fading out
+   over 2.5rem above them, with a light blur that fades the same way. The blur is plain CSS
+   (Safari 9+, Chrome 76+, Firefox 103+); where it isn't supported the fade alone remains. */
+.footer-fade {
+  isolation: isolate;
+}
+.footer-fade::before {
+  content: '';
+  position: absolute;
+  inset: -2.5rem -1rem 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklch, var(--background) 0%, transparent),
+    var(--background) 2.5rem
+  );
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 2.5rem);
+  mask-image: linear-gradient(to bottom, transparent, black 2.5rem);
+}
+
 /* Toasts: sonner sets its own system font on the toaster, outside any layer. */
 html [data-sonner-toaster] {
   font-family: var(--font-sans);
