@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { lazy, Suspense, useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { Brand } from '@/components/Brand'
 import { Flag } from '@/components/Flag'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -54,13 +55,7 @@ export function Lander() {
         Skip to content
       </a>
       <header className={cn(container, 'flex h-16 items-center justify-between')}>
-        <Link to="/" className="flex items-center gap-2 font-heading text-lg font-bold">
-          <img src="/favicon.svg" alt="" width={28} height={28} className="size-7" />
-          Whose Habits
-          <Badge variant="soft" className="ml-0.5 font-sans">
-            Beta
-          </Badge>
-        </Link>
+        <Brand />
         <Button asChild variant="ghost" size="lg" className="-mr-2.5">
           <Link to="/new">Host a game</Link>
         </Button>
@@ -186,7 +181,9 @@ function ResumeGame() {
 function ExampleQuestion() {
   const question = HERO_QUESTION
   return (
-    <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-sm ring-1">
+    // Tilted in 3D like a product shot, so it reads as a picture of the game, not a control.
+    // Still real text (crisp, translatable, read by screen readers); only the transform is new.
+    <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-2xl ring-1 select-none [transform:perspective(1200px)_rotateY(-16deg)_rotateX(6deg)_rotateZ(-3deg)] md:[transform:perspective(1200px)_rotateY(-20deg)_rotateX(8deg)_rotateZ(-3deg)]">
       <figcaption className="text-muted-foreground flex items-center justify-between text-sm">
         <span>Example question</span>
         <span className="tabular-nums">Round 3 of 10</span>
