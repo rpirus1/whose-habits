@@ -34,10 +34,17 @@ describe('parseEvent', () => {
       gameId,
     })
     expect(parseEvent({ type: 'share_click', gameId, role: 'host' })).toBeTruthy()
+    expect(
+      parseEvent({ type: 'report', gameId, statementId: 'nl-007', reason: 'not_unique' }),
+    ).toEqual({ type: 'report', gameId, statementId: 'nl-007', reason: 'not_unique' })
+  })
+
+  it('reads a report without a reason (older builds) as no reason given', () => {
     expect(parseEvent({ type: 'report', gameId, statementId: 'nl-007' })).toEqual({
       type: 'report',
       gameId,
       statementId: 'nl-007',
+      reason: 'none',
     })
   })
 
@@ -72,6 +79,7 @@ describe('parseEvent', () => {
       'report',
       { type: 'report', gameId: 'not-a-uuid', statementId: 'nl-007' },
       { type: 'report', gameId, statementId: '<script>' },
+      { type: 'report', gameId, statementId: 'nl-007', reason: 'boring' },
       { type: 'unknown', gameId },
       { type: 'play_again_vote', gameId, vote: 'definitely', role: 'guest' },
       { type: 'game_started', gameId, players: 500, cultures: [], rounds: 10, seconds: 20 },

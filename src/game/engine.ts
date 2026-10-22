@@ -7,6 +7,7 @@
 //   final ◀──last── reveal ──next──▶ question      (back: view earlier reveals)
 //   question ──skip / everyone "I don't know"──▶ question (replacement, same index)
 //   any ──end──▶ final ──playAgain──▶ lobby
+//   reveal ──reportOpen──▶ on hold (Next and Back wait) ──reportDone / 10 s──▶ reveal
 import { CULTURE_CODES } from '@/content/schema'
 import type { CultureCode } from '@/content/schema'
 import { MAX_CULTURES, MIN_CULTURES } from '@/content/cultures'
@@ -17,11 +18,21 @@ import {
   MAX_NAME_LENGTH,
   MAX_PLAYERS,
   MIN_PLAYERS_TO_START,
+  REPORT_HOLD_MS,
+  REPORT_REASONS,
   ROUND_OPTIONS,
   SECONDS_OPTIONS,
 } from './types'
 import type { GameSource } from '@/lib/events'
-import type { Choice, EngineContext, GameState, Player, Round, Settings } from './types'
+import type {
+  Choice,
+  EngineContext,
+  GameState,
+  Player,
+  ReportReason,
+  Round,
+  Settings,
+} from './types'
 
 export type Action =
   | { type: 'join'; playerId: string; name: string }
@@ -39,6 +50,10 @@ export type Action =
   | { type: 'leave'; playerId: string }
   | { type: 'updateSettings'; settings: Settings }
   | { type: 'playAgain'; gameId: string }
+  /** A player opened the report pop-up for the reveal on screen: the game holds. */
+  | { type: 'reportOpen'; playerId: string; statementId: string }
+  /** They picked a reason or closed it. Also counts a report whose open got lost. */
+  | { type: 'reportDone'; playerId: string; statementId: string; reason: ReportReason }
 
 export const DEFAULT_HOST_NAME = 'Host'
 export const DEFAULT_PLAYER_NAME = 'Player'
@@ -117,6 +132,17 @@ export function validSettings(settings: Settings): boolean {
   )
 }
 
+/** Open reports at this time; while there are any, the reveal is on hold. */
+export function openReports(state: GameState, now: number) {
+  return (state.reports ?? []).filter((r) => r.reason === null && r.until > now)
+}
+
+/** The reveal on screen: the current one, or the earlier one the host went Back to. */
+function shownReveal(s: GameState): Round | undefined {
+  if (s.viewing !== null) return s.rounds[s.viewing]
+  return s.phase === 'reveal' ? s.rounds.at(-1) : undefined
+}
+
 export function reduce(state: GameState, action: Action, ctx: EngineContext): GameState {
   const draft = structuredClone(state)
   return apply(draft, action, ctx) ? draft : state
@@ -191,6 +217,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       s.playersAtStart = s.players.filter((p) => p.connected).length
       s.gameId = action.gameId
       s.rounds = []
+      s.reports = []
       for (const p of s.players) {
         p.score = 0
         p.playsFrom = 0
@@ -200,7 +227,15 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
     }
 
     case 'tick': {
-      if (s.phase !== 'question' || s.paused || s.endsAt === null) return false
+      // Holds expire on the host's clock, so a reporter who drops can't stall the game.
+      let expired = false
+      for (const r of s.reports ?? []) {
+        if (r.reason === null && r.until <= ctx.now) {
+          r.reason = 'none'
+          expired = true
+        }
+      }
+      if (s.phase !== 'question' || s.paused || s.endsAt === null) return expired
       if (ctx.now < s.endsAt + ANSWER_GRACE_MS) return false
       closeRound(s)
       return true
@@ -224,7 +259,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
 
     case 'back': {
       const round = currentRound(s)
-      if (!round) return false
+      if (!round || openReports(s, ctx.now).length) return false
       const target = (s.viewing ?? round.index) - 1
       if (target < 0) return false
       if (s.phase === 'question' && !s.paused) {
@@ -242,7 +277,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
         if (s.pausedByBack) resume(s, ctx)
         return true
       }
-      if (s.phase !== 'reveal') return false
+      if (s.phase !== 'reveal' || openReports(s, ctx.now).length) return false
       // From a reveal (or an earlier reveal via Back): on to the next unplayed statement.
       if (s.rounds.length >= s.totalRounds || !s.queue.length) finish(s)
       else startQuestion(s, ctx)
@@ -279,6 +314,51 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       const round = currentRound(s)
       if (round && !round.result) delete round.answers[player.id]
       closeIfEveryoneAnswered(s, ctx)
+      return true
+    }
+
+    case 'reportOpen': {
+      const shown = shownReveal(s)
+      if (
+        s.phase !== 'reveal' ||
+        shown?.statementId !== action.statementId ||
+        !s.players.some((p) => p.id === action.playerId) ||
+        (s.reports ?? []).some(
+          (r) => r.playerId === action.playerId && r.statementId === action.statementId,
+        )
+      )
+        return false
+      ;(s.reports ??= []).push({
+        playerId: action.playerId,
+        statementId: action.statementId,
+        until: ctx.now + REPORT_HOLD_MS,
+        reason: null,
+      })
+      return true
+    }
+
+    case 'reportDone': {
+      if (!validReason(action.reason)) return false
+      const report = (s.reports ?? []).find(
+        (r) => r.playerId === action.playerId && r.statementId === action.statementId,
+      )
+      if (report) {
+        if (report.reason !== null) return false
+        report.reason = action.reason
+        return true
+      }
+      // The open message got lost: still count the report, without a hold.
+      if (
+        !s.players.some((p) => p.id === action.playerId) ||
+        !s.rounds.some((r) => r.result && r.statementId === action.statementId)
+      )
+        return false
+      ;(s.reports ??= []).push({
+        playerId: action.playerId,
+        statementId: action.statementId,
+        until: ctx.now,
+        reason: action.reason,
+      })
       return true
     }
 
@@ -391,6 +471,10 @@ function finish(s: GameState) {
   s.paused = false
   s.viewing = null
   s.pausedByBack = false
+}
+
+function validReason(reason: string): reason is ReportReason {
+  return reason === 'none' || (REPORT_REASONS as readonly string[]).includes(reason)
 }
 
 function validChoice(choice: string, cultures: CultureCode[]): choice is Choice {

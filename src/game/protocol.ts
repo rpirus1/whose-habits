@@ -2,7 +2,8 @@
 // Guest messages are untrusted input: the host parses them with parseGuestMessage.
 import type { CultureCode, Obviousness } from '@/content/schema'
 import { percentCorrect } from './scoring'
-import type { Choice, GameState, Phase, Round, Settings } from './types'
+import { REPORT_REASONS } from './types'
+import type { Choice, GameState, Phase, ReportReason, Round, Settings } from './types'
 import type { Statement } from '@/content/schema'
 
 // ── Guest → host ────────────────────────────────────────────────────────────
@@ -15,6 +16,9 @@ export type GuestMessage =
   | { type: 'ping'; playerId: string; t0: number }
   /** The player left from their menu. Unlike a kick, they may rejoin. */
   | { type: 'leave'; playerId: string }
+  /** Opened the report pop-up: the host holds the game for everyone. */
+  | { type: 'reportOpen'; playerId: string; statementId: string }
+  | { type: 'reportDone'; playerId: string; statementId: string; reason: ReportReason }
 
 // ── Host → guests ───────────────────────────────────────────────────────────
 
@@ -100,6 +104,8 @@ export interface Snapshot {
   /** True when `reveal` is an earlier round the host is re-viewing. */
   viewing: boolean
   final: FinalSummary | null
+  /** Host clock time a report hold ends, or null. Anonymous: not who is reporting. */
+  holdUntil: number | null
 }
 
 export function toSnapshot(
@@ -144,7 +150,13 @@ export function toSnapshot(
     reveal: revealRound?.result ? toReveal(revealRound, s.totalRounds, statements) : null,
     viewing: s.viewing !== null,
     final: s.phase === 'final' ? finalSummary(s, statements) : null,
+    holdUntil: holdEnd(s),
   }
+}
+
+function holdEnd(s: GameState): number | null {
+  const open = (s.reports ?? []).filter((r) => r.reason === null)
+  return open.length ? Math.max(...open.map((r) => r.until)) : null
 }
 
 function toReveal(
@@ -224,6 +236,20 @@ export function parseGuestMessage(payload: unknown): GuestMessage | null {
         : null
     case 'leave':
       return { type: 'leave', playerId: m.playerId }
+    case 'reportOpen':
+      return isString(m.statementId, 16)
+        ? { type: 'reportOpen', playerId: m.playerId, statementId: m.statementId }
+        : null
+    case 'reportDone':
+      return isString(m.statementId, 16) &&
+        (m.reason === 'none' || (REPORT_REASONS as readonly unknown[]).includes(m.reason))
+        ? {
+            type: 'reportDone',
+            playerId: m.playerId,
+            statementId: m.statementId,
+            reason: m.reason as ReportReason,
+          }
+        : null
     default:
       return null
   }

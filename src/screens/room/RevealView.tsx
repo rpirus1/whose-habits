@@ -9,19 +9,29 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { getCulture } from '@/content/cultures'
 import type { PublicReveal, Snapshot } from '@/game/protocol'
-import { alreadySent, trackOnce } from '@/lib/analytics'
+import type { ReportReason } from '@/game/types'
+import { alreadySent, markSent } from '@/lib/analytics'
 import { cn } from '@/lib/utils'
 import { enterHighlight, enterScreen } from '@/lib/motion'
+import { ReportDialog } from './ReportDialog'
+
+export interface ReportHandlers {
+  /** The pop-up opened: the host holds the game. */
+  open: (statementId: string) => void
+  done: (statementId: string, reason: ReportReason) => void
+}
 
 export function RevealView({
   snapshot,
   meId,
   onNext,
+  onReport,
 }: {
   snapshot: Snapshot
   meId: string
   /** Host only. */
   onNext?: () => void
+  onReport: ReportHandlers
 }) {
   const reveal = snapshot.reveal!
   const culture = getCulture(reveal.answer)
@@ -69,11 +79,7 @@ export function RevealView({
           <Lightbulb className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />
           <span>{reveal.note}</span>
         </p>
-        <ReportButton
-          key={reveal.statementId}
-          gameId={snapshot.gameId}
-          statementId={reveal.statementId}
-        />
+        <ReportButton key={reveal.statementId} statementId={reveal.statementId} {...onReport} />
       </div>
 
       <Separator />
@@ -86,7 +92,7 @@ export function RevealView({
 
       <StickyFooter>
         {onNext ? (
-          <Button size="xl" className="w-full" onClick={onNext}>
+          <Button size="xl" className="w-full" disabled={!!snapshot.holdUntil} onClick={onNext}>
             {snapshot.viewing && snapshot.phase === 'question'
               ? 'Back to the question'
               : isLast && !snapshot.viewing
@@ -126,24 +132,40 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
   )
 }
 
-/** Flags a statement for review. Only the statement id is logged, once per device. */
-function ReportButton({ gameId, statementId }: { gameId: string; statementId: string }) {
+/**
+ * Flags a statement for review: a pop-up asks why while the game holds for everyone. The host
+ * sends the analytics event; this device only remembers that it reported the statement.
+ */
+function ReportButton({ statementId, open, done }: { statementId: string } & ReportHandlers) {
   const key = `report:${statementId}`
   const [reported, setReported] = useState(() => alreadySent(key))
+  const [asking, setAsking] = useState(false)
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="text-muted-foreground self-center"
-      disabled={reported}
-      onClick={() => {
-        trackOnce(key, { type: 'report', gameId, statementId })
-        setReported(true)
-        toast.success('Thanks! We’ll review this statement.')
-      }}
-    >
-      <FlagIcon /> {reported ? 'Reported' : 'Report this statement'}
-    </Button>
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-muted-foreground self-center"
+        disabled={reported}
+        onClick={() => {
+          setReported(true)
+          setAsking(true)
+          open(statementId)
+        }}
+      >
+        <FlagIcon /> {reported ? 'Reported' : 'Report this statement'}
+      </Button>
+      {asking && (
+        <ReportDialog
+          onDone={(reason) => {
+            setAsking(false)
+            markSent(key)
+            done(statementId, reason)
+            if (reason !== 'none') toast.success('Thanks for the feedback!')
+          }}
+        />
+      )}
+    </>
   )
 }

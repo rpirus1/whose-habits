@@ -121,6 +121,8 @@ export function useHostGame(initial: GameState): HostGame {
           return
         }
         case 'leave':
+        case 'reportOpen':
+        case 'reportDone':
           dispatch(message)
           return
         case 'ping':
@@ -183,6 +185,20 @@ export function useHostGame(initial: GameState): HostGame {
       })
     }
   }, [state])
+
+  // One report event per report, sent by the host when its hold ends (so a reporter who
+  // drops still counts). The key stays on this device; the event has no player id.
+  useEffect(() => {
+    for (const r of state.reports ?? []) {
+      if (r.reason === null) continue
+      trackOnce(`report:${state.gameId}:${r.playerId}:${r.statementId}`, {
+        type: 'report',
+        gameId: state.gameId,
+        statementId: r.statementId,
+        reason: r.reason,
+      })
+    }
+  }, [state.gameId, state.reports])
 
   // Remember statements this device has shown, so the next game avoids them.
   useEffect(() => {

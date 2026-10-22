@@ -4,6 +4,8 @@
 
 export type PlayAgainVote = 'yes' | 'maybe' | 'no'
 export type Role = 'host' | 'guest'
+/** Why a player reported a statement; 'none' when they closed the pop-up or it timed out. */
+export type ReportReason = 'incorrect' | 'outdated' | 'not_unique' | 'offensive' | 'none'
 /** How the host got to /new: on their own, or via "Host your own game" after playing as a guest. */
 export type GameSource = 'direct' | 'guest_cta'
 
@@ -38,8 +40,8 @@ type EventBody =
   /** A guest tapped "Host your own game" on the final screen (guest → host conversion). */
   | { type: 'host_cta_click'; gameId: string }
   | { type: 'share_click'; gameId: string; role: Role }
-  /** Report button at the reveal: only the statement id is logged. */
-  | { type: 'report'; gameId: string; statementId: string }
+  /** A report at the reveal, sent by the host when its hold ends. No player id. */
+  | { type: 'report'; gameId: string; statementId: string; reason: ReportReason }
 
 export const MAX_EVENT_BYTES = 1024
 
@@ -50,6 +52,7 @@ export const MAX_EVENT_BYTES = 1024
 export const isPreviewHost = (hostname: string) =>
   hostname === 'workers.dev' || hostname.endsWith('.workers.dev')
 
+const REPORT_REASONS = ['incorrect', 'outdated', 'not_unique', 'offensive', 'none'] as const
 const ID = /^[0-9a-f-]{36}$/
 const STATEMENT_ID = /^[a-z]{2}-\d{3}$/
 const CULTURE = /^[A-Z]{2}$/
@@ -129,8 +132,19 @@ function parseBody(e: Record<string, unknown>): EventBody | null {
       if (!oneOf(e.role, ['host', 'guest'] as const)) return null
       return { type: 'share_click', gameId, role: e.role }
     case 'report':
-      if (typeof e.statementId !== 'string' || !STATEMENT_ID.test(e.statementId)) return null
-      return { type: 'report', gameId, statementId: e.statementId }
+      if (
+        typeof e.statementId !== 'string' ||
+        !STATEMENT_ID.test(e.statementId) ||
+        // Optional: older builds sent reports without a reason.
+        (e.reason !== undefined && !oneOf(e.reason, REPORT_REASONS))
+      )
+        return null
+      return {
+        type: 'report',
+        gameId,
+        statementId: e.statementId,
+        reason: e.reason === undefined ? 'none' : e.reason,
+      }
     default:
       return null
   }

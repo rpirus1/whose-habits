@@ -3,6 +3,8 @@ import type { Choice } from '@/game/types'
 import { FinalView } from './FinalView'
 import { QuestionView } from './QuestionView'
 import { RevealView } from './RevealView'
+import type { ReportHandlers } from './RevealView'
+import { useCountdown } from '@/hooks/useCountdown'
 
 /** The in-game screen for everyone (host included): question, reveal or final scores. */
 export function GameView({
@@ -15,6 +17,7 @@ export function GameView({
   onNext,
   onPlayAgain,
   onResume,
+  onReport,
 }: {
   snapshot: Snapshot
   meId: string
@@ -26,6 +29,7 @@ export function GameView({
   onPlayAgain?: () => void
   /** Host only. */
   onResume?: () => void
+  onReport: ReportHandlers
 }) {
   if (snapshot.final) {
     return <FinalView snapshot={snapshot} meId={meId} onPlayAgain={onPlayAgain} />
@@ -34,10 +38,15 @@ export function GameView({
   if (snapshot.reveal) {
     return (
       <>
-        {snapshot.paused && !snapshot.viewing && (
-          <p role="status" className="bg-muted rounded-xl px-4 py-3 text-center text-sm">
-            Paused by the host
-          </p>
+        {snapshot.holdUntil ? (
+          <HoldNotice holdUntil={snapshot.holdUntil} clockOffset={clockOffset} />
+        ) : (
+          snapshot.paused &&
+          !snapshot.viewing && (
+            <p role="status" className="bg-muted rounded-xl px-4 py-3 text-center text-sm">
+              Paused by the host
+            </p>
+          )
         )}
         {/* Keyed so going Back to an earlier reveal animates in like a new screen. */}
         <RevealView
@@ -45,6 +54,7 @@ export function GameView({
           snapshot={snapshot}
           meId={meId}
           onNext={onNext}
+          onReport={onReport}
         />
       </>
     )
@@ -64,4 +74,15 @@ export function GameView({
     )
   }
   return null
+}
+
+/** Everyone sees this while someone picks a report reason. Anonymous on purpose. */
+function HoldNotice({ holdUntil, clockOffset }: { holdUntil: number; clockOffset: number }) {
+  const left = useCountdown(holdUntil, null, clockOffset)
+  return (
+    <p role="status" className="bg-muted rounded-xl px-4 py-3 text-center text-sm">
+      A player is reporting this statement…{' '}
+      <span className="text-muted-foreground tabular-nums">{Math.ceil(left / 1000)} s</span>
+    </p>
+  )
 }
