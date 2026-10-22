@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils'
 import hostArt from './art/step-1-host.svg'
 import joinArt from './art/step-2-join.svg'
 import scoreArt from './art/step-3-score.svg'
+import makerPhoto from './art/maker.webp'
 import { FAQ, HERO_QUESTION, SAMPLES } from './content'
 import { CountryCarousel } from './CountryCarousel'
 import { FlipCard } from './FlipCard'
@@ -390,32 +391,44 @@ function WithEmailLink({ text }: { text: string }) {
 function About() {
   return (
     <Section id="about" title="About the maker">
-      <div className="max-w-2xl space-y-4 text-lg">
-        <p>
-          Hi, I’m Ruslan, a product person in Amsterdam. I made Whose Habits for game nights with
-          friends from all over, where the best stories start with “wait, you do that too?”
-        </p>
-        <p>
-          It’s a side project, built in the open and free to play. Ideas, bugs and habits from your
-          country are very welcome.
-        </p>
-        <p>
-          <ExternalLink
-            href={LINKEDIN_URL}
-            className="text-primary-soft font-medium whitespace-nowrap underline underline-offset-4"
-          >
-            Ruslan on LinkedIn
-          </ExternalLink>
-        </p>
-        <p>
-          Do you like what I do?{' '}
-          <ExternalLink
-            href={COFFEE_URL}
-            className="text-primary-soft font-semibold whitespace-nowrap underline underline-offset-4"
-          >
-            Buy me a coffee
-          </ExternalLink>
-        </p>
+      {/* Phones: photo above the text. Desktop: photo beside it. */}
+      <div className="flex flex-col gap-6 md:flex-row md:gap-10">
+        <img
+          src={makerPhoto}
+          alt="Ruslan Pirus"
+          width={256}
+          height={256}
+          loading="lazy"
+          decoding="async"
+          className="size-28 shrink-0 rounded-full md:size-36"
+        />
+        <div className="max-w-2xl space-y-4 text-lg">
+          <p>
+            Hi, I’m Ruslan, a product person in Amsterdam. I made Whose Habits for game nights with
+            friends from all over, where the best stories start with “wait, you do that too?”
+          </p>
+          <p>
+            It’s a side project, built in the open and free to play. Ideas, bugs and habits from
+            your country are very welcome.
+          </p>
+          <p>
+            <ExternalLink
+              href={LINKEDIN_URL}
+              className="text-primary-soft font-medium whitespace-nowrap underline underline-offset-4"
+            >
+              Ruslan on LinkedIn
+            </ExternalLink>
+          </p>
+          <p>
+            Do you like what I do?{' '}
+            <ExternalLink
+              href={COFFEE_URL}
+              className="text-primary-soft font-semibold whitespace-nowrap underline underline-offset-4"
+            >
+              Buy me a coffee
+            </ExternalLink>
+          </p>
+        </div>
       </div>
       <div className="bg-card ring-border lander-dots mt-12 flex flex-col items-start gap-4 rounded-3xl p-6 ring-1 md:flex-row md:items-center md:justify-between md:p-8">
         <p className="font-heading text-2xl font-bold text-balance">Got friends over tonight?</p>
