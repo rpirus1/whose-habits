@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { FAQ } from './content'
 import { headTags, structuredData } from './head'
-import { parseJoinInput } from './join'
+import { formatTypedCode, parseJoinInput } from './join'
 
 describe('landing page head', () => {
   it('puts every FAQ entry into the FAQPage JSON-LD', () => {
@@ -30,5 +30,18 @@ describe('parseJoinInput', () => {
     expect(parseJoinInput('k7m2')).toBeNull()
     expect(parseJoinInput('')).toBeNull()
     expect(parseJoinInput(null)).toBeNull()
+  })
+})
+
+describe('formatTypedCode', () => {
+  it('adds dashes between groups of four as the code is typed', () => {
+    expect(formatTypedCode('k7m2')).toBe('k7m2')
+    expect(formatTypedCode('k7m2x')).toBe('k7m2-x')
+    expect(formatTypedCode('K7M2-X9QP4tdv')).toBe('k7m2-x9qp-4tdv')
+    expect(formatTypedCode('k7m2 x9qp 4tdv extra')).toBe('k7m2-x9qp-4tdv')
+  })
+
+  it('leaves a pasted link alone', () => {
+    expect(formatTypedCode('https://whosehabits.com/r/k7m2')).toBe('https://whosehabits.com/r/k7m2')
   })
 })

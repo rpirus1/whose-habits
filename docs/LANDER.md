@@ -170,7 +170,7 @@ Link: LinkedIn.
   - Wording aimed at an EU visitor: what, why (to see if people enjoy the game and which settings
     work), no profiling, contact for questions. Supabase runs in the EU (Ireland).
 - **Feedback / contact:** feedback@whosehabits.com (also for reports and privacy questions).
-- **Credits:** HeroUI "Rabbit" theme (MIT), country-flag-icons (MIT), Lucide icons (ISC), Geist font (OFL).
+- **Credits:** HeroUI components (MIT), country-flag-icons (MIT), Lucide icons (ISC), Bricolage Grotesque font (OFL).
   Each name links to its project.
 - © 2026 Ruslan Pirus (or no copyright line; your call).
 
@@ -207,7 +207,7 @@ one-line change; it updates canonical, og:url, og:image, sitemap, robots and JSO
 
 | Target                                                                     | How                                                                                                                                                                                                                                                         |
 | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Lighthouse 95+ on Performance, Accessibility, Best Practices, SEO (mobile) | Run once locally with `npx lighthouse` against `npm run preview` (needs Chrome on this machine), report saved in the PR. Perf levers: prerendered HTML, lazy game routes, preloaded Geist woff2, no images above the fold apart from inline SVG flags.      |
+| Lighthouse 95+ on Performance, Accessibility, Best Practices, SEO (mobile) | Run once locally with `npx lighthouse` against `npm run preview` (needs Chrome on this machine), report saved in the PR. Perf levers: prerendered HTML, lazy game routes, preloaded font woff2, no images above the fold apart from inline SVG flags.      |
 | WCAG 2.2 AA                                                                | axe-core run in the browser pane on the built page, both themes; manual pass: focus order, visible focus, 24×24 px targets (2.5.8), contrast of muted text and orange on both backgrounds, `lang="en"`, skip link.                                          |
 | Semantic structure                                                         | One `h1`, `h2` per section, `header`/`main`/`footer`, lists for steps and FAQ.                                                                                                                                                                              |
 | Works without JS                                                           | Everything is in the HTML; FAQ and answers use `<details>`; join form posts to `/join`. Checked with JS disabled.                                                                                                                                           |

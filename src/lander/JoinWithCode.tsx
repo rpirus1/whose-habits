@@ -2,7 +2,7 @@ import { useId, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { parseJoinInput } from './join'
+import { formatTypedCode, parseJoinInput } from './join'
 import { useHydrated } from './useHydrated'
 
 const ERROR = "That code doesn't look right. It's 12 letters and numbers, like k7m2-x9qp-4tdv."
@@ -47,7 +47,8 @@ export function JoinWithCode() {
           ref={inputRef}
           id={`${id}-code`}
           name="code"
-          placeholder="k7m2-x9qp-4tdv"
+          // A shape, not a real-looking code: testers took the old example for a code to use.
+          placeholder="xxxx-xxxx-xxxx"
           autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"
@@ -55,8 +56,15 @@ export function JoinWithCode() {
           enterKeyHint="go"
           aria-invalid={invalid || undefined}
           aria-describedby={`${id}-hint`}
-          onChange={() => setInvalid(false)}
-          className="h-full min-w-0 flex-1 rounded-full border-0 bg-transparent px-4 text-lg tabular-nums focus-visible:ring-0 aria-invalid:ring-0 md:text-lg dark:bg-transparent"
+          onChange={(e) => {
+            setInvalid(false)
+            // Typing (not deleting): put the dashes in as the groups fill up.
+            if ((e.nativeEvent as InputEvent).inputType?.startsWith('insert')) {
+              const input = e.currentTarget
+              input.value = formatTypedCode(input.value)
+            }
+          }}
+          className="h-full min-w-0 flex-1 rounded-full border-0 bg-transparent px-4 text-lg tabular-nums placeholder:text-muted-foreground/50 focus-visible:ring-0 aria-invalid:ring-0 md:text-lg dark:bg-transparent"
         />
         <Button type="submit" size="lg" className="h-full px-5 text-base" variant="secondary">
           Join

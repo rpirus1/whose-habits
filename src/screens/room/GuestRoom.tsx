@@ -67,14 +67,16 @@ function GuestScreen({
   children,
   menu,
   center = false,
+  leaveWarning,
 }: {
   children: ReactNode
   menu?: ReactNode
   center?: boolean
+  leaveWarning?: string
 }) {
   return (
     <Screen>
-      <AppBar menu={() => menu ?? <PlayerMenu />} />
+      <AppBar menu={() => menu ?? <PlayerMenu />} leaveWarning={leaveWarning} />
       {center ? (
         <div className="flex flex-1 flex-col justify-center gap-6 text-center">{children}</div>
       ) : (
@@ -184,6 +186,11 @@ function GuestGame({
 
   return (
     <GuestScreen
+      leaveWarning={
+        snapshot.phase === 'question' || snapshot.phase === 'reveal'
+          ? 'The game goes on without you. You can come back with the same link and keep your score.'
+          : undefined
+      }
       menu={
         <PlayerMenu
           name={identity.name}

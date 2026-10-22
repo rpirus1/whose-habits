@@ -8,7 +8,7 @@ export type ThemeChoice = 'system' | 'light' | 'dark'
 /** Same key as the inline script in index.html. Stored as a plain string. */
 const KEY = 'cc:theme'
 /** Safari tints its toolbar and status bar with theme-color: keep it on the page background. */
-const THEME_COLOR = { light: '#fcf3f0', dark: '#090504' }
+const THEME_COLOR = { light: '#f9f5fa', dark: '#0c070d' }
 
 const systemLight = window.matchMedia('(prefers-color-scheme: light)')
 const listeners = new Set<() => void>()

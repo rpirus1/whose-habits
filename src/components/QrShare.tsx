@@ -31,12 +31,12 @@ export function QrShare({ roomCode }: { roomCode: string }) {
     <section className="bg-card flex flex-col items-center gap-4 rounded-2xl p-5">
       {/* QR codes need dark-on-light to scan reliably, so this stays light in both themes:
           the dark theme's text colour behind, its background colour (as hex) for the modules. */}
-      <div className="rounded-xl bg-[oklch(0.9911_0.01_36.66)] p-3 ring-border ring-1">
+      <div className="rounded-xl bg-white p-3 ring-border ring-1">
         <QRCodeSVG
           value={url}
           size={176}
           marginSize={0}
-          fgColor="#090504"
+          fgColor="#0c070d"
           bgColor="transparent"
           aria-label={`QR code for ${url}`}
         />

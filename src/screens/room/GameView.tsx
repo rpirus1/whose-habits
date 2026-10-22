@@ -14,6 +14,7 @@ export function GameView({
   onChoose,
   onNext,
   onPlayAgain,
+  onResume,
 }: {
   snapshot: Snapshot
   meId: string
@@ -23,6 +24,8 @@ export function GameView({
   onChoose: (choice: Choice) => void
   onNext?: () => void
   onPlayAgain?: () => void
+  /** Host only. */
+  onResume?: () => void
 }) {
   if (snapshot.final) {
     return <FinalView snapshot={snapshot} meId={meId} onPlayAgain={onPlayAgain} />
@@ -56,6 +59,7 @@ export function GameView({
         confirmed={confirmed}
         clockOffset={clockOffset}
         onChoose={onChoose}
+        onResume={onResume}
       />
     )
   }

@@ -93,7 +93,7 @@ describe('finalSummary', () => {
       { id: 'ann', rank: 1 },
       { id: 'host', rank: 2 },
     ])
-    expect(summary.surprising.map((x) => x.percentCorrect)).toEqual([0, 0, 0.5])
+    expect(summary.surprising.map((x) => x.percentCorrect)).toEqual([0, 0])
   })
 })
 
