@@ -56,14 +56,14 @@ describe('parseStatementsCsv', () => {
   })
 
   it('warns when a statement claims exclusivity', () => {
-    const csv = `${HEADER}\nus-001,People here only tip in cash at restaurants.,US,Note.,1,daily,AI-generated,,,`
+    const csv = `${HEADER}\nus-001,People here only tip in cash at restaurants.,US,Note.,1,home,AI-generated,,,`
     expect(parseStatementsCsv(csv).warnings).toHaveLength(1)
   })
 
   it('requires a source: a URL or "AI-generated"', () => {
     const row = (source: string) =>
       parseStatementsCsv(`${HEADER}
-nl-001,A statement that is long enough.,NL,Note.,1,daily,${source},,,`).errors
+nl-001,A statement that is long enough.,NL,Note.,1,home,${source},,,`).errors
     expect(row('https://www.reddit.com/r/Netherlands/comments/abc')).toEqual([])
     expect(row('ai-generated')).toEqual([])
     expect(row('')).toHaveLength(1)
@@ -81,7 +81,7 @@ describe('eligibleCount (ambiguity rule)', () => {
     [
       HEADER,
       'br-001,Arriving late to a house party is normal.,BR MX,Note.,1,hosting,AI-generated,,,',
-      'br-002,Friends greet with cheek kisses by city.,BR,Note.,2,daily,AI-generated,,,',
+      'br-002,Friends greet with cheek kisses by city.,BR,Note.,2,home,AI-generated,,,',
     ].join('\n'),
   )
   it('uses a statement only when exactly one selected culture fits', () => {

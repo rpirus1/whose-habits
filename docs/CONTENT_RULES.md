@@ -6,7 +6,7 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 - 10 cultures × 50 statements = 500 (PL, UA, NL, BR, MX, US, TR, IT, FR, KR)
 - Per culture, roughly: 15 × obviousness 1, 20 × obviousness 2, 15 × obviousness 3
-- Spread across all six topics, at least 5 per topic per culture
+- Spread across all 13 topics, at least 3 per topic per culture (`npm run content` lists the gaps)
 - Every 2-culture pair keeps at least 30 eligible statements (`npm run content` prints the smallest pool)
 
 ## A good statement
@@ -25,14 +25,23 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 ## Topics (`topic` column)
 
-| key        | covers                                      |
-| ---------- | ------------------------------------------- |
-| `daily`    | routines, shops, transport, home habits     |
-| `hosting`  | visiting, guests, parties, being a guest    |
-| `family`   | birthdays, holidays, rituals, generations   |
-| `humour`   | humour and small talk                       |
-| `work`     | work etiquette, meetings, colleagues        |
-| `language` | phrases, expressions, ways of saying things |
+The same 13 groups for every culture, used for analytics and a future "pick topics" setting. File each statement where a player would expect to find it.
+
+| key         | covers                                                                     |
+| ----------- | -------------------------------------------------------------------------- |
+| `home`      | home life, housework, flats, neighbours, building rules                    |
+| `money`     | paying, prices, tipping, banks, shopping, markets, opening hours           |
+| `transport` | driving, buses, trains, cycling, streets, queues, behaviour in public      |
+| `table`     | meal times, eating habits, table manners (habits, not dishes)              |
+| `hosting`   | visiting, guests, being a guest, parties at home, gifts                    |
+| `holidays`  | public and seasonal holidays, festivals, New Year (the custom, not faith)  |
+| `family`    | family roles, babies, birthdays, weddings, coming of age, couples          |
+| `school`    | school, exams, graduation, university                                      |
+| `work`      | offices, colleagues, meetings, leave, pay, paperwork and bureaucracy       |
+| `language`  | sayings, idioms, set phrases, forms of address, texting conventions        |
+| `humour`    | jokes, teasing, banter, small talk, complaining                            |
+| `weather`   | weather talk, seasons, superstitions, luck, folk remedies                  |
+| `leisure`   | free time, sports, hobbies, beach, outings, TV and entertainment habits    |
 
 ## Off limits
 

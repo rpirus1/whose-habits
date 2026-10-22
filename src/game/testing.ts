@@ -14,7 +14,7 @@ export function makeStatement(
     fits,
     note: `Note for ${id}`,
     obviousness,
-    topic: 'daily',
+    topic: 'home',
     reviewed: true,
   }
 }
