@@ -1,9 +1,39 @@
 # Ideas backlog
 
-Ideas for Culture Clash, stored here so they don't get lost. Nothing in this file is planned or committed to.
+Ideas for Culture Clash, stored here so they don't get lost. Only items under "Next up" are planned; the rest are not committed to.
 For what is being built now, see [PLAN.md](PLAN.md).
 
 Each entry: what and why, date added, where it came from.
+
+## Next up
+
+### "Buy Me a Coffee" link on the lander
+An optional way to support the maker. It unlocks nothing and stays out of the game itself.
+Added 2026-10-22. From Ruslan, via the main chat. Approach approved, start planned for 2026-10-23 in the lander chat.
+
+**Approach**
+- A plain link to `https://buymeacoffee.com/<handle>`, styled as our own button (Lucide Coffee icon, orchid styling). Reuse `ExternalLink` in `src/lander/Lander.tsx`.
+- Don't use BMC's script widget or hosted button image. Both load from BMC on every visit and would break the "No cookies, no ads, no tracking scripts… This page sends nothing" promise in the footer, FAQ and README. A plain link sends nothing until someone taps it, and it works on the prerendered page without JavaScript.
+- Placement: in "About the maker" next to LinkedIn ("Enjoying it? Buy me a coffee."), plus a small text link in the footer next to Feedback. Not in the hero, the Host CTA or the game screens.
+
+**Copy**
+- FAQ "Is it really free?": add "If you like it, you can buy me a coffee. It unlocks nothing."
+- "Free: no ads, no paywall" stays true as long as BMC memberships and the shop aren't used.
+- Privacy footer, one added line: the link goes to buymeacoffee.com, nothing loads from BMC until you tap it, BMC and Stripe handle the payment, and the maker sees a supporter's name or message only if they leave one.
+
+**Metrics**
+- No new event. The BMC dashboard counts supporters.
+- An optional `support_click` event would need schema, Worker and privacy-text changes.
+
+**Ruslan's own steps**
+- Create the BMC page and set up payouts (5% fee plus processing). Ko-fi, with 0% on one-off donations, is the alternative.
+- NL tax: donations are usually taxable income, so check with the Belastingdienst.
+
+**Build steps (about 1 hour)**
+1. Add `SUPPORT_URL` to `src/lander/contact.ts` and hide the button while it's empty.
+2. Add the About button and the footer link.
+3. Update the FAQ, privacy text, `README.md` and `docs/LANDER.md`.
+4. Add a test that the lander loads no third-party scripts.
 
 ## Ideas
 
