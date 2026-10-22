@@ -327,6 +327,20 @@ function Samples() {
           <FlipCard key={s.id} sample={s} />
         ))}
       </ul>
+      <aside
+        aria-labelledby="habits-note-title"
+        className="text-muted-foreground mt-8 max-w-2xl md:mt-10"
+      >
+        <h3 id="habits-note-title" className="text-foreground font-semibold">
+          How I write the habits
+        </h3>
+        <p className="mt-1.5">
+          They’re playful generalisations, not rules about people: plenty of Brazilians have never
+          clapped at a gate. I research and polish them with help from AI, and your feedback is what
+          makes them better. Spotted one that’s wrong or feels unfair? Tap Report in the game. I
+          read every report and fix or remove the statement.
+        </p>
+      </aside>
     </Section>
   )
 }

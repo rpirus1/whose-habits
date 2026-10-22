@@ -49,20 +49,12 @@ export interface Faq {
 
 export const FAQ: readonly Faq[] = [
   {
-    q: 'Is it really free?',
-    a: 'Yes. No ads, no in-app purchases, no premium version.',
+    q: 'Is it free? Do we need an app?',
+    a: 'Free, with no ads, no in-app purchases and no premium version. It runs in the browser on any phone: no app, no sign-up, just type a name.',
   },
   {
-    q: 'Do we need to download an app or sign up?',
-    a: 'No. It runs in the browser on any phone. Type a name and you are in.',
-  },
-  {
-    q: 'Does everyone need a phone?',
-    a: 'Yes, one each, the host included. Everyone answers on their own phone at the same time.',
-  },
-  {
-    q: 'How many people can play?',
-    a: 'From 2 to 12 players in one game.',
+    q: 'Who can play?',
+    a: 'From 2 to 12 players, each on their own phone, the host included. Everyone answers at the same time.',
   },
   {
     q: 'How do my friends join?',
@@ -74,22 +66,18 @@ export const FAQ: readonly Faq[] = [
   },
   {
     q: 'Which countries are in it?',
-    a: 'Brazil, France, Italy, Mexico, the Netherlands, Poland, South Korea, Türkiye, Ukraine and the United States. The host picks 2 to 6 of them for each game. More countries are coming.',
+    a: 'Brazil, France, Italy, Mexico, the Netherlands, Poland, South Korea, Türkiye, Ukraine and the United States. The host picks 2 to 6 of them for each game. More countries are coming. The game is in English for now.',
   },
   {
     q: 'Can a habit belong to more than one country?',
     a: 'Many do. A habit only comes up when exactly one of the countries in your game fits it, so there is always one right answer.',
   },
   {
-    q: 'Isn’t this about stereotypes?',
-    a: 'It is about small everyday things: how people greet, shop, host and celebrate. The game stays away from politics, religion, appearance and national clichés.',
+    q: 'Are the habits true for everyone?',
+    a: 'No. Each one is a habit people most associate with a country, not something everyone there does. They are about small everyday things, like how people greet, shop, host and celebrate, and stay away from politics, religion, appearance and anything that ranks countries. I research and polish them with help from AI, and your reports are how they get better.',
   },
   {
-    q: 'I don’t agree with a statement. How can I report it?',
-    a: `Tap Report on the answer screen during the game, or write to ${FEEDBACK_EMAIL} with the statement and what you’d change. Every report gets read, and statements get fixed or removed.`,
-  },
-  {
-    q: 'What language is it in?',
-    a: 'English, for now.',
+    q: 'A habit feels wrong. How can I report it?',
+    a: `Tap Report on the answer screen and pick what’s wrong, or write to ${FEEDBACK_EMAIL} with the statement and what you’d change. I read every report, and statements get fixed or removed.`,
   },
 ]

@@ -281,3 +281,8 @@ Not touched: `src/screens/room/*`, SettingsScreen, game components, AppBar/menus
 - Footer theme switcher: full width on phones.
 - About: the maker's photo (src/lander/art/maker.webp, 256 px, 10 KB), above the text on phones and beside it
   on desktop. Lazy-loaded.
+- "How I write the habits" note under the sample cards: playful generalisations, AI-assisted research,
+  and reports as the way they improve. No promise of reviewing every statement; reported ones get read.
+  Wording agreed with the Branding session (docs/BRAND.md), in the maker's own voice ("I").
+- FAQ cut from 11 to 8: free + no app, phones + player count, and countries + language are merged; the
+  stereotypes answer became "Are the habits true for everyone?".
