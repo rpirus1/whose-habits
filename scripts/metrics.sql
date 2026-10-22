@@ -117,7 +117,13 @@ SELECT
 -- 7. Reported statements (review these before each content update)
 SELECT
   json_extract(data, '$.statementId') AS statement_id,
-  COUNT(*) AS reports
+  COUNT(*) AS reports,
+  SUM(json_extract(data, '$.reason') = 'incorrect') AS incorrect,
+  SUM(json_extract(data, '$.reason') = 'outdated') AS outdated,
+  SUM(json_extract(data, '$.reason') = 'not_unique') AS not_unique,
+  SUM(json_extract(data, '$.reason') = 'offensive') AS offensive,
+  -- Closed or timed out, or sent by a build from before reasons existed.
+  SUM(COALESCE(json_extract(data, '$.reason'), 'none') = 'none') AS no_reason
 FROM events
 WHERE type = 'report' AND test = 0
 GROUP BY statement_id

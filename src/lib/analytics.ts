@@ -66,6 +66,15 @@ export function isTestDevice(): boolean {
   }
 }
 
+/** Remembers a key without sending anything (the event is sent by another device). */
+export function markSent(key: string) {
+  try {
+    localStorage.setItem(sentKey(key), '1')
+  } catch {
+    // Without storage the button just forgets after a refresh.
+  }
+}
+
 export function alreadySent(key: string): boolean {
   try {
     return localStorage.getItem(sentKey(key)) !== null

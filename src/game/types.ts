@@ -1,5 +1,6 @@
 import type { CultureCode, Statement } from '@/content/schema'
-import type { GameSource } from '@/lib/events'
+import type { GameSource, ReportReason } from '@/lib/events'
+export type { ReportReason }
 
 export type Phase = 'lobby' | 'question' | 'reveal' | 'final'
 
@@ -13,6 +14,16 @@ export const MIN_PLAYERS_TO_START = 2
 export const MAX_NAME_LENGTH = 20
 /** Answers that arrive this long after endsAt still count (network delay). */
 export const ANSWER_GRACE_MS = 500
+/** A report holds the game this long while the reporter picks a reason. */
+export const REPORT_HOLD_MS = 10_000
+
+/** The reasons a reporter can pick, in pop-up order. Closing it gives 'none'. */
+export const REPORT_REASONS = [
+  'incorrect',
+  'outdated',
+  'not_unique',
+  'offensive',
+] as const satisfies readonly ReportReason[]
 
 export interface Settings {
   cultures: CultureCode[]
@@ -60,6 +71,16 @@ export interface Round {
   result: RoundResult | null
 }
 
+/** One player's report of one statement. Open while not done and before `until`. */
+export interface Report {
+  playerId: string
+  statementId: string
+  /** Host clock: the hold ends here even if the reporter never answers. */
+  until: number
+  /** Set when the hold ends; the host then sends one analytics event. */
+  reason: ReportReason | null
+}
+
 export interface GameState {
   v: 1
   roomCode: string
@@ -93,6 +114,8 @@ export interface GameState {
   viewing: number | null
   /** True when Back paused a live question, so Next resumes it. */
   pausedByBack: boolean
+  /** Reports this game. Open ones hold the reveal: Next and Back wait for them. */
+  reports?: Report[]
 }
 
 /** Everything the pure engine needs from the outside world. */

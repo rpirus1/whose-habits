@@ -70,6 +70,7 @@ function mockSnapshot(view: string, endsAt: number): Snapshot {
           },
     viewing: false,
     final: null,
+    holdUntil: null,
   }
 }
 
@@ -106,7 +107,13 @@ export function DevScreensScreen() {
           onChoose={setChoice}
         />
       ) : (
-        <RevealView key={view} snapshot={snapshot} meId={ME} onNext={() => {}} />
+        <RevealView
+          key={view}
+          snapshot={snapshot}
+          meId={ME}
+          onNext={() => {}}
+          onReport={{ open: () => {}, done: () => {} }}
+        />
       )}
     </Screen>
   )

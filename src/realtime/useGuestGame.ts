@@ -1,8 +1,8 @@
 // A guest's side of a room: says hello until the host lists them, syncs its clock,
 // sends answers until the host acknowledges them, and renders snapshots.
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { GuestMessage, HostMessage, Snapshot } from '@/game/protocol'
-import type { Choice } from '@/game/types'
+import type { Choice, ReportReason } from '@/game/types'
 import { saveGuestIdentity } from '@/lib/savedRooms'
 import type { GuestIdentity } from '@/lib/savedRooms'
 import { CLOCK_SAMPLE_GAP_MS, CLOCK_SAMPLES, estimateOffset } from './clock'
@@ -24,6 +24,8 @@ export interface MyAnswer {
 const HELLO_RETRY_MS = 2000
 const ANSWER_RETRY_MS = 1000
 const NOT_FOUND_AFTER_MS = 8000
+/** Report messages are re-sent at these delays; the host ignores repeats. */
+const REPORT_RESEND_MS = [1000, 2500]
 
 export function useGuestGame(roomCode: string, identity: GuestIdentity) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null)
@@ -57,6 +59,25 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
       send({ type: 'answer', playerId: identity.playerId, roundId, choice })
     },
     [identity.playerId, send],
+  )
+
+  /** Re-sent a couple of times, since broadcast can drop a message and the host ignores repeats. */
+  const sendReliably = useCallback(
+    (message: GuestMessage) => {
+      send(message)
+      for (const ms of REPORT_RESEND_MS) window.setTimeout(() => send(message), ms)
+    },
+    [send],
+  )
+
+  const report = useMemo(
+    () => ({
+      open: (statementId: string) =>
+        sendReliably({ type: 'reportOpen', playerId: identity.playerId, statementId }),
+      done: (statementId: string, reason: ReportReason) =>
+        sendReliably({ type: 'reportDone', playerId: identity.playerId, statementId, reason }),
+    }),
+    [identity.playerId, sendReliably],
   )
 
   useEffect(() => {
@@ -185,5 +206,5 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
   // Until the first presence sync arrives (the list includes ourselves), assume the host is there.
   const hostOnline = !snapshot || !onlineIds.length || onlineIds.includes(snapshot.hostId)
 
-  return { snapshot, status, hostOnline, clockOffset, myAnswer, answer, leave }
+  return { snapshot, status, hostOnline, clockOffset, myAnswer, answer, leave, report }
 }

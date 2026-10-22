@@ -149,10 +149,8 @@ function GuestGame({
   identity: GuestIdentity
   onLeft: () => void
 }) {
-  const { snapshot, status, hostOnline, clockOffset, myAnswer, answer, leave } = useGuestGame(
-    roomCode,
-    identity,
-  )
+  const { snapshot, status, hostOnline, clockOffset, myAnswer, answer, leave, report } =
+    useGuestGame(roomCode, identity)
   // A sleeping phone drops its connection, so keep the screen on during play.
   useWakeLock(snapshot?.phase === 'question' || snapshot?.phase === 'reveal')
   // Removed or turned away: remember it, so Home stops offering "Back to your game"
@@ -218,6 +216,7 @@ function GuestGame({
           confirmed={current?.acked ?? false}
           clockOffset={clockOffset}
           onChoose={(choice) => snapshot.question && answer(snapshot.question.roundId, choice)}
+          onReport={report}
         />
       )}
     </GuestScreen>

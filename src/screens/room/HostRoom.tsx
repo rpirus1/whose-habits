@@ -73,6 +73,12 @@ export function HostRoom({ initial }: { initial: GameState }) {
           onNext={() => dispatch({ type: 'next' })}
           onPlayAgain={() => dispatch({ type: 'playAgain', gameId: newId() })}
           onResume={() => dispatch({ type: 'resume' })}
+          onReport={{
+            open: (statementId) =>
+              dispatch({ type: 'reportOpen', playerId: state.hostId, statementId }),
+            done: (statementId, reason) =>
+              dispatch({ type: 'reportDone', playerId: state.hostId, statementId, reason }),
+          }}
         />
       )}
     </Screen>

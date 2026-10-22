@@ -109,6 +109,11 @@ describe('parseGuestMessage', () => {
       type: 'leave',
       playerId: 'p',
     })
+    const done = { type: 'reportDone', playerId: 'p', statementId: 'nl-007', reason: 'outdated' }
+    expect(parseGuestMessage(done)).toEqual(done)
+    expect(
+      parseGuestMessage({ type: 'reportOpen', playerId: 'p', statementId: 'nl-007' }),
+    ).toBeTruthy()
   })
 
   it('rejects junk', () => {
@@ -120,6 +125,8 @@ describe('parseGuestMessage', () => {
       { type: 'answer', playerId: 'p', roundId: 1, choice: 'PL' },
       { type: 'ping', playerId: 'p', t0: 'soon' },
       { type: 'state', playerId: 'p' },
+      { type: 'reportDone', playerId: 'p', statementId: 'nl-007', reason: 'boring' },
+      { type: 'reportOpen', playerId: 'p' },
     ]) {
       expect(parseGuestMessage(bad)).toBeNull()
     }

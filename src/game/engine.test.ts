@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createGame, currentRound, joinRejection, reduce } from './engine'
+import { createGame, currentRound, joinRejection, openReports, reduce } from './engine'
 import type { Action } from './engine'
 import { seededRandom } from './random'
 import { byId, makeBank } from './testing'
-import { ANSWER_GRACE_MS, MAX_PLAYERS } from './types'
+import { ANSWER_GRACE_MS, MAX_PLAYERS, REPORT_HOLD_MS } from './types'
 import type { Choice, EngineContext, GameState, Settings } from './types'
 
 const bank = makeBank(['PL', 'NL'], 12)
@@ -412,5 +412,95 @@ describe('host controls', () => {
     const base = { roomCode: 'BCDF', hostId: 'host', settings }
     expect(createGame({ ...base, source: 'guest_cta' }).source).toBe('guest_cta')
     expect(createGame(base)).not.toHaveProperty('source')
+  })
+})
+
+describe('report hold', () => {
+  /** A harness on the reveal of round 1. */
+  function onReveal() {
+    const h = harness()
+    h.answerAll('right')
+    return { h, statementId: h.round.statementId }
+  }
+
+  it('holds Next and Back until the reporter picks a reason; the host cannot resume it', () => {
+    const { h, statementId } = onReveal()
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId })
+    expect(openReports(h.s, h.ctx.now)).toHaveLength(1)
+    const held = h.s
+    h.run({ type: 'next' })
+    h.run({ type: 'back' })
+    h.run({ type: 'resume' })
+    expect(h.s).toBe(held)
+    h.run({ type: 'reportDone', playerId: 'ann', statementId, reason: 'outdated' })
+    expect(h.s.reports).toEqual([expect.objectContaining({ playerId: 'ann', reason: 'outdated' })])
+    h.run({ type: 'next' })
+    expect(h.s.phase).toBe('question')
+  })
+
+  it('expires on the host clock with no reason, so a reporter who drops cannot stall the game', () => {
+    const { h, statementId } = onReveal()
+    h.run({ type: 'reportOpen', playerId: 'bob', statementId })
+    h.advance(REPORT_HOLD_MS - 1)
+    expect(h.s.reports![0].reason).toBeNull()
+    h.advance(1)
+    expect(h.s.reports![0].reason).toBe('none')
+    // A late answer from the reporter doesn't change the recorded report.
+    h.run({ type: 'reportDone', playerId: 'bob', statementId, reason: 'offensive' })
+    expect(h.s.reports![0].reason).toBe('none')
+    h.run({ type: 'next' })
+    expect(h.s.phase).toBe('question')
+  })
+
+  it('with several reporters, holds until the last one is done', () => {
+    const { h, statementId } = onReveal()
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId })
+    h.ctx.now += 4000
+    h.run({ type: 'reportOpen', playerId: 'host', statementId })
+    h.run({ type: 'reportDone', playerId: 'ann', statementId, reason: 'incorrect' })
+    h.advance(REPORT_HOLD_MS - 1)
+    h.run({ type: 'next' })
+    expect(h.s.phase).toBe('reveal')
+    h.advance(1)
+    h.run({ type: 'next' })
+    expect(h.s.phase).toBe('question')
+    expect(h.s.reports!.map((r) => r.reason)).toEqual(['incorrect', 'none'])
+  })
+
+  it('counts each player once per statement, and only for the reveal on screen', () => {
+    const { h, statementId } = onReveal()
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId: 'nope' })
+    expect(h.s.reports).toEqual([])
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId })
+    h.run({ type: 'reportDone', playerId: 'ann', statementId, reason: 'none' })
+    const done = h.s
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId })
+    expect(h.s).toBe(done)
+  })
+
+  it('cannot open during a question, but still counts a reason whose open got lost', () => {
+    const { h, statementId } = onReveal()
+    h.run({ type: 'next' })
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId: h.round.statementId })
+    expect(h.s.reports).toEqual([])
+    h.run({ type: 'reportDone', playerId: 'ann', statementId, reason: 'not_unique' })
+    expect(h.s.reports).toEqual([expect.objectContaining({ reason: 'not_unique' })])
+    expect(openReports(h.s, h.ctx.now)).toEqual([])
+  })
+
+  it('rejects unknown reasons and resets with a new game', () => {
+    const { h, statementId } = onReveal()
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId })
+    h.run({
+      type: 'reportDone',
+      playerId: 'ann',
+      statementId,
+      reason: 'boring' as 'none',
+    })
+    expect(h.s.reports![0].reason).toBeNull()
+    h.run({ type: 'end' })
+    h.run({ type: 'playAgain', gameId: 'g2' })
+    h.run({ type: 'start', gameId: 'g2' })
+    expect(h.s.reports).toEqual([])
   })
 })
