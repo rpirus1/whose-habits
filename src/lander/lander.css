@@ -98,3 +98,34 @@ html:not(.js) .flip button {
 .lander-carousel::-webkit-scrollbar {
   display: none;
 }
+
+/* Hero example question: a product-shot tilt. Phones get it 15% smaller, with a slight nudge left
+   (the Y rotation makes the nearer right edge look heavier). */
+.example-tilt {
+  transform: perspective(1200px) rotateX(8deg) rotateY(-14deg) rotateZ(2deg);
+}
+@media (width < 48rem) {
+  .example-tilt {
+    transform: translateX(-1%) scale(0.85) perspective(1200px) rotateX(8deg) rotateY(-14deg)
+      rotateZ(2deg);
+  }
+}
+
+/* Dark mode only: a soft sunflower glow under the card (a shadow doesn't show on dark). */
+.example-halo {
+  display: none;
+}
+.dark .example-halo {
+  display: block;
+  position: absolute;
+  inset: 14% -6% -10%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklch, var(--highlight) 35%, transparent),
+    transparent
+  );
+  filter: blur(24px);
+  transform: translate(3%, 6%);
+}

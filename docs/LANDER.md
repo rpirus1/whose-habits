@@ -265,3 +265,17 @@ Not touched: `src/screens/room/*`, SettingsScreen, game components, AppBar/menus
   imports them, so editing a file is enough. The same file shows in both themes.
 - "Countries in the game"; footer order: Theme, Privacy, Credits (two columns on desktop), feedback
   and copyright. The Theme legend has the same style as the Privacy and Credits headings.
+
+## 10. Polish round (2026-10-22)
+
+- About: "Do you like what I do? Buy me a coffee" (https://buymeacoffee.com/ruslan.p) under the
+  LinkedIn link. A plain link that opens in a new tab: no widget script, so the page still loads
+  nothing from other sites.
+- Hero example question: on phones it is 15% smaller and nudged 1% left, since the 3D tilt made it
+  look off-centre. Dark mode replaces its shadow with a soft sunflower glow; light mode keeps the shadow.
+- Step pictures move: a small CSS animation inside each SVG's own `<style>`, so there's no script and
+  no extra request. They stay still with reduced motion. Don't write a literal tag such as `<img>` in
+  those comments: the file is XML and won't load.
+- Spacing: the title and intro sit closer together, with more space before the section content; H1 and
+  tagline form one unit; more room around the step pictures; a little more space under the header.
+- Footer theme switcher: full width on phones.

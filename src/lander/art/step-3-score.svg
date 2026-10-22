@@ -1,30 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="96" viewBox="0 0 160 96">
-<rect x="30" y="16" width="7" height="3.5" rx="1" fill="#e5abf7" transform="rotate(20 30 16)">
-</rect>
-<rect x="48" y="30" width="7" height="3.5" rx="1" fill="#d358f5" transform="rotate(-30 48 30)">
-</rect>
-<rect x="114" y="14" width="7" height="3.5" rx="1" fill="#fdca3a" transform="rotate(15 114 14)">
-</rect>
-<rect x="128" y="34" width="7" height="3.5" rx="1" fill="#e5abf7" transform="rotate(-20 128 34)">
-</rect>
-<rect x="96" y="8" width="7" height="3.5" rx="1" fill="#d358f5" transform="rotate(40 96 8)">
-</rect>
-<rect x="62" y="10" width="7" height="3.5" rx="1" fill="#fdca3a" transform="rotate(-10 62 10)">
-</rect>
-<rect x="34" y="62" width="30" height="28" rx="4" fill="#e5abf7">
-</rect>
-<rect x="65" y="48" width="30" height="42" rx="4" fill="#d358f5">
-</rect>
-<rect x="96" y="70" width="30" height="20" rx="4" fill="#e5abf7">
-</rect>
-<path d="M68 20h24v6a12 12 0 0 1-24 0Z" fill="#fdca3a">
-</path>
-<path d="M68 23h-5a5 5 0 0 0 5 7M92 23h5a5 5 0 0 1-5 7" stroke="#fdca3a" stroke-width="2.5" fill="none">
-</path>
-<rect x="78" y="37" width="4" height="6" fill="#fdca3a">
-</rect>
-<rect x="72" y="42" width="16" height="4" rx="2" fill="#fdca3a">
-</rect>
-<path d="M80 8Q80 12 84 12Q80 12 80 16Q80 12 76 12Q80 12 80 8Z" fill="#d358f5">
-</path>
+<style>
+  /* Plain CSS animation: works when shown as an image, no script. Still when the phone asks for less motion. */
+  .bar { transform-box: fill-box; transform-origin: bottom; animation: rise 4.8s cubic-bezier(.3,.7,.3,1) infinite both; }
+  .b1 { animation-delay: .15s; }
+  .b3 { animation-delay: .3s; }
+  .cup { animation: cup 4.8s ease-in-out infinite both; }
+  .c { animation: fall 4.8s ease-in infinite both; }
+  .c2 { animation-delay: .4s; } .c3 { animation-delay: .8s; } .c4 { animation-delay: 1.2s; } .c5 { animation-delay: .2s; } .c6 { animation-delay: .6s; }
+  .spark { transform-box: fill-box; transform-origin: center; animation: spark 2.4s ease-in-out infinite; }
+  @keyframes rise { 0% { transform: scaleY(.15); } 18%, 100% { transform: none; } }
+  @keyframes cup { 0%, 12% { transform: translateY(10px); opacity: 0; } 28% { transform: translateY(-2px); opacity: 1; } 36%, 100% { transform: none; opacity: 1; } }
+  @keyframes fall { 0%, 20% { transform: translateY(-6px); opacity: 0; } 32% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateY(14px); opacity: 0; } }
+  @keyframes spark { 0%, 100% { transform: scale(.6) rotate(0); opacity: .5; } 50% { transform: scale(1.1) rotate(45deg); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<g class="c"><rect x="30" y="16" width="7" height="3.5" rx="1" fill="#e5abf7" transform="rotate(20 30 16)"/></g>
+<g class="c c2"><rect x="48" y="30" width="7" height="3.5" rx="1" fill="#d358f5" transform="rotate(-30 48 30)"/></g>
+<g class="c c3"><rect x="114" y="14" width="7" height="3.5" rx="1" fill="#fdca3a" transform="rotate(15 114 14)"/></g>
+<g class="c c4"><rect x="128" y="34" width="7" height="3.5" rx="1" fill="#e5abf7" transform="rotate(-20 128 34)"/></g>
+<g class="c c5"><rect x="96" y="8" width="7" height="3.5" rx="1" fill="#d358f5" transform="rotate(40 96 8)"/></g>
+<g class="c c6"><rect x="62" y="10" width="7" height="3.5" rx="1" fill="#fdca3a" transform="rotate(-10 62 10)"/></g>
+<rect class="bar b1" x="34" y="62" width="30" height="28" rx="4" fill="#e5abf7"/>
+<rect class="bar" x="65" y="48" width="30" height="42" rx="4" fill="#d358f5"/>
+<rect class="bar b3" x="96" y="70" width="30" height="20" rx="4" fill="#e5abf7"/>
+<g class="cup">
+<path d="M68 20h24v6a12 12 0 0 1-24 0Z" fill="#fdca3a"/>
+<path d="M68 23h-5a5 5 0 0 0 5 7M92 23h5a5 5 0 0 1-5 7" stroke="#fdca3a" stroke-width="2.5" fill="none"/>
+<rect x="78" y="37" width="4" height="6" fill="#fdca3a"/>
+<rect x="72" y="42" width="16" height="4" rx="2" fill="#fdca3a"/>
+</g>
+<path class="spark" d="M80 8Q80 12 84 12Q80 12 80 16Q80 12 76 12Q80 12 80 8Z" fill="#d358f5"/>
 </svg>

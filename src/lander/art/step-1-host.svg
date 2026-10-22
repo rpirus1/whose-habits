@@ -1,38 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="96" viewBox="0 0 160 96">
-<g transform="rotate(0 80 48)">
-<rect x="56" y="6" width="48" height="84" rx="9.6" fill="#1d1520">
-</rect>
-<rect x="59" y="11" width="42" height="74" rx="6" fill="#ffffff">
-</rect>
+<style>
+  /* Plain CSS animation: works when shown as an image, no script. Still when the phone asks for less motion. */
+  * { transform-box: fill-box; transform-origin: center; }
+  .row { animation: row 4.8s ease-in-out infinite both; }
+  .r2 { animation-delay: .25s; }
+  .r3 { animation-delay: .5s; }
+  .fill { stroke-dasharray: 26; animation: fill 4.8s ease-in-out infinite; }
+  .cta { animation: cta 4.8s ease-in-out infinite; }
+  .spark { animation: spark 2.4s ease-in-out infinite; }
+  .s2 { animation-delay: .8s; }
+  .s3 { animation-delay: 1.6s; }
+  @keyframes row { 0%, 8% { opacity: 0; transform: translateX(-4px); } 20%, 88% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+  @keyframes fill { 0%, 25% { stroke-dashoffset: 20; } 55%, 100% { stroke-dashoffset: 0; } }
+  @keyframes cta { 0%, 62% { transform: none; } 70% { transform: scale(.92); } 78%, 100% { transform: none; } }
+  @keyframes spark { 0%, 100% { transform: scale(.6) rotate(0); opacity: .5; } 50% { transform: scale(1.1) rotate(45deg); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<rect x="56" y="6" width="48" height="84" rx="9.6" fill="#1d1520"/>
+<rect x="59" y="11" width="42" height="74" rx="6" fill="#ffffff"/>
+<g class="row">
+<circle cx="67" cy="22" r="4" fill="#d358f5"/>
+<rect x="74" y="20" width="20" height="4" rx="2" fill="#6b5e6f" opacity="0.35"/>
 </g>
-<g>
-<circle cx="67" cy="22" r="4" fill="#d358f5">
-</circle>
-<rect x="74" y="20" width="20" height="4" rx="2" fill="#6b5e6f" opacity="0.35">
-</rect>
+<g class="row r2">
+<circle cx="67" cy="35" r="4" fill="#e5abf7"/>
+<rect x="74" y="33" width="20" height="4" rx="2" fill="#6b5e6f" opacity="0.35"/>
 </g>
-<g>
-<circle cx="67" cy="35" r="4" fill="#e5abf7">
-</circle>
-<rect x="74" y="33" width="20" height="4" rx="2" fill="#6b5e6f" opacity="0.35">
-</rect>
+<g class="row r3">
+<circle cx="67" cy="48" r="4" fill="#fdca3a"/>
+<rect x="74" y="46" width="20" height="4" rx="2" fill="#6b5e6f" opacity="0.35"/>
 </g>
-<g>
-<circle cx="67" cy="48" r="4" fill="#fdca3a">
-</circle>
-<rect x="74" y="46" width="20" height="4" rx="2" fill="#6b5e6f" opacity="0.35">
-</rect>
-</g>
-<rect x="63" y="60" width="34" height="8" rx="4" fill="#d358f5" opacity="0.35">
-</rect>
-<rect x="63" y="60" width="14" height="8" rx="4" fill="#d358f5">
-</rect>
-<rect x="63" y="73" width="34" height="9" rx="4.5" fill="#d358f5">
-</rect>
-<path d="M36 24Q36 30 42 30Q36 30 36 36Q36 30 30 30Q36 30 36 24Z" fill="#fdca3a">
-</path>
-<path d="M124 57Q124 62 129 62Q124 62 124 67Q124 62 119 62Q124 62 124 57Z" fill="#e5abf7">
-</path>
-<path d="M122 18.5Q122 22 125.5 22Q122 22 122 25.5Q122 22 118.5 22Q122 22 122 18.5Z" fill="#d358f5">
-</path>
+<rect x="63" y="60" width="34" height="8" rx="4" fill="#d358f5" opacity="0.35"/>
+<path class="fill" d="M67 64h26" stroke="#d358f5" stroke-width="8" stroke-linecap="round" stroke-dashoffset="20"/>
+<rect class="cta" x="63" y="73" width="34" height="9" rx="4.5" fill="#d358f5"/>
+<path class="spark" d="M36 24Q36 30 42 30Q36 30 36 36Q36 30 30 30Q36 30 36 24Z" fill="#fdca3a"/>
+<path class="spark s2" d="M124 57Q124 62 129 62Q124 62 124 67Q124 62 119 62Q124 62 124 57Z" fill="#e5abf7"/>
+<path class="spark s3" d="M122 18.5Q122 22 125.5 22Q122 22 122 25.5Q122 22 118.5 22Q122 22 122 18.5Z" fill="#d358f5"/>
 </svg>

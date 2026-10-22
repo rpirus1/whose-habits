@@ -28,7 +28,7 @@ import { FAQ, HERO_QUESTION, SAMPLES } from './content'
 import { CountryCarousel } from './CountryCarousel'
 import { FlipCard } from './FlipCard'
 import { JoinWithCode } from './JoinWithCode'
-import { FEEDBACK_EMAIL, LINKEDIN_URL } from './contact'
+import { COFFEE_URL, FEEDBACK_EMAIL, LINKEDIN_URL } from './contact'
 import { useHydrated } from './useHydrated'
 import './lander.css'
 
@@ -107,8 +107,8 @@ function Section({
           <h2 id={`${id}-title`} className={h2}>
             {title}
           </h2>
-          {intro && <p className="text-muted-foreground mt-3 max-w-2xl text-base">{intro}</p>}
-          <div className="mt-8 md:mt-10">{children}</div>
+          {intro && <p className="text-muted-foreground mt-2 max-w-2xl text-base">{intro}</p>}
+          <div className={intro ? 'mt-10 md:mt-12' : 'mt-6 md:mt-8'}>{children}</div>
         </div>
       </div>
     </section>
@@ -121,24 +121,24 @@ function Hero() {
       aria-labelledby="hero-title"
       className={cn(
         container,
-        'grid items-center gap-10 pt-2 pb-14 md:grid-cols-[1fr_minmax(0,24rem)] md:gap-16 md:pt-12 md:pb-20',
+        'grid items-center gap-10 pt-4 pb-14 md:grid-cols-[1fr_minmax(0,24rem)] md:gap-16 md:pt-12 md:pb-20',
       )}
     >
-      <div className="flex flex-col gap-6">
-        <div className="space-y-4">
+      <div className="flex flex-col gap-8">
+        <div>
           <Badge variant="highlight" className="h-7 px-3 text-sm">
             Free party game · {PLAYERS} players
           </Badge>
           <h1
             id="hero-title"
-            className="font-heading text-5xl font-bold tracking-tight md:text-6xl"
+            className="font-heading mt-5 text-5xl font-bold tracking-tight md:text-6xl"
           >
             Whose Habits
           </h1>
-          <p className="text-2xl font-semibold text-balance md:text-3xl">
+          <p className="mt-2 text-2xl font-semibold text-balance md:text-3xl">
             Guess whose habit it is.
           </p>
-          <p className="text-muted-foreground max-w-xl text-base text-pretty">
+          <p className="text-muted-foreground mt-4 max-w-xl text-base text-pretty">
             A party game for international friends. Read a small everyday habit, guess which country
             it comes from, and find out who knows their friends best. One phone each, no app.
           </p>
@@ -183,34 +183,39 @@ function ExampleQuestion() {
   return (
     // Tilted in 3D like a product shot, so it reads as a picture of the game, not a control.
     // Still real text (crisp, translatable, read by screen readers); only the transform is new.
-    <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-2xl ring-1 select-none [transform:perspective(1200px)_rotateX(8deg)_rotateY(-14deg)_rotateZ(2deg)]">
-      <figcaption className="text-muted-foreground flex items-center justify-between text-sm">
-        <span>Example question</span>
-        <span className="tabular-nums">Round 3 of 10</span>
-      </figcaption>
-      <div className="bg-muted mt-3 h-1.5 overflow-hidden rounded-full" aria-hidden>
-        <div className="bg-primary h-full w-2/3 rounded-full" />
-      </div>
-      <blockquote className="mt-5 text-xl leading-snug font-semibold text-balance">
-        {question.text}
-      </blockquote>
-      <p className="text-muted-foreground mt-5 mb-3 text-sm">Whose habit is it?</p>
-      <ul className="grid grid-cols-2 gap-2">
-        {question.options.map((code) => (
-          <li
-            key={code}
-            className="bg-background flex min-h-14 items-center gap-2 rounded-2xl px-3 py-2 leading-tight font-semibold"
-          >
-            <Flag code={code} />
-            {getCulture(code).name}
-          </li>
-        ))}
-      </ul>
-    </figure>
+    // Dark mode swaps the (invisible) shadow for a sunflower glow underneath.
+    <div className="relative isolate mx-auto w-full max-w-sm max-md:-my-8">
+      <div className="example-halo" aria-hidden />
+      <figure className="example-tilt bg-card ring-border w-full rounded-3xl p-5 shadow-2xl ring-1 select-none dark:shadow-none">
+        <figcaption className="text-muted-foreground flex items-center justify-between text-sm">
+          <span>Example question</span>
+          <span className="tabular-nums">Round 3 of 10</span>
+        </figcaption>
+        <div className="bg-muted mt-3 h-1.5 overflow-hidden rounded-full" aria-hidden>
+          <div className="bg-primary h-full w-2/3 rounded-full" />
+        </div>
+        <blockquote className="mt-5 text-xl leading-snug font-semibold text-balance">
+          {question.text}
+        </blockquote>
+        <p className="text-muted-foreground mt-5 mb-3 text-sm">Whose habit is it?</p>
+        <ul className="grid grid-cols-2 gap-2">
+          {question.options.map((code) => (
+            <li
+              key={code}
+              className="bg-background flex min-h-14 items-center gap-2 rounded-2xl px-3 py-2 leading-tight font-semibold"
+            >
+              <Flag code={code} />
+              {getCulture(code).name}
+            </li>
+          ))}
+        </ul>
+      </figure>
+    </div>
   )
 }
 
-// Edit the pictures in src/lander/art/*.svg (plain SVG, opens in Figma).
+// Edit the pictures in src/lander/art/*.svg (plain SVG, opens in Figma). Each one moves with a
+// small CSS animation in its own <style>.
 const STEPS: { title: string; text: string; art: string }[] = [
   {
     art: hostArt,
@@ -239,15 +244,15 @@ function HowToPlay() {
     >
       <ol className="grid gap-4 md:grid-cols-3">
         {STEPS.map(({ title, text, art }, i) => (
-          <li key={title} className="bg-card ring-border rounded-2xl p-5 ring-1">
-            <div className="bg-muted flex justify-center rounded-xl py-3">
+          <li key={title} className="bg-card ring-border rounded-2xl p-5 ring-1 md:p-6">
+            <div className="bg-muted flex justify-center rounded-xl py-5">
               <img src={art} alt="" width={160} height={96} className="h-24 w-auto" />
             </div>
-            <p className="text-muted-foreground mt-4 text-sm font-medium tabular-nums">
+            <p className="text-muted-foreground mt-5 text-sm font-medium tabular-nums">
               Step {i + 1}
             </p>
             <h3 className="mt-1 text-lg font-semibold">{title}</h3>
-            <p className="text-muted-foreground mt-1">{text}</p>
+            <p className="text-muted-foreground mt-1.5">{text}</p>
           </li>
         ))}
       </ol>
@@ -338,7 +343,7 @@ function FaqSection() {
                 aria-hidden
               />
             </summary>
-            <p className="text-muted-foreground pb-4">
+            <p className="text-muted-foreground pb-5">
               <WithEmailLink text={a} />
             </p>
           </details>
@@ -397,9 +402,18 @@ function About() {
         <p>
           <ExternalLink
             href={LINKEDIN_URL}
-            className="text-primary-soft font-medium underline underline-offset-4"
+            className="text-primary-soft font-medium whitespace-nowrap underline underline-offset-4"
           >
             Ruslan on LinkedIn
+          </ExternalLink>
+        </p>
+        <p>
+          Do you like what I do?{' '}
+          <ExternalLink
+            href={COFFEE_URL}
+            className="text-primary-soft font-semibold whitespace-nowrap underline underline-offset-4"
+          >
+            Buy me a coffee
           </ExternalLink>
         </p>
       </div>
@@ -441,7 +455,7 @@ function Footer() {
             its space meanwhile. Its legend gets the same look as the headings below. */}
         <div
           className={cn(
-            'min-h-[5.5rem] max-w-xs',
+            'min-h-[5.5rem] md:max-w-xs',
             '[&_legend]:mb-3 [&_legend]:text-base [&_legend]:font-semibold',
           )}
         >
@@ -477,7 +491,7 @@ function Footer() {
               </li>
               <li>
                 Votes on “play again?”, taps on Share and “Host your own game”, and the id of a
-                statement someone reported.
+                statement someone reported with the reason they picked.
               </li>
               <li>
                 Names you type go to the other players in your room while you play, through Supabase

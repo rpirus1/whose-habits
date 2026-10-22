@@ -1,23 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="160" height="96" viewBox="0 0 160 96">
-<g transform="rotate(-12 29 56)">
+<style>
+  /* Plain CSS animation: works when shown as an image, no script. Still when the phone asks for less motion. */
+  .bob { animation: bob 3.2s ease-in-out infinite; }
+  .late { animation-delay: -1.6s; }
+  .link { animation: flow 1.2s linear infinite; }
+  .qr { animation: scan 3.2s ease-in-out infinite; }
+  .dot { transform-box: fill-box; transform-origin: center; animation: pop 3.2s ease-in-out infinite; }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  @keyframes flow { to { stroke-dashoffset: -7; } }
+  @keyframes scan { 0%, 100% { opacity: 1; } 50% { opacity: .75; } }
+  @keyframes pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.18); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+<g class="bob"><g transform="rotate(-12 29 56)">
 <rect x="14" y="30" width="30" height="52" rx="6" fill="#1d1520">
 </rect>
 <rect x="17" y="35" width="24" height="42" rx="3.75" fill="#ffffff">
 </rect>
-</g>
-<g transform="rotate(12 131 56)">
+</g></g>
+<g class="bob late"><g transform="rotate(12 131 56)">
 <rect x="116" y="30" width="30" height="52" rx="6" fill="#1d1520">
 </rect>
 <rect x="119" y="35" width="24" height="42" rx="3.75" fill="#ffffff">
 </rect>
-</g>
+</g></g>
 <g transform="rotate(0 80 48)">
 <rect x="56" y="6" width="48" height="84" rx="9.6" fill="#1d1520">
 </rect>
 <rect x="59" y="11" width="42" height="74" rx="6" fill="#f7e3fd">
 </rect>
 </g>
-<rect x="64" y="28" width="5.4" height="5.4" rx="1" fill="#1c121f">
+<g class="qr"><rect x="64" y="28" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
 <rect x="70.4" y="28" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
@@ -50,11 +63,11 @@
 <rect x="83.2" y="53.6" width="5.4" height="5.4" rx="1" fill="#1c121f">
 </rect>
 <rect x="89.6" y="53.6" width="5.4" height="5.4" rx="1" fill="#1c121f">
-</rect>
-<path d="M44 40q8-14 18-14M116 40q-8-14-18-14" stroke="#d358f5" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 6" fill="none">
+</rect></g>
+<path d="M44 40q8-14 18-14M116 40q-8-14-18-14" stroke="#d358f5" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 6" fill="none" class="link">
 </path>
-<circle cx="29" cy="58" r="6" fill="#e5abf7">
-</circle>
-<circle cx="131" cy="58" r="6" fill="#fdca3a">
-</circle>
+<g class="bob"><circle class="dot" cx="29" cy="58" r="6" fill="#e5abf7">
+</circle></g>
+<g class="bob late"><circle class="dot" style="animation-delay:-1.6s" cx="131" cy="58" r="6" fill="#fdca3a">
+</circle></g>
 </svg>
