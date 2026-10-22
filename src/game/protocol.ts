@@ -1,8 +1,10 @@
 // Messages on the room's Supabase broadcast channel, and the public snapshot the host sends.
-// Guest messages are untrusted input: the host parses them with parseGuestMessage.
+// Every message is untrusted input: the host parses guest messages with parseGuestMessage,
+// guests parse host messages with parseHostMessage.
+import { CULTURE_CODES } from '@/content/schema'
 import type { CultureCode, Obviousness } from '@/content/schema'
 import { percentCorrect } from './scoring'
-import { REPORT_REASONS } from './types'
+import { REPORT_REASONS, ROUND_OPTIONS, SECONDS_OPTIONS } from './types'
 import type { Choice, GameState, Phase, ReportReason, Round, Settings } from './types'
 import type { Statement } from '@/content/schema'
 
@@ -253,4 +255,135 @@ export function parseGuestMessage(payload: unknown): GuestMessage | null {
     default:
       return null
   }
+}
+
+// ── Validation of host messages on guests ───────────────────────────────────
+// Anyone in the room can broadcast, so a guest can't trust that a "host" message came from
+// the host. This doesn't prove who sent it; it keeps a malformed one from breaking the screen.
+
+type Check = (v: unknown) => boolean
+
+const str =
+  (max = 64): Check =>
+  (v) =>
+    typeof v === 'string' && v.length <= max
+const num: Check = (v) => typeof v === 'number' && Number.isFinite(v)
+const bool: Check = (v) => typeof v === 'boolean'
+const nullable =
+  (check: Check): Check =>
+  (v) =>
+    v === null || check(v)
+const optional =
+  (check: Check): Check =>
+  (v) =>
+    v === undefined || check(v)
+const oneOf =
+  (values: readonly unknown[]): Check =>
+  (v) =>
+    values.includes(v)
+const list =
+  (check: Check, max: number): Check =>
+  (v) =>
+    Array.isArray(v) && v.length <= max && v.every(check)
+const record =
+  (key: Check, value: Check, max: number): Check =>
+  (v) =>
+    isObject(v) &&
+    Object.keys(v).length <= max &&
+    Object.entries(v).every(([k, x]) => key(k) && value(x))
+const shape =
+  (fields: Record<string, Check>): Check =>
+  (v) =>
+    isObject(v) && Object.entries(fields).every(([k, check]) => check(v[k]))
+
+const isObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v)
+
+// Generous limits: real snapshots stay far below them.
+const ID = str()
+const TEXT = str(1000)
+const MAX_LIST = 64
+const ids = list(ID, MAX_LIST)
+const culture = oneOf(CULTURE_CODES)
+const choice = oneOf([...CULTURE_CODES, 'unknown'])
+
+const isSnapshot = shape({
+  v: oneOf([1]),
+  seq: num,
+  hostId: ID,
+  roomCode: ID,
+  gameId: ID,
+  phase: oneOf(['lobby', 'question', 'reveal', 'final'] satisfies Phase[]),
+  paused: bool,
+  settings: shape({
+    cultures: list(culture, CULTURE_CODES.length),
+    rounds: oneOf(ROUND_OPTIONS),
+    seconds: oneOf(SECONDS_OPTIONS),
+  }),
+  players: list(
+    shape({
+      id: ID,
+      name: str(),
+      score: num,
+      connected: bool,
+      isHost: bool,
+      left: optional(bool),
+    }),
+    MAX_LIST,
+  ),
+  question: nullable(
+    shape({
+      roundId: ID,
+      index: num,
+      total: num,
+      text: TEXT,
+      endsAt: nullable(num),
+      remainingMs: nullable(num),
+      answeredIds: ids,
+      answeringIds: ids,
+    }),
+  ),
+  reveal: nullable(
+    shape({
+      index: num,
+      total: num,
+      statementId: ID,
+      text: TEXT,
+      answer: culture,
+      note: TEXT,
+      split: record(choice, num, MAX_LIST),
+      correctIds: ids,
+      bonusId: nullable(ID),
+      points: record(ID, num, MAX_LIST),
+      choices: record(ID, choice, MAX_LIST),
+    }),
+  ),
+  viewing: bool,
+  final: nullable(
+    shape({
+      ranking: list(shape({ id: ID, rank: num }), MAX_LIST),
+      surprising: list(
+        shape({ statementId: ID, text: TEXT, answer: culture, note: TEXT, percentCorrect: num }),
+        MAX_LIST,
+      ),
+      roundsPlayed: num,
+    }),
+  ),
+  holdUntil: nullable(num),
+})
+
+const isHostMessage: Record<HostMessage['type'], Check> = {
+  state: shape({ snapshot: isSnapshot }),
+  pong: shape({ playerId: ID, t0: num, hostNow: num }),
+  rejected: shape({ playerId: ID, reason: oneOf(['full', 'kicked']) }),
+  ack: shape({ playerId: ID, roundId: ID, choice }),
+}
+
+/** A well-formed host message, or null. Guest messages on the channel also end up here. */
+export function parseHostMessage(payload: unknown): HostMessage | null {
+  if (!isObject(payload) || typeof payload.type !== 'string') return null
+  const check = isHostMessage[payload.type as HostMessage['type']]
+  return Object.hasOwn(isHostMessage, payload.type) && check(payload)
+    ? (payload as unknown as HostMessage)
+    : null
 }

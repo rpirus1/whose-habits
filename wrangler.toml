@@ -23,3 +23,16 @@ binding = "DB"
 database_name = "culture-clash"
 database_id = "373adea5-17c9-4098-99b4-9f0917a4b076"
 migrations_dir = "migrations"
+
+# Rate limits per IP address (worker/rateLimit.ts). A party of 12 phones behind one Wi-Fi
+# sends a handful of events per game, far below this; a script flooding D1 is cut off.
+[[ratelimits]]
+name = "EVENT_LIMIT"
+namespace_id = "1001"
+simple = { limit = 60, period = 60 }
+
+# /stats password attempts: slows down guessing STATS_TOKEN.
+[[ratelimits]]
+name = "STATS_LIMIT"
+namespace_id = "1002"
+simple = { limit = 10, period = 60 }

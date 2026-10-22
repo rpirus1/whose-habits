@@ -3,12 +3,15 @@
 // handled by the assets layer. This code sees /api/* and /stats first (run_worker_first in
 // wrangler.toml), and every request that matched no file: those get the app shell.
 import { isPreviewHost, MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
-import { PRIVATE_HEADERS, routeRequest, SHELL_PATH } from './routes'
+import { fromOwnPage, PRIVATE_HEADERS, routeRequest, SHELL_PATH } from './routes'
+import { withinLimit } from './rateLimit'
 import { handleStats } from './stats'
 import type { StatsEnv } from './stats'
 
 interface Env extends StatsEnv {
   ASSETS: Fetcher
+  /** Events per IP address (wrangler.toml). Optional so tests and older configs still run. */
+  EVENT_LIMIT?: RateLimit
 }
 
 export default {
@@ -42,9 +45,8 @@ async function serveApp(request: Request, url: URL, env: Env): Promise<Response>
 
 /** Stores one anonymous product event in D1. Only known, validated fields are kept. */
 async function handleEvent(request: Request, env: Env): Promise<Response> {
-  // Only our own pages may post (blocks drive-by cross-site spam; not a security boundary).
-  const origin = request.headers.get('Origin')
-  if (origin && origin !== new URL(request.url).origin) return new Response(null, { status: 403 })
+  if (!fromOwnPage(request)) return new Response(null, { status: 403 })
+  if (!(await withinLimit(env.EVENT_LIMIT, request))) return new Response(null, { status: 429 })
 
   const text = await request.text()
   if (text.length > MAX_EVENT_BYTES) return new Response(null, { status: 413 })

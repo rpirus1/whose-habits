@@ -3,10 +3,13 @@
 // (`wrangler secret put STATS_TOKEN`); without it the page doesn't exist.
 import METRICS_SQL from '../scripts/metrics.sql'
 import { renderStats, splitQueries } from './statsPage'
+import { withinLimit } from './rateLimit'
 
 export interface StatsEnv {
   DB: D1Database
   STATS_TOKEN?: string
+  /** Requests (so password guesses) per IP address (wrangler.toml). */
+  STATS_LIMIT?: RateLimit
 }
 
 const HEADERS = {
@@ -20,6 +23,12 @@ export async function handleStats(request: Request, env: StatsEnv): Promise<Resp
   if (!env.STATS_TOKEN) return new Response('Not found', { status: 404 })
   if (request.method !== 'GET')
     return new Response(null, { status: 405, headers: { Allow: 'GET' } })
+  if (!(await withinLimit(env.STATS_LIMIT, request))) {
+    return new Response('Too many attempts. Try again in a minute.', {
+      status: 429,
+      headers: HEADERS,
+    })
+  }
   if (!(await authorized(request, env.STATS_TOKEN))) {
     return new Response('Password required', {
       status: 401,

@@ -1,7 +1,8 @@
 // A guest's side of a room: says hello until the host lists them, syncs its clock,
 // sends answers until the host acknowledges them, and renders snapshots.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { GuestMessage, HostMessage, Snapshot } from '@/game/protocol'
+import { parseHostMessage } from '@/game/protocol'
+import type { GuestMessage, Snapshot } from '@/game/protocol'
 import type { Choice, ReportReason } from '@/game/types'
 import { saveGuestIdentity } from '@/lib/savedRooms'
 import type { GuestIdentity } from '@/lib/savedRooms'
@@ -24,6 +25,11 @@ export interface MyAnswer {
 const HELLO_RETRY_MS = 2000
 const ANSWER_RETRY_MS = 1000
 const NOT_FOUND_AFTER_MS = 8000
+/**
+ * The host numbers snapshots with its clock. A snapshot claiming to be further ahead than this
+ * still shows, but can't make the guest drop the real host's snapshots for longer than this.
+ */
+const SEQ_AHEAD_MS = 30_000
 /** Report messages are re-sent at these delays; the host ignores repeats. */
 const REPORT_RESEND_MS = [1000, 2500]
 
@@ -38,6 +44,7 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
   const connectionRef = useRef<RoomConnection | null>(null)
   const myAnswerRef = useRef<MyAnswer | null>(null)
   const lastSeq = useRef(0)
+  const clockOffsetRef = useRef(0)
   const hostId = useRef(identity.hostId)
 
   const send = useCallback((message: GuestMessage) => connectionRef.current?.send(message), [])
@@ -119,13 +126,13 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
     const offPresence = connection.onPresence(setOnlineIds)
 
     const offMessage = connection.onMessage((payload) => {
-      const message = payload as HostMessage
+      const message = parseHostMessage(payload)
       switch (message?.type) {
         case 'state': {
           const snap = message.snapshot
           if (hostId.current && snap.hostId !== hostId.current) return
           if (snap.seq <= lastSeq.current) return
-          lastSeq.current = snap.seq
+          lastSeq.current = Math.min(snap.seq, Date.now() + clockOffsetRef.current + SEQ_AHEAD_MS)
           if (!hostId.current) {
             hostId.current = snap.hostId
             saveGuestIdentity(roomCode, { ...identity, hostId: snap.hostId })
@@ -153,7 +160,10 @@ export function useGuestGame(roomCode: string, identity: GuestIdentity) {
           if (message.playerId !== identity.playerId) return
           samples.push({ t0: message.t0, hostNow: message.hostNow, t1: Date.now() })
           const offset = estimateOffset(samples)
-          if (offset !== null) setClockOffset(offset)
+          if (offset !== null) {
+            clockOffsetRef.current = offset
+            setClockOffset(offset)
+          }
           return
         }
         case 'ack': {

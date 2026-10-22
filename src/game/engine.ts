@@ -481,16 +481,30 @@ function validChoice(choice: string, cultures: CultureCode[]): choice is Choice 
   return choice === 'unknown' || (cultures as string[]).includes(choice)
 }
 
+/**
+ * Names come from guests, so they're cleaned before anyone sees them: no control characters,
+ * no invisible or direction-flipping ones (but the joiner inside emoji like 👩‍👧 stays), no
+ * towers of stacked accents, and no emoji cut in half at the length limit.
+ */
 export function cleanName(name: string): string {
-  return name.replace(/\s+/g, ' ').trim().slice(0, MAX_NAME_LENGTH).trim()
+  const clean = name
+    .replace(/\p{Cc}/gu, ' ')
+    .replace(/(?!‍)\p{Cf}/gu, '')
+    .replace(/(\p{M}{2})\p{M}+/gu, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return cut(clean, MAX_NAME_LENGTH).trim()
 }
+
+/** The first `max` UTF-16 units (what the name input's maxLength counts), no half emoji. */
+const cut = (text: string, max: number) => text.slice(0, max).replace(/[\uD800-\uDBFF]$/, '')
 
 /** "Anna" → "Anna 2" → "Anna 3" when the name is taken (case-insensitive). */
 function uniqueName(players: Player[], name: string): string {
   const taken = new Set(players.map((p) => p.name.toLowerCase()))
   if (!taken.has(name.toLowerCase())) return name
   for (let n = 2; ; n++) {
-    const candidate = `${name.slice(0, MAX_NAME_LENGTH - 3)} ${n}`
+    const candidate = `${cut(name, MAX_NAME_LENGTH - 3)} ${n}`
     if (!taken.has(candidate.toLowerCase())) return candidate
   }
 }

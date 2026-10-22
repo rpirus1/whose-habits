@@ -67,6 +67,20 @@ describe('lobby', () => {
     ])
   })
 
+  it('strips invisible, direction-flipping and stacked characters from names', () => {
+    const h = harness({ guests: [], start: false })
+    h.run({ type: 'join', playerId: 'a', name: 'Ann‮evil​\n' })
+    h.run({ type: 'join', playerId: 'b', name: 'Z̀́̂̃̄o' })
+    h.run({ type: 'join', playerId: 'c', name: '👩‍👧 Mia' })
+    h.run({ type: 'join', playerId: 'd', name: 'x'.repeat(19) + '😀' })
+    expect(h.s.players.slice(1).map((p) => p.name)).toEqual([
+      'Annevil',
+      'Z̀́o',
+      '👩‍👧 Mia',
+      'x'.repeat(19),
+    ])
+  })
+
   it('rejoins a known player without creating a duplicate', () => {
     const h = harness({ start: false })
     h.run({ type: 'presence', onlineIds: ['bob'] })

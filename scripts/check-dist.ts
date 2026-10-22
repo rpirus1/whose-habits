@@ -20,9 +20,10 @@ expect(shell.includes('property="og:image"'), 'app.html: lost its link preview t
 
 expect(read('dist/sitemap.xml').includes('<loc>https://'), 'sitemap.xml: missing')
 expect(read('dist/robots.txt').includes('Sitemap: https://'), 'robots.txt: missing')
+expect(/Content-Security-Policy: .*'sha256-/.test(read('dist/_headers')), '_headers: no CSP')
 
 if (errors.length) {
   for (const e of errors) console.error(`  dist check  ${e}`)
   process.exit(1)
 }
-console.log('dist check passed: prerendered lander, app shell, sitemap, robots.')
+console.log('dist check passed: prerendered lander, app shell, sitemap, robots, CSP.')

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createGame, reduce } from './engine'
 import type { Action } from './engine'
-import { finalSummary, parseGuestMessage, toSnapshot } from './protocol'
+import { finalSummary, parseGuestMessage, parseHostMessage, toSnapshot } from './protocol'
 import { seededRandom } from './random'
 import { byId, makeBank } from './testing'
 import type { EngineContext, GameState } from './types'
@@ -130,5 +130,57 @@ describe('parseGuestMessage', () => {
     ]) {
       expect(parseGuestMessage(bad)).toBeNull()
     }
+  })
+})
+
+describe('parseHostMessage', () => {
+  it('accepts every snapshot the host sends, from lobby to final', () => {
+    const g = started()
+    const snaps = [toSnapshot(g.s, statements, 1)]
+    const round = g.s.rounds[0]
+    g.run({ type: 'answer', playerId: 'ann', roundId: round.id, choice: round.answer })
+    g.run({ type: 'answer', playerId: 'host', roundId: round.id, choice: 'unknown' })
+    snaps.push(toSnapshot(g.s, statements, 2))
+    g.run({ type: 'end' })
+    snaps.push(toSnapshot(g.s, statements, 3))
+    const lobby = createGame({
+      roomCode: 'BCDF',
+      hostId: 'host',
+      settings: { cultures: ['PL', 'NL'], rounds: 10, seconds: 20 },
+    })
+    snaps.push(toSnapshot(lobby, statements, 4))
+
+    expect(snaps.map((s) => s.phase)).toEqual(['question', 'reveal', 'final', 'lobby'])
+    for (const snapshot of snaps) {
+      const message = JSON.parse(JSON.stringify({ type: 'state', snapshot }))
+      expect(parseHostMessage(message)).toEqual(message)
+    }
+    for (const m of [
+      { type: 'pong', playerId: 'ann', t0: 1, hostNow: 2 },
+      { type: 'rejected', playerId: 'ann', reason: 'kicked' },
+      { type: 'ack', playerId: 'ann', roundId: 'r1', choice: 'PL' },
+    ])
+      expect(parseHostMessage(m)).toEqual(m)
+  })
+
+  it('rejects malformed or unknown messages', () => {
+    const snapshot = toSnapshot(started().s, statements, 1)
+    const broken = (patch: object) => ({ type: 'state', snapshot: { ...snapshot, ...patch } })
+    for (const m of [
+      null,
+      'state',
+      { type: 'state' },
+      { type: 'constructor' },
+      { type: 'hello', playerId: 'ann', name: 'Ann' },
+      broken({ players: 'everyone' }),
+      broken({ players: [{ id: 'x', name: 'X' }] }),
+      broken({ phase: 'party' }),
+      broken({ seq: Infinity }),
+      broken({ question: { ...snapshot.question, text: 'x'.repeat(5000) } }),
+      broken({ settings: { ...snapshot.settings, cultures: ['XX'] } }),
+      { type: 'rejected', playerId: 'ann', reason: 'banned' },
+      { type: 'ack', playerId: 'ann', roundId: 'r1', choice: '<b>' },
+    ])
+      expect(parseHostMessage(m)).toBeNull()
   })
 })

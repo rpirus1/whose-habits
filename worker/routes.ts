@@ -31,3 +31,17 @@ export const PRIVATE_HEADERS = {
   'X-Robots-Tag': 'noindex, nofollow',
   'Referrer-Policy': 'no-referrer',
 }
+
+/**
+ * Whether a POST came from one of our own pages. Browsers always send Sec-Fetch-Site or
+ * Origin (room pages send Origin "null", their referrer policy being no-referrer), so a
+ * request with neither is a script. Blocks drive-by and casual spam; a determined sender can
+ * fake both, which the rate limit covers.
+ */
+export function fromOwnPage(request: Request): boolean {
+  const site = request.headers.get('Sec-Fetch-Site')
+  const origin = request.headers.get('Origin')
+  if (site) return site === 'same-origin'
+  if (!origin) return false
+  return origin === 'null' || origin === new URL(request.url).origin
+}
