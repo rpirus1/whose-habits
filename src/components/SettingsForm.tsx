@@ -20,8 +20,13 @@ export function SettingsForm({
   /** Refuse to untick below the minimum (in the lobby, where the game must stay valid). */
   keepMinimum?: boolean
 }) {
-  // The culture the host just tried to untick, and a counter so repeat taps shake again.
-  const [refused, setRefused] = useState<{ code: CultureCode; n: number } | null>(null)
+  // The culture the host just tried to tick or untick past a limit, which limit, and a counter so
+  // repeat taps shake again.
+  const [refused, setRefused] = useState<{
+    code: CultureCode
+    limit: 'min' | 'max'
+    n: number
+  } | null>(null)
   useEffect(() => {
     if (!refused) return
     const id = window.setTimeout(() => setRefused(null), 2500)
@@ -30,9 +35,14 @@ export function SettingsForm({
 
   const toggleCulture = (code: CultureCode) => {
     const selected = value.cultures.includes(code)
-    if (!selected && value.cultures.length >= MAX_CULTURES) return
-    if (selected && keepMinimum && value.cultures.length <= MIN_CULTURES) {
-      setRefused((r) => ({ code, n: (r?.n ?? 0) + 1 }))
+    const limit =
+      !selected && value.cultures.length >= MAX_CULTURES
+        ? 'max'
+        : selected && keepMinimum && value.cultures.length <= MIN_CULTURES
+          ? 'min'
+          : null
+    if (limit) {
+      setRefused((r) => ({ code, limit, n: (r?.n ?? 0) + 1 }))
       return
     }
     const cultures = selected ? value.cultures.filter((c) => c !== code) : [...value.cultures, code]
@@ -45,7 +55,9 @@ export function SettingsForm({
 
   const enough = value.cultures.length >= MIN_CULTURES
   const hint = refused
-    ? `Keep at least ${MIN_CULTURES} countries.`
+    ? refused.limit === 'max'
+      ? `Up to ${MAX_CULTURES} countries. Untick one to swap it.`
+      : `Keep at least ${MIN_CULTURES} countries.`
     : enough
       ? ''
       : `Pick at least ${MIN_CULTURES} countries.`
