@@ -36,3 +36,11 @@ simple = { limit = 60, period = 60 }
 name = "STATS_LIMIT"
 namespace_id = "1002"
 simple = { limit = 10, period = 60 }
+
+# Workers Logs, to catch errors: kept 3 days on the free plan (7 on paid). Only requests that
+# reach this Worker are logged (/api/*, /r/*, /new, /stats), not the lander or static files.
+# Set here, not only in the dashboard, so a deploy from main can't switch it off.
+# The lander's privacy section mentions these logs: keep the two in step.
+[observability.logs]
+enabled = true
+invocation_logs = true

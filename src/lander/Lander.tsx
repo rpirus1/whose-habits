@@ -530,7 +530,7 @@ function Footer() {
               </li>
               <li>
                 Cloudflare hosts the site and, like any web host, sees IP addresses to deliver the
-                pages.
+                pages. It also keeps request logs for 3 days, so we can catch errors.
               </li>
             </ul>
             <p className="text-muted-foreground mt-2">

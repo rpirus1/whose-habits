@@ -36,6 +36,11 @@ No accounts, no cookies, no personal data. The app sends a few anonymous, game-l
 Cloudflare D1. No names, player ids or IP addresses are stored. Room links are unguessable
 and marked `noindex`.
 
+Cloudflare Workers Logs is on (`[observability.logs]` in `wrangler.toml`) to catch errors: it keeps
+request logs (which can include IP addresses) for 3 days on the free plan (7 on paid). Only requests
+that reach the Worker are logged (`/api/*`, `/r/*`, `/new`, `/stats`); the lander and static files
+are not. The lander's privacy section says this.
+
 Your own playtests don't count: events from `localhost`, the dev server, or a device that
 opened any page with `?test=1` are stored with `test = 1` and left out of every query
 (`?test=0` turns it off again). Until launch on a custom domain, everything on the
