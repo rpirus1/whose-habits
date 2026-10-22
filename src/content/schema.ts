@@ -4,7 +4,23 @@
 export const CULTURE_CODES = ['PL', 'UA', 'NL', 'BR', 'MX', 'US', 'TR', 'IT', 'FR', 'KR'] as const
 export type CultureCode = (typeof CULTURE_CODES)[number]
 
-export const TOPICS = ['daily', 'hosting', 'family', 'humour', 'work', 'language'] as const
+// The same groups for every culture: used for analytics and a future "pick topics" setting.
+// What each one covers: docs/CONTENT_RULES.md.
+export const TOPICS = [
+  'home',
+  'money',
+  'transport',
+  'table',
+  'hosting',
+  'holidays',
+  'family',
+  'school',
+  'work',
+  'language',
+  'humour',
+  'weather',
+  'leisure',
+] as const
 export type Topic = (typeof TOPICS)[number]
 
 export type Obviousness = 1 | 2 | 3

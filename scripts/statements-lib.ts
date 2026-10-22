@@ -164,6 +164,15 @@ export function coverageReport(statements: Statement[]): string {
   )
   lines.push('By topic:       ' + TOPICS.map((t) => `${t} ${byTopic.get(t) ?? 0}`).join('  '))
 
+  // A future "pick topics" game needs a few statements per topic for every culture.
+  const thin = TOPICS.flatMap((t) => {
+    const low = CULTURE_CODES.filter(
+      (c) => statements.filter((s) => s.topic === t && s.id.startsWith(c.toLowerCase())).length < 3,
+    )
+    return low.length ? [`${t} (${low.join(' ')})`] : []
+  })
+  lines.push('Under 3 per culture: ' + (thin.length ? thin.join(', ') : 'none'))
+
   // The smallest 2-culture game is the tightest pool; it must cover 20 rounds plus replacements.
   let tightest = { pair: '', n: Infinity }
   for (let i = 0; i < CULTURE_CODES.length; i++)
