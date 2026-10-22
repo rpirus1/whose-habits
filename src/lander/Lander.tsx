@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { lazy, Suspense, useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router'
+import { Brand } from '@/components/Brand'
 import { Flag } from '@/components/Flag'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -54,10 +55,7 @@ export function Lander() {
         Skip to content
       </a>
       <header className={cn(container, 'flex h-16 items-center justify-between')}>
-        <Link to="/" className="flex items-center gap-2 font-heading text-lg font-bold">
-          <img src="/favicon.svg" alt="" width={28} height={28} className="size-7" />
-          Whose Habits
-        </Link>
+        <Brand />
         <Button asChild variant="ghost" size="lg" className="-mr-2.5">
           <Link to="/new">Host a game</Link>
         </Button>
@@ -128,7 +126,7 @@ function Hero() {
     >
       <div className="flex flex-col gap-6">
         <div className="space-y-4">
-          <Badge variant="soft" className="h-7 px-3 text-sm">
+          <Badge variant="highlight" className="h-7 px-3 text-sm">
             Free party game · {PLAYERS} players
           </Badge>
           <h1
@@ -183,7 +181,9 @@ function ResumeGame() {
 function ExampleQuestion() {
   const question = HERO_QUESTION
   return (
-    <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-sm ring-1">
+    // Tilted in 3D like a product shot, so it reads as a picture of the game, not a control.
+    // Still real text (crisp, translatable, read by screen readers); only the transform is new.
+    <figure className="bg-card ring-border mx-auto w-full max-w-sm rounded-3xl p-5 shadow-2xl ring-1 select-none [transform:perspective(1200px)_rotateX(8deg)_rotateY(-14deg)_rotateZ(2deg)]">
       <figcaption className="text-muted-foreground flex items-center justify-between text-sm">
         <span>Example question</span>
         <span className="tabular-nums">Round 3 of 10</span>
@@ -287,7 +287,7 @@ function WhyItsDifferent() {
 
       <div className="mt-14 flex items-center gap-3 md:mt-16">
         <h3 className="font-semibold">Countries in the game</h3>
-        <Badge variant="soft">More coming</Badge>
+        <Badge variant="highlight">More coming</Badge>
       </div>
       {/* Phones: a drifting row you can swipe. Desktop: all chips, wrapped. */}
       <div className="mt-5 md:hidden">
@@ -414,14 +414,18 @@ function About() {
 }
 
 const CREDITS = [
-  { name: 'HeroUI “Rabbit” theme', license: 'MIT', href: 'https://heroui.com' },
+  { name: 'HeroUI components', license: 'MIT', href: 'https://heroui.com' },
   {
     name: 'country-flag-icons',
     license: 'MIT',
     href: 'https://gitlab.com/catamphetamine/country-flag-icons',
   },
   { name: 'Lucide icons', license: 'ISC', href: 'https://lucide.dev' },
-  { name: 'Geist font', license: 'OFL', href: 'https://vercel.com/font' },
+  {
+    name: 'Bricolage Grotesque font',
+    license: 'OFL',
+    href: 'https://github.com/ateliertriay/bricolage',
+  },
 ]
 
 /** Footer headings: Theme, Privacy and Credits share this style. */

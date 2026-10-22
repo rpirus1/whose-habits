@@ -1,10 +1,11 @@
 import { SlidersHorizontal } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { Brand } from '@/components/Brand'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 /**
- * Top bar for every room screen: the name on the left, a menu button on the right.
+ * Top bar for every room screen: the logo (a link home) on the left, a menu button on the right.
  * The menu opens as a panel over the page (the game doesn't move) and closes on a tap
  * outside it, on Escape, or on the button again. `menu` gets a close function so an
  * action like "End game" can shut it.
@@ -13,11 +14,14 @@ export function AppBar({
   menu,
   menuLabel = 'Menu',
   dot = false,
+  leaveWarning,
 }: {
   menu: (close: () => void) => ReactNode
   menuLabel?: string
   /** A small dot on the button, e.g. while the game is paused. */
   dot?: boolean
+  /** While a game runs: the logo link asks before leaving, with this explanation. */
+  leaveWarning?: string
 }) {
   const [open, setOpen] = useState(false)
   const panelId = useId()
@@ -43,7 +47,7 @@ export function AppBar({
     // (Safari tints the status bar from it). z-20 keeps it and its menu above the page.
     <header className="bg-background sticky top-0 z-20 -mx-4 -mt-[max(1.5rem,env(safe-area-inset-top))] px-4 pt-[max(0.5rem,env(safe-area-inset-top))]">
       <div className="flex h-12 items-center justify-between">
-        <span className="font-heading text-lg font-bold">Whose Habits</span>
+        <Brand leaveWarning={leaveWarning} />
         <Button
           ref={buttonRef}
           variant="ghost"

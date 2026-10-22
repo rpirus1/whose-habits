@@ -23,6 +23,11 @@ export function HostRoom({ initial }: { initial: GameState }) {
       <AppBar
         menuLabel="Host menu"
         dot={state.paused}
+        leaveWarning={
+          state.phase === 'question' || state.phase === 'reveal'
+            ? 'The game runs on your phone, so it stops for everyone until you come back. You can return with the same link.'
+            : undefined
+        }
         menu={(close) => (
           <HostMenu state={state} players={snapshot.players} dispatch={dispatch} close={close} />
         )}
@@ -67,6 +72,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
           }
           onNext={() => dispatch({ type: 'next' })}
           onPlayAgain={() => dispatch({ type: 'playAgain', gameId: newId() })}
+          onResume={() => dispatch({ type: 'resume' })}
         />
       )}
     </Screen>

@@ -14,6 +14,7 @@ export function QuestionView({
   confirmed,
   clockOffset,
   onChoose,
+  onResume,
 }: {
   snapshot: Snapshot
   meId: string
@@ -22,6 +23,8 @@ export function QuestionView({
   confirmed: boolean
   clockOffset: number
   onChoose: (choice: Choice) => void
+  /** Host only. */
+  onResume?: () => void
 }) {
   const question = snapshot.question!
   const msLeft = useCountdown(question.endsAt, question.remainingMs, clockOffset)
@@ -44,7 +47,7 @@ export function QuestionView({
             {answered} of {answering.length} answered
           </span>
         </div>
-        <TimerBar msLeft={msLeft} totalMs={totalMs} paused={snapshot.paused} />
+        <TimerBar msLeft={msLeft} totalMs={totalMs} paused={snapshot.paused} onResume={onResume} />
       </div>
 
       <p className="text-muted-foreground text-center text-sm">Where is this most typical?</p>

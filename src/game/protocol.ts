@@ -169,7 +169,7 @@ function toReveal(
   }
 }
 
-export const SURPRISING_COUNT = 3
+export const SURPRISING_COUNT = 2
 
 export function finalSummary(
   s: GameState,

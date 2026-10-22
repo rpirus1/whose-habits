@@ -6,14 +6,15 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
-@import '@fontsource-variable/geist';
+/* Optical-size build: small UI text gets wider, opener letterforms automatically. */
+@import '@fontsource-variable/bricolage-grotesque/opsz.css';
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
-  /* One typeface everywhere: numbers use Geist's tabular figures (tabular-nums), not a mono font. */
+  --font-sans: 'Bricolage Grotesque Variable', sans-serif;
+  /* One typeface everywhere: numbers use its tabular figures (tabular-nums), not a mono font. */
   --font-mono: var(--font-sans);
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -21,6 +22,8 @@
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-primary-soft: var(--primary-soft);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -61,54 +64,61 @@
 }
 
 :root {
-  /* HeroUI v3 "Rabbit" preset (light). Text colours marked "AA" are darkened from the preset
-     so they read at 4.5:1 on the light background and cards. */
-  --background: oklch(0.9702 0.01 36.66);
-  --foreground: oklch(0.2103 0.01 36.66);
-  --card: oklch(1 0.005 36.66);
-  --card-foreground: oklch(0.2103 0.01 36.66);
-  --popover: oklch(1 0.003 36.66);
-  --popover-foreground: oklch(0.2103 0.01 36.66);
-  --primary: oklch(0.6678 0.2232 36.66);
-  --primary-foreground: oklch(0.15 0.03 36.66);
-  --secondary: oklch(0.94 0.01 36.66);
-  --secondary-foreground: oklch(0.2103 0.0059 36.66);
-  --muted: oklch(0.9524 0.008 36.66);
-  --muted-foreground: oklch(0.53 0.02 36.66); /* AA */
-  --accent: oklch(0.94 0.01 36.66);
-  --accent-foreground: oklch(0.2103 0.0059 36.66);
-  --destructive: oklch(0.55 0.22 29.09); /* AA */
-  --success: oklch(0.52 0.15 140.81); /* AA */
+  /* Orchid (light). Hue 318 everywhere, so the neutrals carry a faint violet tint. Contrast,
+     checked against background, card and muted: text 4.5:1 or more, primary on white 5.6:1. */
+  --background: oklch(0.975 0.008 318);
+  --foreground: oklch(0.2 0.03 318);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.03 318);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.03 318);
+  --primary: oklch(0.55 0.25 318);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.015 318);
+  --secondary-foreground: oklch(0.2 0.03 318);
+  --muted: oklch(0.95 0.015 318);
+  --muted-foreground: oklch(0.5 0.03 318);
+  --accent: oklch(0.95 0.015 318);
+  --accent-foreground: oklch(0.2 0.03 318);
+  --destructive: oklch(0.55 0.22 29.09);
+  --success: oklch(0.52 0.15 140.81);
   /* Accent text on a tinted fill (the score chip). */
-  --primary-soft: oklch(0.52 0.18 36.66); /* AA */
-  --border: oklch(0.9 0.01 36.66);
-  --input: oklch(0.9 0.01 36.66);
-  --ring: oklch(0.6678 0.2232 36.66);
+  --primary-soft: oklch(0.5 0.24 318);
+  /* Second brand colour: sunflower. A fill for illustrations, icons, confetti and social
+     images, always with dark text on it (11.8:1). Too light to be text on a light page. */
+  --highlight: oklch(0.86 0.16 88);
+  --highlight-foreground: oklch(0.2 0.03 318);
+  --border: oklch(0.9 0.015 318);
+  --input: oklch(0.9 0.015 318);
+  --ring: oklch(0.55 0.25 318);
   --radius: 0.75rem;
 }
 
 .dark {
-  /* HeroUI v3 "Rabbit" preset (dark), mapped onto shadcn roles. Credit: HeroUI, MIT. */
-  --background: oklch(0.12 0.01 36.66);
-  --foreground: oklch(0.9911 0.01 36.66);
-  --card: oklch(0.2103 0.02 36.66);
-  --card-foreground: oklch(0.9911 0.01 36.66);
-  --popover: oklch(0.2103 0.02 36.66);
-  --popover-foreground: oklch(0.9911 0.01 36.66);
-  --primary: oklch(0.6678 0.2232 36.66);
-  --primary-foreground: oklch(0.15 0.03 36.66);
-  --secondary: oklch(0.274 0.01 36.66);
-  --secondary-foreground: oklch(0.9911 0 0);
-  --muted: oklch(0.257 0.015 36.66);
-  --muted-foreground: oklch(0.705 0.02 36.66);
-  --accent: oklch(0.274 0.01 36.66);
-  --accent-foreground: oklch(0.9911 0 0);
-  --destructive: oklch(0.6291 0.2565 29.09);
+  /* Orchid (dark). Primary buttons take dark text: 6.1:1 (white on orchid is only 3.2:1). */
+  --background: oklch(0.14 0.015 318);
+  --foreground: oklch(0.985 0.005 318);
+  --card: oklch(0.21 0.025 318);
+  --card-foreground: oklch(0.985 0.005 318);
+  --popover: oklch(0.21 0.025 318);
+  --popover-foreground: oklch(0.985 0.005 318);
+  --primary: oklch(0.68 0.24 318);
+  --primary-foreground: oklch(0.15 0.04 318);
+  --secondary: oklch(0.26 0.025 318);
+  --secondary-foreground: oklch(0.985 0.005 318);
+  --muted: oklch(0.26 0.025 318);
+  --muted-foreground: oklch(0.72 0.03 318);
+  --accent: oklch(0.26 0.025 318);
+  --accent-foreground: oklch(0.985 0.005 318);
+  /* Lighter than the old red so it reads 4.5:1 on its own tinted button. */
+  --destructive: oklch(0.68 0.2 25);
   --success: oklch(0.7113 0.2043 140.81);
-  --primary-soft: oklch(0.6678 0.2232 36.66);
-  --border: oklch(0.28 0.01 36.66);
-  --input: oklch(0.28 0.01 36.66);
-  --ring: oklch(0.6678 0.2232 36.66);
+  --primary-soft: oklch(0.76 0.17 318);
+  --highlight: oklch(0.86 0.16 88);
+  --highlight-foreground: oklch(0.15 0.04 318);
+  --border: oklch(0.3 0.02 318);
+  --input: oklch(0.3 0.02 318);
+  --ring: oklch(0.68 0.24 318);
   --radius: 0.75rem;
 }
 
@@ -127,6 +137,28 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Sticky footer backdrop (StickyFooter): solid background behind the buttons, fading out
+   over 2.5rem above them, with a light blur that fades the same way. The blur is plain CSS
+   (Safari 9+, Chrome 76+, Firefox 103+); where it isn't supported the fade alone remains. */
+.footer-fade {
+  isolation: isolate;
+}
+.footer-fade::before {
+  content: '';
+  position: absolute;
+  inset: -2.5rem -1rem 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in oklch, var(--background) 0%, transparent),
+    var(--background) 2.5rem
+  );
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 2.5rem);
+  mask-image: linear-gradient(to bottom, transparent, black 2.5rem);
 }
 
 /* Toasts: sonner sets its own system font on the toaster, outside any layer. */
