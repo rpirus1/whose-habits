@@ -29,3 +29,6 @@ src/content/statements.json
 
 # Wrangler local state (local D1 database, caches)
 .wrangler
+
+# Generated for the stats Worker (npm run stats:content)
+stats/statements.json

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { STATEMENT_MAP } from '@/content/statements'
 import { joinRejection, reduce } from '@/game/engine'
 import type { Action } from '@/game/engine'
+import { statementEvents } from '@/game/metrics'
 import { parseGuestMessage, toSnapshot } from '@/game/protocol'
 import type { HostMessage, Snapshot } from '@/game/protocol'
 import type { EngineContext, GameState } from '@/game/types'
@@ -186,19 +187,11 @@ export function useHostGame(initial: GameState): HostGame {
     }
   }, [state])
 
-  // One report event per report, sent by the host when its hold ends (so a reporter who
-  // drops still counts). The key stays on this device; the event has no player id.
+  // Statement metrics: each played round, each replaced statement, and each report once its
+  // hold ends (so a reporter who drops still counts). Keys stay here; events have no player ids.
   useEffect(() => {
-    for (const r of state.reports ?? []) {
-      if (r.reason === null) continue
-      trackOnce(`report:${state.gameId}:${r.playerId}:${r.statementId}`, {
-        type: 'report',
-        gameId: state.gameId,
-        statementId: r.statementId,
-        reason: r.reason,
-      })
-    }
-  }, [state.gameId, state.reports])
+    for (const { key, event } of statementEvents(state, STATEMENT_MAP)) trackOnce(key, event)
+  }, [state])
 
   // Remember statements this device has shown, so the next game avoids them.
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { Crown, Share2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Flag } from '@/components/Flag'
@@ -7,7 +7,7 @@ import { StickyFooter } from '@/components/StickyFooter'
 import { Button } from '@/components/ui/button'
 import { getCulture } from '@/content/cultures'
 import type { Snapshot } from '@/game/protocol'
-import { track } from '@/lib/analytics'
+import { track, trackOnce } from '@/lib/analytics'
 import type { PlayAgainVote } from '@/lib/analytics'
 import { shareLink } from '@/lib/share'
 import { load, save } from '@/lib/storage'
@@ -35,6 +35,16 @@ export function FinalView({
     : final.ranking
   const myRank = final.ranking.find((r) => r.id === meId)?.rank
   const role = onPlayAgain ? 'host' : 'guest'
+  // Join funnel: a guest made it to the end of a game (the host is counted by game_finished).
+  useEffect(() => {
+    if (role === 'guest' && snapshot.gameId) {
+      trackOnce(`final:${snapshot.gameId}`, {
+        type: 'join_step',
+        step: 'final',
+        gameId: snapshot.gameId,
+      })
+    }
+  }, [role, snapshot.gameId])
 
   async function tellAFriend() {
     track({ type: 'share_click', gameId: snapshot.gameId, role })
@@ -128,7 +138,7 @@ export function FinalView({
           // Every guest just finished a game: the best moment to turn them into a host.
           <Button asChild size="xl" className="w-full">
             <Link
-              to="/new"
+              to="/new?from=cta"
               onClick={() => track({ type: 'host_cta_click', gameId: snapshot.gameId })}
             >
               Host your own game

@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CULTURES, getCulture } from '@/content/cultures'
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '@/game/types'
+import { track } from '@/lib/analytics'
 import { lastRoom } from '@/lib/savedRooms'
 import { cn } from '@/lib/utils'
 import hostArt from './art/step-1-host.svg'
@@ -58,7 +59,12 @@ export function Lander() {
       <header className={cn(container, 'flex h-16 items-center justify-between')}>
         <Brand />
         <Button asChild variant="ghost" size="lg" className="-mr-2.5">
-          <Link to="/new">Host a game</Link>
+          <Link
+            to="/new?from=lander"
+            onClick={() => track({ type: 'lander_click', target: 'host_header' })}
+          >
+            Host a game
+          </Link>
         </Button>
       </header>
 
@@ -149,7 +155,12 @@ function Hero() {
         <div className="flex w-full max-w-md flex-col gap-6 md:w-[21rem]">
           <div className="flex flex-col gap-2">
             <Button asChild size="xl" className="w-full">
-              <Link to="/new">Host a game</Link>
+              <Link
+                to="/new?from=lander"
+                onClick={() => track({ type: 'lander_click', target: 'host_hero' })}
+              >
+                Host a game
+              </Link>
             </Button>
             <ResumeGame />
           </div>
@@ -170,7 +181,10 @@ function ResumeGame() {
 
   return (
     <Button asChild variant="ghost" size="lg" className="text-primary-soft self-center">
-      <Link to={`/r/${room.roomCode}`}>
+      <Link
+        to={`/r/${room.roomCode}`}
+        onClick={() => track({ type: 'lander_click', target: 'rejoin' })}
+      >
         Back to the last game
         <ChevronRight data-icon="inline-end" aria-hidden />
       </Link>
@@ -447,7 +461,12 @@ function About() {
       <div className="bg-card ring-border lander-dots mt-12 flex flex-col items-start gap-4 rounded-3xl p-6 ring-1 md:flex-row md:items-center md:justify-between md:p-8">
         <p className="font-heading text-2xl font-bold text-balance">Got friends over tonight?</p>
         <Button asChild size="xl" className="w-full md:w-fit md:px-10">
-          <Link to="/new">Host a game</Link>
+          <Link
+            to="/new?from=lander"
+            onClick={() => track({ type: 'lander_click', target: 'host_footer' })}
+          >
+            Host a game
+          </Link>
         </Button>
       </div>
     </Section>
@@ -500,7 +519,7 @@ function Footer() {
           <p className="text-muted-foreground">
             No cookies, no ads, no tracking scripts. The game sends a few anonymous events to our
             own database, to see whether people enjoy it and which settings work. No names, no
-            player ids, no IP addresses are stored. This page sends nothing.
+            player ids, no IP addresses are stored. On this page we only count taps on its buttons.
           </p>
           <details className="group">
             <summary className="text-foreground flex min-h-11 cursor-pointer list-none items-center gap-1 font-medium [&::-webkit-details-marker]:hidden">
@@ -519,6 +538,14 @@ function Footer() {
               <li>
                 Votes on “play again?”, taps on Share and “Host your own game”, and the id of a
                 statement someone reported with the reason they picked.
+              </li>
+              <li>
+                For each round: which statement it was and how many players picked each country. Not
+                who picked what.
+              </li>
+              <li>
+                Counts of steps into a game: a room link opened, a name entered, joined, reached the
+                end. And taps on this page’s buttons. The room code is never sent.
               </li>
               <li>
                 Names you type go to the other players in your room while you play, through Supabase

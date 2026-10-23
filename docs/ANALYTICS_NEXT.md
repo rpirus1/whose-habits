@@ -3,7 +3,46 @@
 Plan only, written 2026-10-22 and updated the same day for report flow v2 and the 13 topics. It builds on
 [METRICS.md](METRICS.md). Effort: XS = under an hour, S = half a day, M = a day.
 
-## Already in place (on main, deployed)
+## Built (2026-10-23)
+
+Everything below is built, except 1.1 (Web Analytics needs the dashboard toggle or a site token). The private
+stats site at `https://culture-clash-stats.ruslan-pirus.workers.dev` has:
+
+- **Dashboard (`/`):**
+  - Tiles for the success signals: 5+ player sessions, median player finish, would play again, actually
+    replayed, guest → host.
+  - Games per week.
+  - The Lander → game funnel and the Guests joining funnel.
+  - The metrics.sql tables under "All numbers".
+- **Statements (`/statements`):**
+  - The review queue: needs action / review / watch, with why.
+  - Per statement: shown, % correct, "don't know", culture picked instead, reports per reason (and the rate),
+    skips.
+  - Filters: culture, topic, unreviewed only, current wording only.
+  - By culture and by topic.
+  - Report holds (the health numbers below).
+  - **Download CSV** (`/statements.csv`).
+- **Shared filters:** date presets and range, plus all events or real players only.
+
+New events (`src/lib/events.ts`, all anonymous):
+
+| Event                | Sent by                 | Fields                                                                                                  |
+| -------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| `round_result`       | host, after each reveal | `statementId`, `v`, `answer`, `split`                                                                   |
+| `statement_replaced` | host                    | `statementId`, `v`, `why`: `skip` or `unknown`                                                          |
+| `lander_click`       | lander                  | `target`: `host_header`, `host_hero`, `host_footer`, `join_code` or `rejoin`. No game id                |
+| `join_step`          | guest                   | `step`: `opened`, `named`, `joined` or `final`. Only `final` has a game id; the room code is never sent |
+
+Changed events:
+
+- `report` adds `v`, `heldMs` and `nth`.
+- `game_started.source` can be `lander`. The lander's "Host a game" links go to `/new?from=lander`, and the guest
+  CTA goes to `/new?from=cta`.
+
+Statement text, topic and review state come from `stats/statements.json`, built from both CSVs by
+`npm run stats:content`; deploys and builds run it. `v` = `statementVersion(text, fits)`.
+
+## Already in place before this plan
 
 - Anonymous events in D1, all checked by `parseEvent` (`src/lib/events.ts`): `game_started` (with `replay` and
   `source`), `game_finished`, `play_again_vote`, `host_cta_click`, `share_click`, `report` (statement id only).

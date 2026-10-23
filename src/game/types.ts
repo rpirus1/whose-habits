@@ -1,5 +1,5 @@
 import type { CultureCode, Statement } from '@/content/schema'
-import type { GameSource, ReportReason } from '@/lib/events'
+import type { GameSource, ReplacedWhy, ReportReason } from '@/lib/events'
 export type { ReportReason }
 
 export type Phase = 'lobby' | 'question' | 'reveal' | 'final'
@@ -83,6 +83,15 @@ export interface Report {
   until: number
   /** Set when the hold ends; the host then sends one analytics event. */
   reason: ReportReason | null
+  /** Metrics: host clock when the hold started and ended (equal when the open got lost). */
+  openedAt?: number
+  doneAt?: number
+}
+
+/** Metrics: a statement swapped mid-round, by Skip or because everyone chose "I don't know". */
+export interface Replaced {
+  statementId: string
+  why: ReplacedWhy
 }
 
 export interface GameState {
@@ -120,6 +129,8 @@ export interface GameState {
   pausedByBack: boolean
   /** Reports this game. Open ones hold the reveal: Next and Back wait for them. */
   reports?: Report[]
+  /** Metrics: statements replaced this game. */
+  replaced?: Replaced[]
   /** Host clock time the host became the only connected player, while others may reconnect. */
   aloneSince?: number | null
   /** Paused because nobody else is here: only End, or Continue once someone is back. */

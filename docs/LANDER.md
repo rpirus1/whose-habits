@@ -162,7 +162,7 @@ Link: LinkedIn.
     (number of players, countries, rounds, seconds per question, replay or not), a game finished
     (rounds played, players at start and end, ended early), the play-again vote, clicks on Share and
     "Host your own game", and a reported statement's id. Each carries a random game id.
-    **No names, no player ids, no IP addresses are stored.** The lander itself sends nothing.
+    **No names, no player ids, no IP addresses are stored.** The lander only counts taps on its buttons (`lander_click`, no ids).
   - Names you type travel to the other players in the room through Supabase Realtime while you
     play; they aren't stored on a server.
   - Your phone keeps your theme choice and rooms you can rejoin in `localStorage` (rooms expire after 12 hours).

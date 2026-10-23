@@ -58,10 +58,11 @@ async function handleEvent(request: Request, env: Env): Promise<Response> {
   }
   if (!event) return new Response(null, { status: 400 })
 
+  // Lander clicks and join steps happen outside a game: stored with an empty game id.
   const { type, gameId, test, ...data } = event
   const isTest = test || isPreviewHost(new URL(request.url).hostname)
   await env.DB.prepare('INSERT INTO events (type, game_id, data, test) VALUES (?, ?, ?, ?)')
-    .bind(type, gameId, JSON.stringify(data), isTest ? 1 : 0)
+    .bind(type, gameId ?? '', JSON.stringify(data), isTest ? 1 : 0)
     .run()
   return new Response(null, { status: 204 })
 }

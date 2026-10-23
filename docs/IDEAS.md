@@ -13,7 +13,7 @@ Added 2026-10-22. From Ruslan, via the main chat. Approach approved, start plann
 
 **Approach**
 - A plain link to `https://buymeacoffee.com/<handle>`, styled as our own button (Lucide Coffee icon, orchid styling). Reuse `ExternalLink` in `src/lander/Lander.tsx`.
-- Don't use BMC's script widget or hosted button image. Both load from BMC on every visit and would break the "No cookies, no ads, no tracking scripts… This page sends nothing" promise in the footer, FAQ and README. A plain link sends nothing until someone taps it, and it works on the prerendered page without JavaScript.
+- Don't use BMC's script widget or hosted button image. Both load from BMC on every visit and would break the "No cookies, no ads, no tracking scripts" promise in the footer, FAQ and README. A plain link sends nothing until someone taps it, and it works on the prerendered page without JavaScript.
 - Placement: in "About the maker" next to LinkedIn ("Enjoying it? Buy me a coffee."), plus a small text link in the footer next to Feedback. Not in the hero, the Host CTA or the game screens.
 
 **Copy**

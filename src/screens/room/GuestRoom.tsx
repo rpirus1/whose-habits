@@ -16,18 +16,26 @@ import {
   saveGuestIdentity,
   type GuestIdentity,
 } from '@/lib/savedRooms'
+import { track, trackOnce } from '@/lib/analytics'
 import { useGuestGame } from '@/realtime/useGuestGame'
 import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
 
 export function GuestRoom({ roomCode }: { roomCode: string }) {
   const [identity, setIdentity] = useState(() => loadGuestIdentity(roomCode))
+  // Join funnel, step 1: opened a room link without having joined it on this device before.
+  // The room code only goes into the local "sent" key, never into the event.
+  const [isNew] = useState(() => !identity)
+  useEffect(() => {
+    if (isNew) trackOnce(`opened:${roomCode}`, { type: 'join_step', step: 'opened' })
+  }, [isNew, roomCode])
 
   if (!identity) {
     return (
       <JoinView
         onJoin={(name) => {
           const next: GuestIdentity = { playerId: newId(), name }
+          track({ type: 'join_step', step: 'named' })
           saveGuestIdentity(roomCode, next)
           save(keys.lastName, name)
           setIdentity(next)
@@ -158,6 +166,12 @@ function GuestGame({
   useEffect(() => {
     if (status === 'kicked' || status === 'full') markGuestRemoved(roomCode, status)
   }, [status, roomCode])
+  // Join funnel: the host let them in (once per player per room).
+  useEffect(() => {
+    if (status === 'in') {
+      trackOnce(`joined:${roomCode}:${identity.playerId}`, { type: 'join_step', step: 'joined' })
+    }
+  }, [status, roomCode, identity.playerId])
 
   if (status === 'full' || status === 'kicked' || status === 'notFound' || status === 'hostAway') {
     const message = {

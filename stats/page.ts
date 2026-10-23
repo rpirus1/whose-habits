@@ -1,4 +1,4 @@
-// The stats page's HTML and the splitting of scripts/metrics.sql into queries (pure, tested).
+// Shared parts of the stats pages: filters, layout, tables, and splitting metrics.sql (pure, tested).
 
 export interface Query {
   title: string
@@ -37,8 +37,8 @@ export function parseFilters(params: URLSearchParams): Filters {
 }
 
 /**
- * metrics.sql filters every read of `events` with `test = 0` (so `npm run metrics` counts real
- * players only). The page swaps each of those for the filters, bound as ?1 (include tests),
+ * Every query filters each read of `events` with `test = 0` (so `npm run metrics` counts real
+ * players only). The pages swap each of those for the filters, bound as ?1 (include tests),
  * ?2 (from) and ?3 (to, exclusive).
  */
 export function filterSql(sql: string): string {
@@ -56,7 +56,7 @@ export function filterParams(f: Filters): [number, string, string] {
   ]
 }
 
-const addDays = (day: string, n: number) =>
+export const addDays = (day: string, n: number) =>
   new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10)
 
 /**
@@ -73,8 +73,25 @@ export function splitQueries(sql: string): Query[] {
   return queries
 }
 
+/** The pages of the stats site, in nav order. */
+export const PAGES = [
+  { path: '/', label: 'Dashboard' },
+  { path: '/statements', label: 'Statements' },
+] as const
+
+/** Query string for the shared filters plus any page-specific ones (`extra`). */
+export function filterQuery(f: Filters, extra: Record<string, string> = {}): string {
+  const p = new URLSearchParams()
+  if (f.scope === 'real') p.set('data', 'real')
+  if (f.from) p.set('from', f.from)
+  if (f.to) p.set('to', f.to)
+  for (const [k, v] of Object.entries(extra)) if (v) p.set(k, v)
+  const q = p.toString()
+  return q ? `?${q}` : '?'
+}
+
 /** Presets, the date fields and the data switch. A plain GET form: works without JavaScript. */
-function renderFilters(f: Filters, now: Date): string {
+function renderFilters(f: Filters, now: Date, extra: Record<string, string>): string {
   const today = now.toISOString().slice(0, 10)
   const presets: { label: string; from: string | null; to: string | null }[] = [
     { label: 'Today', from: today, to: today },
@@ -82,29 +99,26 @@ function renderFilters(f: Filters, now: Date): string {
     { label: '30 days', from: addDays(today, -29), to: today },
     { label: 'All time', from: null, to: null },
   ]
-  const link = (from: string | null, to: string | null, scope: DataScope) => {
-    const p = new URLSearchParams()
-    if (scope === 'real') p.set('data', 'real')
-    if (from) p.set('from', from)
-    if (to) p.set('to', to)
-    const q = p.toString()
-    return q ? `?${q}` : '?'
-  }
   const chips = presets
     .map((p) => {
       const active = p.from === f.from && p.to === f.to
-      return `<a class="chip${active ? ' on' : ''}" href="${escape(link(p.from, p.to, f.scope))}">${p.label}</a>`
+      const href = filterQuery({ ...f, from: p.from, to: p.to }, extra)
+      return `<a class="chip${active ? ' on' : ''}" href="${escape(href)}">${p.label}</a>`
     })
     .join('')
   const option = (value: DataScope, label: string) =>
     `<option value="${value}"${f.scope === value ? ' selected' : ''}>${label}</option>`
+  const hidden = Object.entries(extra)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `<input type="hidden" name="${escape(k)}" value="${escape(v)}">`)
+    .join('')
   return `<form class="filters" method="get" action="">
 <div class="chips">${chips}</div>
 <div class="fields">
 <label>From <input type="date" name="from" value="${escape(f.from ?? '')}" max="${today}"></label>
 <label>To <input type="date" name="to" value="${escape(f.to ?? '')}" max="${today}"></label>
 <label>Data <select name="data">${option('all', 'All events (incl. test)')}${option('real', 'Real players only')}</select></label>
-<button type="submit">Apply</button>
+${hidden}<button type="submit">Apply</button>
 </div>
 </form>`
 }
@@ -124,24 +138,38 @@ function describeFilters(f: Filters): string {
   return `${scope} · ${range} (UTC days)`
 }
 
-export function renderStats(
-  results: QueryResult[],
-  now: Date,
-  filters: Filters = { scope: 'all', from: null, to: null },
-): string {
-  const sections = results
-    .map(({ title, rows }) => {
-      const columns = Object.keys(rows[0] ?? {})
-      const table = rows.length
-        ? `<table><thead><tr>${columns.map((c) => `<th>${escape(c)}</th>`).join('')}</tr></thead>` +
-          `<tbody>${rows
-            .map((r) => `<tr>${columns.map((c) => `<td>${escape(r[c])}</td>`).join('')}</tr>`)
-            .join('')}</tbody></table>`
-        : '<p class="empty">No data yet.</p>'
-      return `<section><h2>${escape(title)}</h2>${table}</section>`
-    })
+/** A plain table from query rows (column names as headers). */
+export function renderTable(rows: Record<string, unknown>[]): string {
+  if (!rows.length) return '<p class="empty">No data yet.</p>'
+  const columns = Object.keys(rows[0]!)
+  const head = columns.map((c) => `<th>${escape(c)}</th>`).join('')
+  const body = rows
+    .map((r) => `<tr>${columns.map((c) => `<td>${escape(r[c])}</td>`).join('')}</tr>`)
     .join('')
+  return `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
+}
 
+export function renderSections(results: QueryResult[]): string {
+  return results
+    .map(({ title, rows }) => `<section><h2>${escape(title)}</h2>${renderTable(rows)}</section>`)
+    .join('')
+}
+
+export interface LayoutOptions {
+  path: string
+  filters: Filters
+  now: Date
+  body: string
+  /** Page-specific URL params to keep when the shared filters change. */
+  extra?: Record<string, string>
+}
+
+export function renderLayout({ path, filters, now, body, extra = {} }: LayoutOptions): string {
+  const nav = PAGES.map(
+    (p) =>
+      `<a href="${escape(p.path + filterQuery(filters))}"${p.path === path ? ' aria-current="page"' : ''}>${p.label}</a>`,
+  ).join('')
+  const updated = now.toISOString().slice(0, 16).replace('T', ' ')
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -149,17 +177,51 @@ export function renderStats(
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Culture Clash stats</title>
-<style>
-  :root { color-scheme: light dark; --fg: #111; --bg: #fff; --muted: #666; --line: #ddd; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #eee; --bg: #111; --muted: #999; --line: #333; } }
-  body { margin: 0 auto; max-width: 960px; padding: 16px; font: 15px/1.4 system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+<style>${STYLES}</style>
+</head>
+<body>
+<header><h1>Culture Clash stats</h1><nav>${nav}</nav></header>
+${renderFilters(filters, now, extra)}
+<p class="meta">${escape(describeFilters(filters))}. Updated ${escape(updated)} UTC. Definitions: docs/METRICS.md and docs/ANALYTICS_NEXT.md.</p>
+${body}
+</body>
+</html>`
+}
+
+/** The metrics.sql tables as one page (the dashboard shows them under "All numbers"). */
+export function renderStats(
+  results: QueryResult[],
+  now: Date,
+  filters: Filters = { scope: 'all', from: null, to: null },
+): string {
+  return renderLayout({ path: '/', filters, now, body: renderSections(results) })
+}
+
+export function escape(value: unknown): string {
+  return String(value ?? '–').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  )
+}
+
+const STYLES = `
+  :root { color-scheme: light dark; --fg: #111; --bg: #fff; --muted: #666; --line: #ddd; --card: #f4f4f5; --accent: #7c3aed; --ok: #15803d; --warn: #b45309; --bad: #b91c1c; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #eee; --bg: #111; --muted: #999; --line: #333; --card: #1d1d20; --accent: #a78bfa; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; } }
+  body { margin: 0 auto; max-width: 1100px; padding: 16px; font: 15px/1.4 system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+  header { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
+  nav { display: flex; gap: 14px; }
+  nav a { color: var(--muted); text-decoration: none; font-weight: 600; }
+  nav a[aria-current] { color: var(--fg); border-bottom: 2px solid var(--accent); }
   h1 { font-size: 22px; margin: 0 0 4px; }
   h2 { font-size: 16px; margin: 28px 0 8px; }
-  .meta, .empty { color: var(--muted); }
-  section { overflow-x: auto; }
+  a { color: var(--accent); }
+  .meta, .empty, .hint { color: var(--muted); }
+  .hint { font-size: 13px; margin: 4px 0 8px; }
+  .scroll { overflow-x: auto; }
   table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
-  th, td { padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  th, td { padding: 6px 12px 6px 0; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; vertical-align: top; }
   th { font-weight: 600; font-size: 13px; color: var(--muted); }
+  td.text { white-space: normal; min-width: 240px; max-width: 420px; }
   .filters { margin: 16px 0 8px; display: flex; flex-direction: column; gap: 10px; }
   .chips, .fields { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .chip { padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--fg); text-decoration: none; font-size: 14px; }
@@ -167,20 +229,24 @@ export function renderStats(
   label { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
   input, select, button { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
   button { cursor: pointer; }
-</style>
-</head>
-<body>
-<h1>Culture Clash stats</h1>
-${renderFilters(filters, now)}
-<p class="meta">${escape(describeFilters(filters))}. Updated ${escape(now.toISOString().slice(0, 16).replace('T', ' '))} UTC. Definitions: docs/METRICS.md.</p>
-${sections}
-</body>
-</html>`
-}
-
-function escape(value: unknown): string {
-  return String(value ?? '–').replace(
-    /[&<>"']/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
-  )
-}
+  .button { display: inline-block; padding: 4px 12px; border: 1px solid var(--line); border-radius: 6px; text-decoration: none; color: var(--fg); font-size: 14px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .tile { background: var(--card); border-radius: 12px; padding: 12px 14px; }
+  .tile .label, .tile .sub { font-size: 13px; color: var(--muted); }
+  .tile .value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tile.ok .value { color: var(--ok); }
+  .tile.warn .value { color: var(--warn); }
+  .funnel { display: flex; flex-wrap: wrap; gap: 6px; align-items: stretch; }
+  .step { background: var(--card); border-radius: 10px; padding: 8px 12px; min-width: 100px; }
+  .step .n { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .step .label, .step .pct { font-size: 13px; color: var(--muted); }
+  .arrow { align-self: center; color: var(--muted); }
+  .flag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+  .flag.action { background: var(--bad); color: var(--bg); }
+  .flag.review { background: var(--warn); color: var(--bg); }
+  .flag.watch { border: 1px solid var(--warn); color: var(--warn); }
+  details { margin-top: 28px; }
+  summary { cursor: pointer; font-weight: 600; }
+  svg text { fill: var(--muted); font-size: 11px; }
+  svg .bar { fill: var(--accent); }
+`

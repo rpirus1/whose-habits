@@ -2,6 +2,7 @@ import { useId, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { track } from '@/lib/analytics'
 import { formatTypedCode, parseJoinInput } from './join'
 import { useHydrated } from './useHydrated'
 
@@ -30,6 +31,7 @@ export function JoinWithCode() {
       inputRef.current?.focus()
       return
     }
+    track({ type: 'lander_click', target: 'join_code' })
     void navigate(`/r/${code}`)
   }
 

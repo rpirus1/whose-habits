@@ -31,8 +31,10 @@ Open `content/statements.csv` in Google Sheets or Excel, edit, export as CSV (UT
 
 ## Privacy and analytics
 
-No accounts, no cookies, no personal data. The app sends a few anonymous, game-level events
-(game started/finished, "play again?" vote, report a statement, share and host clicks) to
+No accounts, no cookies, no personal data. The app sends a few anonymous events (game
+started/finished, each round's answer counts per country, replaced statements, "play again?"
+vote, reports with a reason, share and host clicks, lander button taps, and counts of the steps
+into a room) to
 `worker/index.ts`, which validates them (`src/lib/events.ts`) and stores them in
 Cloudflare D1. No names, player ids or IP addresses are stored. Room links are unguessable
 and marked `noindex`.

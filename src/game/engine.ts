@@ -27,7 +27,7 @@ import {
   ROUND_OPTIONS,
   SECONDS_OPTIONS,
 } from './types'
-import type { GameSource } from '@/lib/events'
+import type { GameSource, ReplacedWhy } from '@/lib/events'
 import type {
   Choice,
   EngineContext,
@@ -262,6 +262,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       s.gameId = action.gameId
       s.rounds = []
       s.reports = []
+      s.replaced = []
       for (const p of s.players) {
         p.score = 0
         p.playsFrom = 0
@@ -276,6 +277,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       for (const r of s.reports ?? []) {
         if (r.reason === null && r.until <= ctx.now) {
           r.reason = 'none'
+          r.doneAt = r.until
           expired = true
         }
       }
@@ -336,7 +338,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
 
     case 'skip': {
       if (s.phase !== 'question' || s.viewing !== null || s.waitingForPlayers) return false
-      replaceStatement(s, ctx)
+      replaceStatement(s, ctx, 'skip')
       return true
     }
 
@@ -382,6 +384,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
         playerId: action.playerId,
         statementId: action.statementId,
         until: ctx.now + REPORT_HOLD_MS,
+        openedAt: ctx.now,
         reason: null,
       })
       return true
@@ -395,6 +398,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       if (report) {
         if (report.reason !== null) return false
         report.reason = action.reason
+        report.doneAt = ctx.now
         return true
       }
       // The open message got lost: still count the report, without a hold.
@@ -407,6 +411,8 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
         playerId: action.playerId,
         statementId: action.statementId,
         until: ctx.now,
+        openedAt: ctx.now,
+        doneAt: ctx.now,
         reason: action.reason,
       })
       return true
@@ -461,7 +467,7 @@ function pushRound(s: GameState, statementId: string, index: number, ctx: Engine
 }
 
 /** Skip or everyone "I don't know": swap in a reserve statement at the same round index. */
-function replaceStatement(s: GameState, ctx: EngineContext) {
+function replaceStatement(s: GameState, ctx: EngineContext, why: ReplacedWhy) {
   const round = s.rounds.at(-1)!
   const roundsLeft = s.totalRounds - (round.index + 1)
   const replaced = ctx.statements.get(round.statementId)!
@@ -478,6 +484,7 @@ function replaceStatement(s: GameState, ctx: EngineContext) {
     closeRound(s)
     return
   }
+  ;(s.replaced ??= []).push({ statementId: round.statementId, why })
   const [statementId] = s.queue.splice(at, 1)
   s.rounds.pop()
   pushRound(s, statementId, round.index, ctx)
@@ -488,7 +495,8 @@ function closeIfEveryoneAnswered(s: GameState, ctx: EngineContext): boolean {
   if (s.phase !== 'question' || s.paused || !round) return false
   const expected = answeringPlayers(s, round)
   if (!expected.length || !expected.every((p) => round.answers[p.id])) return false
-  if (expected.every((p) => round.answers[p.id].choice === 'unknown')) replaceStatement(s, ctx)
+  if (expected.every((p) => round.answers[p.id].choice === 'unknown'))
+    replaceStatement(s, ctx, 'unknown')
   else closeRound(s)
   return true
 }

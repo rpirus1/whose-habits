@@ -20,9 +20,11 @@ import { saveHostGame } from '@/lib/savedRooms'
 
 export function SettingsScreen() {
   const navigate = useNavigate()
-  // "Host your own game" on a guest's final screen links here with ?from=cta (metrics only).
+  // Where the host came from (metrics only): ?from=cta from a guest's "Host your own game",
+  // ?from=lander from the lander's "Host a game".
   const [searchParams] = useSearchParams()
-  const source: GameSource = searchParams.get('from') === 'cta' ? 'guest_cta' : 'direct'
+  const from = searchParams.get('from')
+  const source: GameSource = from === 'cta' ? 'guest_cta' : from === 'lander' ? 'lander' : 'direct'
   const [hostName, setHostName] = useState(() => load<string>(keys.lastName) ?? '')
   const [settings, setSettings] = useState<Settings>(
     () => load<Settings>(keys.lastSettings) ?? DEFAULT_SETTINGS,

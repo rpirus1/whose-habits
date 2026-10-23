@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run content && tsc -b && tsc -p worker && tsc -p stats && vite build && vite build --ssr src/lander/entry-server.tsx --outDir dist-ssr && node scripts/prerender.ts && node scripts/security-headers.ts && node scripts/check-dist.ts",
+    "build": "npm run content && tsc -b && tsc -p worker && npm run stats:content && tsc -p stats && vite build && vite build --ssr src/lander/entry-server.tsx --outDir dist-ssr && node scripts/prerender.ts && node scripts/security-headers.ts && node scripts/check-dist.ts",
     "lint": "oxlint",
     "preview": "vite preview",
     "content": "node scripts/build-statements.ts",
@@ -18,8 +18,9 @@
     "db:migrate": "wrangler d1 migrations apply culture-clash --remote",
     "metrics:local": "wrangler d1 execute culture-clash --local --file scripts/metrics.sql",
     "metrics": "wrangler d1 execute culture-clash --remote --file scripts/metrics.sql",
-    "stats:local": "wrangler dev -c stats/wrangler.toml --port 8790 --persist-to .wrangler/state --var DEV_NO_ACCESS:1",
-    "stats:deploy": "wrangler deploy -c stats/wrangler.toml"
+    "stats:content": "node scripts/build-stats-statements.ts",
+    "stats:local": "npm run stats:content && wrangler dev -c stats/wrangler.toml --port 8790 --persist-to .wrangler/state --var DEV_NO_ACCESS:1",
+    "stats:deploy": "npm run stats:content && wrangler deploy -c stats/wrangler.toml"
   },
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
