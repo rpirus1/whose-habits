@@ -2,7 +2,7 @@
 
 A phone-based party game for international friends. The host picks 2–6 of 10 countries (or lets the game pick at random), friends join by link or QR, and everyone guesses which country each everyday habit comes from.
 
-Live at the Worker's `workers.dev` URL until the move to its own domain (see [Deploy](#deploy)). The code still uses the old working name `culture-clash` for the repository, the Worker and the D1 database; renaming them would change those addresses, so they stay.
+Live at https://www.whosehabits.com. The bare domain and the old `workers.dev` address redirect there (see [Deploy](#deploy)). The code still uses the old working name `culture-clash` for the repository, the Worker and the D1 database; renaming them would change those addresses, so they stay.
 
 See [docs/PLAN.md](docs/PLAN.md) for the product and technical plan and [docs/CONTENT_RULES.md](docs/CONTENT_RULES.md) for how statements are written and reviewed.
 
@@ -67,3 +67,8 @@ The private stats Worker deploys by hand with `npm run stats:deploy`. New D1 mig
 
 Every push to `main` gets a release note and an `rN` git tag (`git tag -n99 -l 'r*'`). To see
 what changed between two releases, run `git diff rN..rM`.
+
+The Worker serves `www.whosehabits.com` and `whosehabits.com` (custom domains in `wrangler.toml`)
+and sees every request first: the bare domain and `culture-clash.<account>.workers.dev` get a 301
+to www (`canonicalRedirect` in `worker/routes.ts`), except `/api/*`, so tabs still open on the old
+address can keep sending events. Those are stored as tests.

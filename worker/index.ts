@@ -1,10 +1,11 @@
 // Cloudflare Worker: serves the built app from dist/ (static assets) and handles the API
-// route. Static files (including the prerendered lander at /) and the _headers file are
-// handled by the assets layer. This code sees /api/* first (run_worker_first in
-// wrangler.toml), and every request that matched no file: those get the app shell.
+// route. It sees every request first (run_worker_first = true in wrangler.toml), so it can
+// send the old addresses to www.whosehabits.com. Then static files (including the
+// prerendered lander at /, with their _headers) come from the assets binding, and requests
+// that matched no file get the app shell.
 // The stats page is a separate, private Worker (stats/).
 import { isPreviewHost, MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
-import { fromOwnPage, routeRequest, SHELL_PATH } from './routes'
+import { canonicalRedirect, fromOwnPage, routeRequest, SHELL_PATH } from './routes'
 import { withinLimit } from './rateLimit'
 
 interface Env {
@@ -17,11 +18,15 @@ interface Env {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url)
+    const canonical = canonicalRedirect(url)
+    if (canonical) return Response.redirect(canonical, 301)
     if (url.pathname === '/api/event') {
       return request.method === 'POST'
         ? handleEvent(request, env)
         : new Response(null, { status: 405, headers: { Allow: 'POST' } })
     }
+    const asset = await env.ASSETS.fetch(request)
+    if (asset.status !== 404) return asset
     return serveApp(request, url, env)
   },
 } satisfies ExportedHandler<Env>

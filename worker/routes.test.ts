@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { withinLimit } from './rateLimit'
-import { fromOwnPage, PRIVATE_HEADERS, routeRequest } from './routes'
+import {
+  CANONICAL_ORIGIN,
+  canonicalRedirect,
+  fromOwnPage,
+  PRIVATE_HEADERS,
+  routeRequest,
+} from './routes'
 
 const route = (path: string) => routeRequest(new URL(path, 'https://example.com'))
 
@@ -74,4 +80,30 @@ describe('withinLimit', () => {
     expect(keys).toEqual(['1.2.3.4', '1.2.3.4'])
     expect(await withinLimit(undefined, req)).toBe(true)
   })
+})
+
+describe('canonicalRedirect', () => {
+  const to = (href: string) => canonicalRedirect(new URL(href))
+
+  it('sends the bare domain and the workers.dev address to www, keeping path and query', () => {
+    expect(to('https://whosehabits.com/')).toBe('https://www.whosehabits.com/')
+    expect(to('https://culture-clash.ruslan-pirus.workers.dev/r/k7m2-x9qp-4tdv?test=1')).toBe(
+      'https://www.whosehabits.com/r/k7m2-x9qp-4tdv?test=1',
+    )
+  })
+
+  it('leaves www, local dev, version previews and the event API alone', () => {
+    expect(to('https://www.whosehabits.com/new')).toBeNull()
+    expect(to('http://localhost:8788/')).toBeNull()
+    expect(to('https://1a2b3c4d-culture-clash.ruslan-pirus.workers.dev/')).toBeNull()
+    expect(to('https://culture-clash.ruslan-pirus.workers.dev/api/event')).toBeNull()
+    expect(to('https://whosehabits.com/api/event')).toBeNull()
+  })
+})
+
+it('redirects to the same address the build uses for canonical links', async () => {
+  const { readFileSync } = await import('node:fs')
+  const env = readFileSync('.env.production', 'utf8')
+  expect(env).toMatch(/^VITE_SITE_URL=(.*)$/m)
+  expect(env.match(/^VITE_SITE_URL=(.*)$/m)![1].trim()).toBe(CANONICAL_ORIGIN)
 })

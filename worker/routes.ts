@@ -1,5 +1,5 @@
-// What the Worker does with a request that matched no static file (not_found_handling = "none"
-// in wrangler.toml). "/" is a real file (the prerendered lander), so it never gets here.
+// What the Worker does with a request that matched no static file (the assets binding returned 404;
+// not_found_handling = "none" in wrangler.toml). "/" is a real file (the lander), so it never gets here.
 import { parseJoinInput } from '../src/lander/join'
 
 export type Route =
@@ -8,6 +8,23 @@ export type Route =
   | { kind: 'redirect'; location: string }
   /** A missing file (has an extension): a plain 404 from the assets layer. */
   | { kind: 'missing' }
+
+/** The game's one public address. Canonical links come from VITE_SITE_URL, which matches it. */
+export const CANONICAL_ORIGIN = 'https://www.whosehabits.com'
+
+/** The bare domain and the Worker's own workers.dev address (not per-version preview URLs). */
+const OLD_HOSTS = [/^whosehabits\.com$/, /^culture-clash\.[a-z0-9-]+\.workers\.dev$/]
+
+/**
+ * Where an old address should send this request (301), or null to serve it here.
+ * /api/* stays put: a redirected POST from sendBeacon arrives as a GET, so events from tabs
+ * still open on the old address would be lost. Those are stored as tests (isPreviewHost).
+ */
+export function canonicalRedirect(url: URL): string | null {
+  if (!OLD_HOSTS.some((host) => host.test(url.hostname))) return null
+  if (url.pathname.startsWith('/api/')) return null
+  return CANONICAL_ORIGIN + url.pathname + url.search
+}
 
 export function routeRequest(url: URL): Route {
   const path = url.pathname
