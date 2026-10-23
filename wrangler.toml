@@ -6,6 +6,9 @@ compatibility_date = "2025-09-01"
 # The public address. Both domains are attached to this Worker (Cloudflare creates their DNS
 # records); the Worker sends whosehabits.com and the workers.dev address to www with a 301
 # (canonicalRedirect in worker/routes.ts).
+# Keep the workers.dev address on (wrangler turns it off once routes are set): it 301s to www,
+# so room links shared before the move keep working, and old tabs can still post events.
+workers_dev = true
 routes = [
   { pattern = "www.whosehabits.com", custom_domain = true },
   { pattern = "whosehabits.com", custom_domain = true },
