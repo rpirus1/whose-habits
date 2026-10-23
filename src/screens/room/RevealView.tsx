@@ -84,11 +84,7 @@ export function RevealView({
 
       <Separator />
 
-      <SplitBars
-        cultures={snapshot.settings.cultures}
-        split={reveal.split}
-        answer={reveal.answer}
-      />
+      <SplitBars cultures={reveal.options} split={reveal.split} answer={reveal.answer} />
 
       <StickyFooter>
         {onNext ? (

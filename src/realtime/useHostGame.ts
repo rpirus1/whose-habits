@@ -7,6 +7,7 @@ import type { Action } from '@/game/engine'
 import { statementEvents } from '@/game/metrics'
 import { parseGuestMessage, toSnapshot } from '@/game/protocol'
 import type { HostMessage, Snapshot } from '@/game/protocol'
+import { isRandom } from '@/game/types'
 import type { EngineContext, GameState } from '@/game/types'
 import { trackOnce } from '@/lib/analytics'
 import { saveHostGame } from '@/lib/savedRooms'
@@ -168,7 +169,8 @@ export function useHostGame(initial: GameState): HostGame {
       type: 'game_started',
       gameId,
       players: state.playersAtStart ?? 0,
-      cultures: state.settings.cultures,
+      mode: isRandom(state.settings) ? 'random' : 'pick',
+      cultures: isRandom(state.settings) ? [] : state.settings.cultures,
       rounds: state.totalRounds,
       seconds: state.settings.seconds,
       replay: state.replay === true,

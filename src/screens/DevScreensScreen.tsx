@@ -6,6 +6,7 @@ import { Screen } from '@/components/Screen'
 import { Button } from '@/components/ui/button'
 import type { Snapshot } from '@/game/protocol'
 import type { Choice } from '@/game/types'
+import type { CultureCode } from '@/content/schema'
 import { QuestionView } from '@/screens/room/QuestionView'
 import { RevealView } from '@/screens/room/RevealView'
 
@@ -19,6 +20,7 @@ const VIEWS = [
 ] as const
 
 const ME = 'me'
+const OPTIONS: CultureCode[] = ['PL', 'UA', 'NL', 'BR', 'MX', 'US']
 
 function mockSnapshot(view: string, endsAt: number): Snapshot {
   const players = [
@@ -37,7 +39,7 @@ function mockSnapshot(view: string, endsAt: number): Snapshot {
     gameId: 'preview',
     phase: view === 'question' ? 'question' : 'reveal',
     paused: false,
-    settings: { cultures: ['PL', 'UA', 'NL', 'BR', 'MX', 'US'], rounds: 10, seconds: 20 },
+    settings: { mode: 'pick', cultures: OPTIONS, rounds: 10, seconds: 20 },
     players,
     question:
       view === 'question'
@@ -46,6 +48,7 @@ function mockSnapshot(view: string, endsAt: number): Snapshot {
             index: 3,
             total: 10,
             text: 'Cycling to a wedding in a suit is completely normal.',
+            options: OPTIONS,
             endsAt,
             remainingMs: null,
             answeredIds: ['p2', 'p3'],
@@ -60,6 +63,7 @@ function mockSnapshot(view: string, endsAt: number): Snapshot {
             total: 10,
             statementId: 'preview',
             text: 'Cycling to a wedding in a suit is completely normal.',
+            options: OPTIONS,
             answer: 'NL',
             note: 'The Netherlands has more bikes than people, and arriving by bike in formal clothes surprises no one.',
             split: { NL: right ? 3 : 2, PL: right ? 1 : 2, US: 1 },

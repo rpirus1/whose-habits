@@ -29,13 +29,22 @@ export const REPORT_REASONS = [
   'offensive',
 ] as const satisfies readonly ReportReason[]
 
+/** 'pick': the host's 2–6 countries every round. 'random': 4 new countries every round. */
+export const GAME_MODES = ['pick', 'random'] as const
+export type GameMode = (typeof GAME_MODES)[number]
+
 export interface Settings {
+  /** Missing in settings saved before random mode: same as 'pick'. */
+  mode?: GameMode
+  /** The picked countries. Kept in random mode, so switching back restores them. */
   cultures: CultureCode[]
   rounds: (typeof ROUND_OPTIONS)[number]
   seconds: (typeof SECONDS_OPTIONS)[number]
 }
 
-export const DEFAULT_SETTINGS: Settings = { cultures: [], rounds: 10, seconds: 20 }
+export const DEFAULT_SETTINGS: Settings = { mode: 'pick', cultures: [], rounds: 10, seconds: 20 }
+
+export const isRandom = (settings: Settings) => settings.mode === 'random'
 
 export interface Player {
   id: string
@@ -71,6 +80,8 @@ export interface Round {
   index: number
   statementId: string
   answer: CultureCode
+  /** Random mode: this round's answer buttons. Otherwise the game's countries are. */
+  options?: CultureCode[]
   answers: Record<string, Answer>
   result: RoundResult | null
 }

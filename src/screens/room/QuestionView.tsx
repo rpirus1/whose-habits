@@ -65,12 +65,9 @@ export function QuestionView({
           answeredEarlier={question.answeredIds.includes(meId)}
         />
         <div
-          className={cn(
-            'grid gap-2',
-            snapshot.settings.cultures.length > 3 ? 'grid-cols-2' : 'grid-cols-1',
-          )}
+          className={cn('grid gap-2', question.options.length > 3 ? 'grid-cols-2' : 'grid-cols-1')}
         >
-          {snapshot.settings.cultures.map((code) => (
+          {question.options.map((code) => (
             <CultureButton
               key={code}
               code={code}

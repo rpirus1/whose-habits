@@ -11,6 +11,8 @@ export type ReportReason = 'incorrect' | 'outdated' | 'not_unique' | 'offensive'
  * playing as a guest, or anything else (a bookmark, a typed URL).
  */
 export type GameSource = 'direct' | 'lander' | 'guest_cta'
+/** 'pick': the host's countries every round. 'random': 4 new countries every round. */
+export type EventGameMode = 'pick' | 'random'
 /** Why a statement was swapped for another mid-round. */
 export type ReplacedWhy = 'skip' | 'unknown'
 /** The lander buttons we count. */
@@ -28,6 +30,8 @@ type EventBody =
       type: 'game_started'
       gameId: string
       players: number
+      mode: EventGameMode
+      /** The picked countries; empty in random mode. */
       cultures: string[]
       rounds: number
       seconds: number
@@ -154,13 +158,16 @@ function parseBody(e: Record<string, unknown>): EventBody | null {
         !int(e.seconds, 30) ||
         // Optional, so a tab still running an older build doesn't lose its events.
         (e.replay !== undefined && typeof e.replay !== 'boolean') ||
-        (e.source !== undefined && !oneOf(e.source, ['direct', 'lander', 'guest_cta'] as const))
+        (e.source !== undefined && !oneOf(e.source, ['direct', 'lander', 'guest_cta'] as const)) ||
+        (e.mode !== undefined && !oneOf(e.mode, ['pick', 'random'] as const))
       )
         return null
       return {
         type: 'game_started',
         gameId,
         players: e.players,
+        // Older builds didn't send it: they only had picked countries.
+        mode: e.mode === 'random' ? 'random' : 'pick',
         cultures: cultures as string[],
         rounds: e.rounds,
         seconds: e.seconds,

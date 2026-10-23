@@ -14,10 +14,13 @@ import { CULTURE_CODES } from '@/content/schema'
 import type { CultureCode } from '@/content/schema'
 import { MAX_CULTURES, MIN_CULTURES } from '@/content/cultures'
 import { scoreRound } from './scoring'
-import { eligibleStatements, pickReplacement, planGame } from './selection'
+import { eligibleStatements, pickReplacement, planGame, randomOptions } from './selection'
+import type { Countries } from './selection'
 import {
   ALONE_GRACE_MS,
   ANSWER_GRACE_MS,
+  GAME_MODES,
+  isRandom,
   MAX_NAME_LENGTH,
   MAX_PLAYERS,
   MIN_PLAYERS_TO_PLAY,
@@ -124,11 +127,23 @@ export function canStart(state: GameState): boolean {
   )
 }
 
+/** The countries a game draws its answers from. */
+export function countriesOf(settings: Settings): Countries {
+  return isRandom(settings) ? 'random' : settings.cultures
+}
+
+/** A round's answer buttons. */
+export function roundOptions(state: GameState, round: Round): CultureCode[] {
+  return round.options ?? state.settings.cultures
+}
+
 export function validSettings(settings: Settings): boolean {
   const unique = new Set(settings.cultures)
   return (
+    (settings.mode === undefined || GAME_MODES.includes(settings.mode)) &&
     unique.size === settings.cultures.length &&
-    unique.size >= MIN_CULTURES &&
+    // Random mode keeps the last pick for switching back, however short.
+    (isRandom(settings) || unique.size >= MIN_CULTURES) &&
     unique.size <= MAX_CULTURES &&
     settings.cultures.every((c) => (CULTURE_CODES as readonly string[]).includes(c)) &&
     (ROUND_OPTIONS as readonly number[]).includes(settings.rounds) &&
@@ -240,7 +255,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
         round.id !== action.roundId ||
         !player ||
         player.playsFrom > round.index ||
-        !validChoice(action.choice, s.settings.cultures) ||
+        !validChoice(action.choice, roundOptions(s, round)) ||
         s.endsAt === null ||
         ctx.now > s.endsAt + ANSWER_GRACE_MS
       )
@@ -254,10 +269,10 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
     case 'start': {
       if (!canStart(s) || !validSettings(s.settings)) return false
       const recent = new Set([...(action.recentIds ?? []), ...s.shownIds])
-      const { cultures, rounds } = s.settings
-      s.queue = planGame(ctx.statements.values(), cultures, rounds, ctx.random, recent)
+      const countries = countriesOf(s.settings)
+      s.queue = planGame(ctx.statements.values(), countries, s.settings.rounds, ctx.random, recent)
       if (!s.queue.length) return false
-      s.totalRounds = Math.min(rounds, s.queue.length)
+      s.totalRounds = Math.min(s.settings.rounds, s.queue.length)
       s.playersAtStart = s.players.filter((p) => p.connected).length
       s.gameId = action.gameId
       s.rounds = []
@@ -448,12 +463,14 @@ function startQuestion(s: GameState, ctx: EngineContext) {
 
 function pushRound(s: GameState, statementId: string, index: number, ctx: EngineContext) {
   const statement = ctx.statements.get(statementId)!
-  const [{ answer }] = eligibleStatements([statement], s.settings.cultures)
+  const countries = countriesOf(s.settings)
+  const [{ answer }] = eligibleStatements([statement], countries)
   s.rounds.push({
     id: `${index}-${statementId}`,
     index,
     statementId,
     answer,
+    ...(countries === 'random' && { options: randomOptions(statement, answer, ctx.random) }),
     answers: {},
     result: null,
   })
@@ -475,7 +492,7 @@ function replaceStatement(s: GameState, ctx: EngineContext, why: ReplacedWhy) {
     s.queue,
     roundsLeft,
     ctx.statements,
-    s.settings.cultures,
+    countriesOf(s.settings),
     replaced,
     round.answer,
   )

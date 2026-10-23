@@ -61,7 +61,12 @@ describe('parseEvent', () => {
       replay: true,
       source: 'guest_cta',
     })
-    expect(parseEvent(started)).toMatchObject({ replay: false, source: 'direct' })
+    expect(parseEvent(started)).toMatchObject({ replay: false, source: 'direct', mode: 'pick' })
+    expect(parseEvent({ ...started, mode: 'random', cultures: [] })).toMatchObject({
+      mode: 'random',
+      cultures: [],
+    })
+    expect(parseEvent({ ...started, mode: 'mixed' })).toBeNull()
     expect(parseEvent({ ...started, replay: 'yes' })).toBeNull()
     expect(parseEvent({ ...started, source: 'ads' })).toBeNull()
   })

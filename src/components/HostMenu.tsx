@@ -33,7 +33,6 @@ export function HostMenu({
       {state.phase === 'lobby' && (
         <SettingsForm
           value={state.settings}
-          keepMinimum
           onChange={(settings) => {
             if (validSettings(settings)) dispatch({ type: 'updateSettings', settings })
           }}

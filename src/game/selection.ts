@@ -1,5 +1,15 @@
+import { CULTURE_CODES } from '@/content/schema'
 import type { CultureCode, Obviousness, Statement } from '@/content/schema'
 import { shuffle } from './random'
+
+/**
+ * Where a game's answers come from: the countries the host picked, or 'random', where every
+ * statement can come up and each round shows its own OPTIONS_PER_ROUND countries.
+ */
+export type Countries = readonly CultureCode[] | 'random'
+
+/** Answer buttons per round in random mode. */
+export const OPTIONS_PER_ROUND = 4
 
 export interface Eligible {
   statement: Statement
@@ -7,27 +17,53 @@ export interface Eligible {
   answer: CultureCode
 }
 
-/** The ambiguity rule: usable only if exactly one selected culture is in `fits`. */
+/**
+ * The ambiguity rule: usable only if exactly one selected culture is in `fits`.
+ * In random mode every statement is usable, answered by the culture it was written for
+ * (its id prefix); randomOptions then leaves the other cultures it fits off the buttons.
+ */
 export function eligibleStatements(
   statements: Iterable<Statement>,
-  cultures: readonly CultureCode[],
+  cultures: Countries,
 ): Eligible[] {
   const out: Eligible[] = []
   for (const statement of statements) {
-    const matches = statement.fits.filter((f) => cultures.includes(f))
-    if (matches.length === 1) out.push({ statement, answer: matches[0] })
+    const answer = answerFor(statement, cultures)
+    if (answer) out.push({ statement, answer })
   }
   return out
+}
+
+function answerFor(statement: Statement, cultures: Countries): CultureCode | undefined {
+  if (cultures === 'random') {
+    const own = statement.id.slice(0, 2).toUpperCase() as CultureCode
+    return statement.fits.includes(own) ? own : statement.fits[0]
+  }
+  const matches = statement.fits.filter((f) => cultures.includes(f))
+  return matches.length === 1 ? matches[0] : undefined
+}
+
+/**
+ * A random-mode round's buttons: the answer plus cultures the statement doesn't fit, so exactly
+ * one button is right. In the usual country order, so the answer's place is random anyway.
+ */
+export function randomOptions(
+  statement: Statement,
+  answer: CultureCode,
+  random: () => number,
+): CultureCode[] {
+  const others = shuffle(
+    CULTURE_CODES.filter((c) => !statement.fits.includes(c)),
+    random,
+  ).slice(0, OPTIONS_PER_ROUND - 1)
+  return CULTURE_CODES.filter((c) => c === answer || others.includes(c))
 }
 
 /** Extra statements kept back so Skip and all-"I don't know" can be replaced. */
 export const RESERVE_SIZE = 3
 
 /** Largest round count the pool supports, so the settings screen can disable bigger options. */
-export function maxPlayableRounds(
-  statements: Iterable<Statement>,
-  cultures: readonly CultureCode[],
-) {
+export function maxPlayableRounds(statements: Iterable<Statement>, cultures: Countries) {
   return Math.max(0, eligibleStatements(statements, cultures).length - RESERVE_SIZE)
 }
 
@@ -45,7 +81,7 @@ export function targetObviousness(index: number, rounds: number): Obviousness {
  */
 export function planGame(
   statements: Iterable<Statement>,
-  cultures: readonly CultureCode[],
+  cultures: Countries,
   rounds: number,
   random: () => number,
   recentIds: ReadonlySet<string> = new Set(),
@@ -110,7 +146,7 @@ export function pickReplacement(
   queue: readonly string[],
   roundsLeft: number,
   statements: ReadonlyMap<string, Statement>,
-  cultures: readonly CultureCode[],
+  cultures: Countries,
   replaced: Statement,
   answer: CultureCode,
 ): number {
@@ -119,7 +155,7 @@ export function pickReplacement(
   for (let i = roundsLeft; i < queue.length; i++) {
     const s = statements.get(queue[i])
     if (!s) continue
-    const sameCulture = s.fits.filter((f) => cultures.includes(f))[0] === answer
+    const sameCulture = answerFor(s, cultures) === answer
     const cost = (sameCulture ? 0 : 10) + Math.abs(s.obviousness - replaced.obviousness)
     if (cost < bestCost) {
       best = i

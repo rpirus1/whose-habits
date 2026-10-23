@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
+import { CULTURE_CODES } from '@/content/schema'
 import { seededRandom } from './random'
 import {
   eligibleStatements,
   maxPlayableRounds,
   pickReplacement,
   planGame,
+  OPTIONS_PER_ROUND,
   RESERVE_SIZE,
+  randomOptions,
   targetObviousness,
 } from './selection'
 import { byId, makeBank, makeStatement } from './testing'
@@ -110,5 +113,34 @@ describe('pickReplacement', () => {
 
   it('returns -1 when the reserve is empty', () => {
     expect(pickReplacement([b.id], 1, statements, ['PL', 'UA'], a, 'PL')).toBe(-1)
+  })
+})
+
+describe('random mode', () => {
+  const multi = makeStatement(['UA', 'PL', 'TR', 'IT', 'FR'], 2, 'ua-900')
+
+  it('uses every statement, answered by the culture it was written for', () => {
+    const result = eligibleStatements([multi, makeStatement(['US'])], 'random')
+    expect(result.map((e) => e.answer)).toEqual(['UA', 'US'])
+  })
+
+  it('shows 4 buttons, exactly one of them a culture the statement fits', () => {
+    for (let seed = 0; seed < 30; seed++) {
+      const options = randomOptions(multi, 'UA', seededRandom(seed))
+      expect(options).toHaveLength(OPTIONS_PER_ROUND)
+      expect(new Set(options).size).toBe(OPTIONS_PER_ROUND)
+      expect(options.filter((c) => multi.fits.includes(c))).toEqual(['UA'])
+      // Canonical order.
+      expect(options).toEqual(CULTURE_CODES.filter((c) => options.includes(c)))
+    }
+  })
+
+  it('plans from the whole pool, balanced across cultures', () => {
+    const bank = makeBank([...CULTURE_CODES], 5)
+    const plan = planGame(bank, 'random', 20, seededRandom(7)).slice(0, 20)
+    const counts = new Map<string, number>()
+    for (const id of plan) counts.set(id.slice(0, 2), (counts.get(id.slice(0, 2)) ?? 0) + 1)
+    expect(counts.size).toBe(CULTURE_CODES.length)
+    expect(Math.max(...counts.values())).toBe(2)
   })
 })

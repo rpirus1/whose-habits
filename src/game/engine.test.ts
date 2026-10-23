@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { CULTURE_CODES } from '@/content/schema'
 import { createGame, currentRound, joinRejection, openReports, reduce } from './engine'
 import type { Action } from './engine'
 import { seededRandom } from './random'
@@ -587,5 +588,61 @@ describe('host left alone', () => {
     h.run({ type: 'leave', playerId: 'bob' })
     h.advance(ALONE_GRACE_MS * 2)
     expect(h.s.waitingForPlayers).toBeFalsy()
+  })
+})
+
+describe('random countries mode', () => {
+  const pool = makeBank([...CULTURE_CODES], 4)
+  function randomGame() {
+    const ctx: EngineContext = { now: 1_000_000, statements: byId(pool), random: seededRandom(9) }
+    let state = createGame({
+      roomCode: 'BCDF',
+      hostId: 'host',
+      settings: { mode: 'random', cultures: [], rounds: 10, seconds: 20 },
+    })
+    const run = (action: Action) => (state = reduce(state, action, ctx))
+    run({ type: 'join', playerId: 'ann', name: 'Ann' })
+    run({ type: 'start', gameId: 'g1' })
+    return {
+      run,
+      get s() {
+        return state
+      },
+    }
+  }
+
+  it('starts without picked countries and gives each round 4 options with the answer', () => {
+    const g = randomGame()
+    expect(g.s.phase).toBe('question')
+    const round = currentRound(g.s)!
+    expect(round.options).toHaveLength(4)
+    expect(round.options).toContain(round.answer)
+  })
+
+  it('accepts only this round’s options', () => {
+    const g = randomGame()
+    const round = currentRound(g.s)!
+    const outside = CULTURE_CODES.find((c) => !round.options!.includes(c))!
+    g.run({ type: 'answer', playerId: 'ann', roundId: round.id, choice: outside })
+    expect(currentRound(g.s)!.answers.ann).toBeUndefined()
+    g.run({ type: 'answer', playerId: 'ann', roundId: round.id, choice: round.options![0] })
+    expect(currentRound(g.s)!.answers.ann).toBeDefined()
+  })
+
+  it('gives a skipped round’s replacement its own options', () => {
+    const g = randomGame()
+    const before = currentRound(g.s)!
+    g.run({ type: 'skip' })
+    const after = currentRound(g.s)!
+    expect(after.statementId).not.toBe(before.statementId)
+    expect(after.options).toContain(after.answer)
+  })
+
+  it('keeps the picked countries while random, even fewer than 2', () => {
+    const h = harness({ guests: [], start: false })
+    h.run({ type: 'updateSettings', settings: { ...settings, mode: 'random', cultures: ['PL'] } })
+    expect(h.s.settings).toMatchObject({ mode: 'random', cultures: ['PL'] })
+    h.run({ type: 'updateSettings', settings: { ...settings, mode: 'pick', cultures: ['PL'] } })
+    expect(h.s.settings.mode).toBe('random')
   })
 })

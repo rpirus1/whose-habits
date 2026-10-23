@@ -4,7 +4,8 @@
 import { CULTURE_CODES } from '@/content/schema'
 import type { CultureCode, Obviousness } from '@/content/schema'
 import { percentCorrect } from './scoring'
-import { REPORT_REASONS, ROUND_OPTIONS, SECONDS_OPTIONS } from './types'
+import { roundOptions } from './engine'
+import { GAME_MODES, REPORT_REASONS, ROUND_OPTIONS, SECONDS_OPTIONS } from './types'
 import type { Choice, GameState, Phase, ReportReason, Round, Settings } from './types'
 import type { Statement } from '@/content/schema'
 
@@ -50,6 +51,8 @@ export interface PublicQuestion {
   index: number
   total: number
   text: string
+  /** The answer buttons, in order (the game's countries, or this round's in random mode). */
+  options: CultureCode[]
   /** Host clock. Guests subtract their clock offset. Null while paused. */
   endsAt: number | null
   remainingMs: number | null
@@ -64,6 +67,8 @@ export interface PublicReveal {
   statementId: string
   text: string
   answer: CultureCode
+  /** The buttons this round had, for the split bars. */
+  options: CultureCode[]
   note: string
   split: Partial<Record<Choice, number>>
   correctIds: string[]
@@ -143,13 +148,16 @@ export function toSnapshot(
             index: current.index,
             total: s.totalRounds,
             text: statements.get(current.statementId)?.text ?? '',
+            options: roundOptions(s, current),
             endsAt: s.endsAt,
             remainingMs: s.remainingMs,
             answeredIds: Object.keys(current.answers),
             answeringIds: s.players.filter((p) => p.playsFrom <= current.index).map((p) => p.id),
           }
         : null,
-    reveal: revealRound?.result ? toReveal(revealRound, s.totalRounds, statements) : null,
+    reveal: revealRound?.result
+      ? toReveal(revealRound, roundOptions(s, revealRound), s.totalRounds, statements)
+      : null,
     viewing: s.viewing !== null,
     final: s.phase === 'final' ? finalSummary(s, statements) : null,
     holdUntil: holdEnd(s),
@@ -163,6 +171,7 @@ function holdEnd(s: GameState): number | null {
 
 function toReveal(
   round: Round,
+  options: CultureCode[],
   total: number,
   statements: ReadonlyMap<string, Statement>,
 ): PublicReveal {
@@ -174,6 +183,7 @@ function toReveal(
     statementId: round.statementId,
     text: statement?.text ?? '',
     answer: round.answer,
+    options,
     note: statement?.note ?? '',
     split: result.split,
     correctIds: result.correctIds,
@@ -316,6 +326,7 @@ const isSnapshot = shape({
   phase: oneOf(['lobby', 'question', 'reveal', 'final'] satisfies Phase[]),
   paused: bool,
   settings: shape({
+    mode: optional(oneOf(GAME_MODES)),
     cultures: list(culture, CULTURE_CODES.length),
     rounds: oneOf(ROUND_OPTIONS),
     seconds: oneOf(SECONDS_OPTIONS),
@@ -337,6 +348,7 @@ const isSnapshot = shape({
       index: num,
       total: num,
       text: TEXT,
+      options: list(culture, CULTURE_CODES.length),
       endsAt: nullable(num),
       remainingMs: nullable(num),
       answeredIds: ids,
@@ -350,6 +362,7 @@ const isSnapshot = shape({
       statementId: ID,
       text: TEXT,
       answer: culture,
+      options: list(culture, CULTURE_CODES.length),
       note: TEXT,
       split: record(choice, num, MAX_LIST),
       correctIds: ids,

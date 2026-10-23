@@ -44,7 +44,8 @@ describe('toSnapshot', () => {
     g.run({ type: 'answer', playerId: 'ann', roundId: g.s.rounds[0].id, choice: 'PL' })
     const snap = toSnapshot(g.s, statements, 2)
     expect(snap.question!.answeredIds).toEqual(['ann'])
-    expect(JSON.stringify(snap.question)).not.toContain('"PL"')
+    const { options: _, ...rest } = snap.question!
+    expect(JSON.stringify(rest)).not.toContain('"PL"')
   })
 
   it("includes the reveal with everyone's choices after the round", () => {
