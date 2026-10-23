@@ -1,6 +1,8 @@
-# Culture Clash (working title)
+# Whose Habits
 
-A phone-based party game for mixed groups. The host picks 2–6 cultures, friends join by link or QR, and everyone guesses which culture each statement fits best.
+A phone-based party game for international friends. The host picks 2–6 of 10 countries (or lets the game pick at random), friends join by link or QR, and everyone guesses which country each everyday habit comes from.
+
+Live at the Worker's `workers.dev` URL until the move to its own domain (see [Deploy](#deploy)). The code still uses the old working name `culture-clash` for the repository, the Worker and the D1 database; renaming them would change those addresses, so they stay.
 
 See [docs/PLAN.md](docs/PLAN.md) for the product and technical plan and [docs/CONTENT_RULES.md](docs/CONTENT_RULES.md) for how statements are written and reviewed.
 
@@ -51,3 +53,16 @@ opened any page with `?test=1` are stored with `test = 1` and left out of every 
 Worker (`stats/`) behind Cloudflare Access that only the owner's email can open, or via
 `npm run metrics`. What each number means and how the page is protected:
 [docs/METRICS.md](docs/METRICS.md).
+
+## Deploy
+
+Every push to `main` deploys:
+
+- **GitHub Actions** (`.github/workflows/ci.yml`) runs lint, tests and the build.
+- **Cloudflare Workers Builds** builds and deploys the game Worker (`wrangler.toml`).
+
+The private stats Worker deploys by hand with `npm run stats:deploy`. New D1 migrations go out with
+`npm run db:migrate` _before_ the code that needs them.
+
+Every push to `main` gets a release note and an `rN` git tag (`git tag -n99 -l 'r*'`). To see
+what changed between two releases, run `git diff rN..rM`.

@@ -4,7 +4,9 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 ## Target for launch
 
-- 10 cultures × 50 statements = 500 (PL, UA, NL, BR, MX, US, TR, IT, FR, KR)
+- 10 countries (PL, UA, NL, BR, MX, US, TR, IT, FR, KR), at least 50 statements each. The bank in
+  `content/statements-extended.csv` has 783 (UA is the thinnest with 53, US the largest with 90).
+  `content/statements.csv` is the older 500-row bank, kept for reference only: the game doesn't read it.
 - Per culture, roughly: 15 × obviousness 1, 20 × obviousness 2, 15 × obviousness 3
 - Spread across all 13 topics, at least 3 per topic per culture (`npm run content` lists the gaps)
 - Every 2-culture pair keeps at least 30 eligible statements (`npm run content` prints the smallest pool)
@@ -27,21 +29,21 @@ Statements are the product. A good one makes the table argue for ten seconds and
 
 The same 13 groups for every culture, used for analytics and a future "pick topics" setting. File each statement where a player would expect to find it.
 
-| key         | covers                                                                     |
-| ----------- | -------------------------------------------------------------------------- |
-| `home`      | home life, housework, flats, neighbours, building rules                    |
-| `money`     | paying, prices, tipping, banks, shopping, markets, opening hours           |
-| `transport` | driving, buses, trains, cycling, streets, queues, behaviour in public      |
-| `table`     | meal times, eating habits, table manners (habits, not dishes)              |
-| `hosting`   | visiting, guests, being a guest, parties at home, gifts                    |
-| `holidays`  | public and seasonal holidays, festivals, New Year (the custom, not faith)  |
-| `family`    | family roles, babies, birthdays, weddings, coming of age, couples          |
-| `school`    | school, exams, graduation, university                                      |
-| `work`      | offices, colleagues, meetings, leave, pay, paperwork and bureaucracy       |
-| `language`  | sayings, idioms, set phrases, forms of address, texting conventions        |
-| `humour`    | jokes, teasing, banter, small talk, complaining                            |
-| `weather`   | weather talk, seasons, superstitions, luck, folk remedies                  |
-| `leisure`   | free time, sports, hobbies, beach, outings, TV and entertainment habits    |
+| key         | covers                                                                    |
+| ----------- | ------------------------------------------------------------------------- |
+| `home`      | home life, housework, flats, neighbours, building rules                   |
+| `money`     | paying, prices, tipping, banks, shopping, markets, opening hours          |
+| `transport` | driving, buses, trains, cycling, streets, queues, behaviour in public     |
+| `table`     | meal times, eating habits, table manners (habits, not dishes)             |
+| `hosting`   | visiting, guests, being a guest, parties at home, gifts                   |
+| `holidays`  | public and seasonal holidays, festivals, New Year (the custom, not faith) |
+| `family`    | family roles, babies, birthdays, weddings, coming of age, couples         |
+| `school`    | school, exams, graduation, university                                     |
+| `work`      | offices, colleagues, meetings, leave, pay, paperwork and bureaucracy      |
+| `language`  | sayings, idioms, set phrases, forms of address, texting conventions       |
+| `humour`    | jokes, teasing, banter, small talk, complaining                           |
+| `weather`   | weather talk, seasons, superstitions, luck, folk remedies                 |
+| `leisure`   | free time, sports, hobbies, beach, outings, TV and entertainment habits   |
 
 ## Off limits
 
@@ -63,12 +65,12 @@ For internal use only; never shipped to players. Each row has one URL where the 
 
 ## Review workflow
 
-1. Claude drafts rows in `content/statements.csv` with `reviewed` left empty.
+1. Claude drafts rows in `content/statements-extended.csv` (the bank the game ships) with `reviewed` left empty.
 2. Import the CSV into Google Sheets and give each reviewer a filtered view of their culture.
 3. The reviewer fixes the wording or note, adjusts `fits` and `obviousness`, adds their name in `reviewer`, puts remarks in `comments`, and writes `yes` in `reviewed`. Rows they reject: delete them (never reuse the id).
-4. Export the sheet as CSV (UTF-8) over `content/statements.csv` and run `npm run content`. Errors name the row to fix.
-5. Launch builds use `ONLY_REVIEWED=1`, so only approved rows ship.
+4. Export the sheet as CSV (UTF-8) over `content/statements-extended.csv` and run `npm run content`. Errors name the row to fix.
+5. `ONLY_REVIEWED=1 npm run content` builds from approved rows only. Production builds do **not** set it yet: the live game ships every row, reviewed or not, until the review is finished (201 of 783 so far: PL, UA and NL).
 
 ## Report button
 
-Players can report a statement at the reveal. Only the statement id is logged. Review reports before each content update.
+Players can report a statement at the reveal and pick a reason (incorrect, outdated, not unique, offensive). Only the statement id and the reason are logged; the private stats site lists them. Review reports before each content update.

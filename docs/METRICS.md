@@ -1,6 +1,6 @@
 # Metrics plan
 
-What Culture Clash measures, why, and what we build next. Agreed on 2026-10-19.
+What Whose Habits measures, why, and what we build next. Agreed on 2026-10-19.
 
 The numbers feed a short product case study, so we want a few trustworthy headline numbers and one or two
 behavioural stories. We don't want a dashboard of everything.

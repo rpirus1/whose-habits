@@ -1,5 +1,16 @@
 # Cross-culture party game: build plan
 
+> **Historical document.** This is the original build plan from October 2026, kept as a record of
+> the early decisions. Several parts have changed since:
+>
+> - The game is called **Whose Habits**.
+> - It has 10 countries and a 783-statement bank (`content/statements-extended.csv`).
+> - Metrics run in a Worker (`worker/`) with a separate private stats Worker (`stats/`), not a
+>   Pages Function.
+>
+> For the current state, see [README.md](../README.md), [METRICS.md](METRICS.md),
+> [LANDER.md](LANDER.md) and [CONTENT_RULES.md](CONTENT_RULES.md).
+
 Working name: **Culture Clash** (placeholder; the domain and final name come later).
 
 ## 1. Decisions so far
