@@ -1,4 +1,4 @@
-// Pure parts of the /stats page (see stats.ts): splitting metrics.sql and rendering HTML.
+// The stats page's HTML and the splitting of scripts/metrics.sql into queries (pure, tested).
 
 export interface Query {
   title: string

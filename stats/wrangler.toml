@@ -1,0 +1,21 @@
+# Private stats Worker: https://culture-clash-stats.ruslan-pirus.workers.dev
+# Deploy: npx wrangler deploy -c stats/wrangler.toml
+# Guarded by Cloudflare Access (only your email) plus a token check in stats/access.ts.
+name = "culture-clash-stats"
+main = "index.ts"
+compatibility_date = "2025-09-01"
+workers_dev = true
+# No per-version preview URLs: the page has exactly one address, the one Access guards.
+preview_urls = false
+
+# Bundles scripts/metrics.sql as text, so the page runs the same queries as `npm run metrics`.
+[[rules]]
+type = "Text"
+globs = ["**/*.sql"]
+fallthrough = true
+
+# The game's database. The page only reads from it.
+[[d1_databases]]
+binding = "DB"
+database_name = "culture-clash"
+database_id = "373adea5-17c9-4098-99b4-9f0917a4b076"

@@ -9,7 +9,7 @@ Plan only, written 2026-10-22 and updated the same day for report flow v2 and th
   `source`), `game_finished`, `play_again_vote`, `host_cta_click`, `share_click`, `report` (statement id only).
 - A `test` column. Dev devices and `?test=1` count as tests, and so does **everything on `workers.dev` until launch**.
   Every live event so far is therefore test data.
-- `scripts/metrics.sql` (8 queries) is shown at `/stats` behind Basic auth (`STATS_TOKEN` is set) and via `npm run metrics`.
+- `scripts/metrics.sql` (8 queries) is shown on the private stats Worker (`stats/`, behind Cloudflare Access, only your email) and via `npm run metrics`.
 - Reports: today one per device per statement, with the id only. No statement text, no times shown, and nothing
   ties a report to the version of the row it was about.
 
@@ -25,12 +25,12 @@ Plan only, written 2026-10-22 and updated the same day for report flow v2 and th
 
 ## 1. Analytics for the lander and the game, ending in a simple dashboard
 
-| #   | What                                                                                                                                                                                                                                                                                      | Effort |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| 1.1 | **Lander traffic:** turn on Cloudflare Web Analytics (cookieless) for visits, referrers and countries. It's a dashboard toggle or one beacon script, and its numbers stay in the Cloudflare dashboard.                                                                                    | XS     |
-| 1.2 | **Lander → game:** a `lander_click` event (`host` / `join_code` / `example_card`, with no game id), and `source: 'lander'` on `game_started` when the room was created from the lander. `parseEvent` must allow events without a game id.                                                 | S      |
-| 1.3 | **Pending in-game items** (`FinalView.tsx`): the CTA links to `/new?from=cta`, and votes are sent once per game. Plus the join funnel (link opened → named → joined → final) from METRICS.md step 5.                                                                                      | S      |
-| 1.4 | **Dashboard:** turn `/stats` from tables into one page: tiles for the 3 success signals (count + %, target shown), a games-per-week bar, lander visits → host taps → games started, and an **"include test data"** switch (otherwise it shows zeros until launch). Inline SVG, same auth. | M      |
+| #   | What                                                                                                                                                                                                                                                                                                                   | Effort |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| 1.1 | **Lander traffic:** turn on Cloudflare Web Analytics (cookieless) for visits, referrers and countries. It's a dashboard toggle or one beacon script, and its numbers stay in the Cloudflare dashboard.                                                                                                                 | XS     |
+| 1.2 | **Lander → game:** a `lander_click` event (`host` / `join_code` / `example_card`, with no game id), and `source: 'lander'` on `game_started` when the room was created from the lander. `parseEvent` must allow events without a game id.                                                                              | S      |
+| 1.3 | **Pending in-game items** (`FinalView.tsx`): the CTA links to `/new?from=cta`, and votes are sent once per game. Plus the join funnel (link opened → named → joined → final) from METRICS.md step 5.                                                                                                                   | S      |
+| 1.4 | **Dashboard:** turn the stats page from tables into one dashboard: tiles for the 3 success signals (count + %, target shown), a games-per-week bar, lander visits → host taps → games started, and an **"include test data"** switch (otherwise it shows zeros until launch). Inline SVG, on the private stats Worker. | M      |
 
 ## 2. Monitoring flagged statements, and reacting to them
 
@@ -71,7 +71,7 @@ The 7 AI-drafted cultures (BR, MX, US, TR, IT, FR, KR) depend on this.
 - **Suggested alarm** (on the dashboard, no alerting): more than 10% of games with `nth ≥ 4`, or a median hold
   above 6 s. If either shows up, consider a cap such as "one hold per player per 3 rounds".
 
-**Review page `/stats/statements`** (same auth, M):
+**Review page `/statements` on the stats Worker** (same Access protection, M):
 
 - **Layout:** offensive reports first, then statements by report count. After those, unreviewed rows with warning
   signs: under 20% correct with one wrong culture dominating, or over 95% correct (too obvious).
@@ -98,7 +98,7 @@ offensive reports come in and fixing by redeploy is too slow.
 
 1. **Report fields:** `heldMs`, `nth` and `v`, added to the v2 `report` event in `parseEvent`. Agree on these with
    the UI session before it ships v2, so the event schema only changes once. Then `round_result` (S).
-2. **`/stats/statements`:** with the hold-health panel and CSV export (M). This part matters most.
+2. **Review page (`/statements` on the stats Worker):** with the hold-health panel and CSV export (M). This part matters most.
 3. Web Analytics + lander events (XS + S)
 4. Dashboard tiles + include-test switch (M)
 5. FinalView bits + join funnel (S), when the room screens are free

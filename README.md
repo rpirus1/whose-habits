@@ -12,17 +12,18 @@ cp .env.example .env.local   # then fill in the Supabase URL and publishable key
 npm run dev                  # also reachable from phones on the same Wi-Fi
 ```
 
-| Script                                      | What it does                                                                                |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `npm run dev`                               | Compile statements, start Vite                                                              |
-| `npm run dev:api`                           | The Worker (site + analytics API) with a local D1 database (port 8788; Vite proxies `/api`) |
-| `npm run db:migrate:local`                  | Create or update the local D1 tables (run once)                                             |
-| `npm run db:migrate`                        | Apply new migrations to the live D1 database (before deploying code that needs them)        |
-| `npm run metrics:local` / `npm run metrics` | Success-signal queries (`scripts/metrics.sql`) on local or live D1                          |
-| `npm run content`                           | Validate `content/statements.csv` and write `src/content/statements.json`                   |
-| `npm test`                                  | Unit tests (Vitest)                                                                         |
-| `npm run build`                             | Content + type check + production build                                                     |
-| `npm run lint` / `npm run format`           | Oxlint / Prettier                                                                           |
+| Script                                         | What it does                                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `npm run dev`                                  | Compile statements, start Vite                                                              |
+| `npm run dev:api`                              | The Worker (site + analytics API) with a local D1 database (port 8788; Vite proxies `/api`) |
+| `npm run db:migrate:local`                     | Create or update the local D1 tables (run once)                                             |
+| `npm run db:migrate`                           | Apply new migrations to the live D1 database (before deploying code that needs them)        |
+| `npm run metrics:local` / `npm run metrics`    | Success-signal queries (`scripts/metrics.sql`) on local or live D1                          |
+| `npm run stats:local` / `npm run stats:deploy` | The private stats page (`stats/`) on localhost with local D1, or deploy it                  |
+| `npm run content`                              | Validate `content/statements.csv` and write `src/content/statements.json`                   |
+| `npm test`                                     | Unit tests (Vitest)                                                                         |
+| `npm run build`                                | Content + type check + production build                                                     |
+| `npm run lint` / `npm run format`              | Oxlint / Prettier                                                                           |
 
 ## Editing statements
 
@@ -38,12 +39,13 @@ and marked `noindex`.
 
 Cloudflare Workers Logs is on (`[observability.logs]` in `wrangler.toml`) to catch errors: it keeps
 request logs (which can include IP addresses) for 3 days on the free plan (7 on paid). Only requests
-that reach the Worker are logged (`/api/*`, `/r/*`, `/new`, `/stats`); the lander and static files
+that reach the Worker are logged (`/api/*`, `/r/*`, `/new`); the lander and static files
 are not. The lander's privacy section says this.
 
 Your own playtests don't count: events from `localhost`, the dev server, or a device that
 opened any page with `?test=1` are stored with `test = 1` and left out of every query
 (`?test=0` turns it off again). Until launch on a custom domain, everything on the
-`workers.dev` URL is stored as a test too. The numbers are at `/stats` (password: the `STATS_TOKEN`
-secret, set with `npx wrangler secret put STATS_TOKEN`) or via `npm run metrics`. What each
-number means: [docs/METRICS.md](docs/METRICS.md).
+`workers.dev` URL is stored as a test too. The numbers are on a private stats page, a separate
+Worker (`stats/`) behind Cloudflare Access that only the owner's email can open, or via
+`npm run metrics`. What each number means and how the page is protected:
+[docs/METRICS.md](docs/METRICS.md).

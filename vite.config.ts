@@ -27,6 +27,11 @@ export default defineConfig({
   // dependencies so ESM/CJS quirks in packages don't matter there.
   ssr: { noExternal: true },
   test: {
-    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'worker/**/*.test.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'scripts/**/*.test.ts',
+      'worker/**/*.test.ts',
+      'stats/**/*.test.ts',
+    ],
   },
 })

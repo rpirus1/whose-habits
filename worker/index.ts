@@ -1,14 +1,14 @@
 // Cloudflare Worker: serves the built app from dist/ (static assets) and handles the API
 // route. Static files (including the prerendered lander at /) and the _headers file are
-// handled by the assets layer. This code sees /api/* and /stats first (run_worker_first in
+// handled by the assets layer. This code sees /api/* first (run_worker_first in
 // wrangler.toml), and every request that matched no file: those get the app shell.
+// The stats page is a separate, private Worker (stats/).
 import { isPreviewHost, MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
 import { fromOwnPage, PRIVATE_HEADERS, routeRequest, SHELL_PATH } from './routes'
 import { withinLimit } from './rateLimit'
-import { handleStats } from './stats'
-import type { StatsEnv } from './stats'
 
-interface Env extends StatsEnv {
+interface Env {
+  DB: D1Database
   ASSETS: Fetcher
   /** Events per IP address (wrangler.toml). Optional so tests and older configs still run. */
   EVENT_LIMIT?: RateLimit
@@ -22,7 +22,6 @@ export default {
         ? handleEvent(request, env)
         : new Response(null, { status: 405, headers: { Allow: 'POST' } })
     }
-    if (url.pathname === '/stats') return handleStats(request, env)
     return serveApp(request, url, env)
   },
 } satisfies ExportedHandler<Env>

@@ -168,7 +168,7 @@ Link: LinkedIn.
   - Your phone keeps your theme choice and rooms you can rejoin in `localStorage` (rooms expire after 12 hours).
   - Hosting: Cloudflare serves the site and, like any web host, sees IP addresses to deliver pages.
     Workers Logs (`[observability.logs]` in `wrangler.toml`) keeps request logs for 3 days (free
-    plan) to catch errors: only requests that reach the Worker (`/api/*`, `/r/*`, `/new`, `/stats`),
+    plan) to catch errors: only requests that reach the Worker (`/api/*`, `/r/*`, `/new`),
     not the lander or static files. The lander says so.
   - Wording aimed at an EU visitor: what, why (to see if people enjoy the game and which settings
     work), no profiling, contact for questions. Supabase runs in the EU (Ireland).
@@ -191,7 +191,7 @@ one-line change; it updates canonical, og:url, og:image, sitemap, robots and JSO
   `noindex` on `/r/*`.
 - Open Graph and Twitter: as in `index.html` today, plus `og:locale=en`, `twitter:title`,
   `twitter:description`, `twitter:image`.
-- `robots.txt`: allow all, `Disallow: /api/` and `/stats`, `Sitemap: {SITE_URL}/sitemap.xml`.
+- `robots.txt`: allow all, `Disallow: /api/`, `Sitemap: {SITE_URL}/sitemap.xml`.
   `/r/` is **not** disallowed: crawlers must be able to fetch it to see `noindex`.
 - `sitemap.xml`: just `/`, with `lastmod` = build date.
 - JSON-LD (one `@graph` in the lander's head):

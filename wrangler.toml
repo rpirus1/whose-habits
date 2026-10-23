@@ -9,14 +9,9 @@ binding = "ASSETS"
 # index.html is the prerendered landing page, so it can't be the SPA fallback. Paths that
 # match no file (/new, /r/<room>, unknown pages) go to the Worker, which serves app.html.
 not_found_handling = "none"
-# API calls and the stats page go to the Worker before the assets layer looks at them.
-run_worker_first = ["/api/*", "/stats"]
-
-# The stats page bundles scripts/metrics.sql as text, so it runs the same queries as `npm run metrics`.
-[[rules]]
-type = "Text"
-globs = ["**/*.sql"]
-fallthrough = true
+# API calls go to the Worker before the assets layer looks at them.
+# (The stats page is a separate private Worker: stats/wrangler.toml.)
+run_worker_first = ["/api/*"]
 
 [[d1_databases]]
 binding = "DB"
@@ -31,14 +26,8 @@ name = "EVENT_LIMIT"
 namespace_id = "1001"
 simple = { limit = 60, period = 60 }
 
-# /stats password attempts: slows down guessing STATS_TOKEN.
-[[ratelimits]]
-name = "STATS_LIMIT"
-namespace_id = "1002"
-simple = { limit = 10, period = 60 }
-
 # Workers Logs, to catch errors: kept 3 days on the free plan (7 on paid). Only requests that
-# reach this Worker are logged (/api/*, /r/*, /new, /stats), not the lander or static files.
+# reach this Worker are logged (/api/*, /r/*, /new), not the lander or static files.
 # Set here, not only in the dashboard, so a deploy from main can't switch it off.
 # The lander's privacy section mentions these logs: keep the two in step.
 [observability.logs]

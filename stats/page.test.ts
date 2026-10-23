@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { renderStats, splitQueries } from './statsPage'
+import { renderStats, splitQueries } from './page'
 
 describe('splitQueries', () => {
   it('finds every numbered query in metrics.sql, without the file header', () => {

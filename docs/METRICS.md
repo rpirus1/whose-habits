@@ -33,7 +33,7 @@ percentage. A stated "yes" is weaker evidence than an actual replay, which is wh
 | 3. Guest → host                       | `/new?from=cta` → `source` done. The CTA link itself waits for `FinalView.tsx` |
 | 4. Web Analytics                      | To do (dashboard setting, no code)                                             |
 | 5. Join funnel                        | Waits for the room-screen session                                              |
-| 6. `/stats` page                      | Done. Needs `STATS_TOKEN` set in production                                    |
+| 6. Stats page                         | Moved to a private Worker behind Cloudflare Access (see step 6 for setup)      |
 
 Migration 0002 is applied to live D1 (2026-10-19), and the 13 playtest events from that day are marked `test = 1`.
 
@@ -91,10 +91,32 @@ side, as a cross-check against the host's `playersAtEnd`.
 
 ### 6. Stats page (I)
 
-A read-only `GET /stats` route in `worker/index.ts`, protected by a secret (`STATS_TOKEN`, set with
-`wrangler secret put`, sent as HTTP Basic auth). It runs the same queries as `scripts/metrics.sql` and renders
-plain HTML tables. It has no links from the app and gets `X-Robots-Tag: noindex`. `npm run metrics` stays the
-quick way from the terminal. For the case study, export a CSV with `wrangler d1 execute … --json`.
+A **separate, private Worker** (`stats/`, named `culture-clash-stats`) at
+`https://culture-clash-stats.ruslan-pirus.workers.dev`. It reads the game's D1 database and renders
+`scripts/metrics.sql` as plain HTML tables. The public game Worker has no stats code.
+
+Who can open it: only the owner, from any device.
+
+1. **Cloudflare Access** guards the whole address. The policy allows one email. Opening the page asks for that
+   email and sends a one-time code to it, and the session lasts as long as the Access app allows.
+2. **The Worker checks Access's token** (`stats/access.ts`): signature, audience, issuer and expiry. If the token
+   is missing or wrong, the Worker refuses, and until `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` are set it refuses everyone.
+   Per-version preview URLs are off (`preview_urls = false`).
+
+Setup, once:
+
+1. `npm run stats:deploy`
+2. In the Cloudflare dashboard: Workers & Pages → `culture-clash-stats` → Settings → Domains & Routes →
+   `workers.dev` → enable **Cloudflare Access**. Then in Zero Trust → Access → Applications, set the app's policy
+   to **Allow, Emails: your email** (delete any broader rule) and note the **Application Audience (AUD) tag**
+   and the team domain (`<team>.cloudflareaccess.com`).
+3. `npx wrangler secret put ACCESS_TEAM_DOMAIN -c stats/wrangler.toml` and
+   `npx wrangler secret put ACCESS_AUD -c stats/wrangler.toml`
+4. On the game Worker, remove the old password: `npx wrangler secret delete STATS_TOKEN`.
+
+Locally: `npm run stats:local` serves the page at `http://localhost:8790` from the local D1, without Access.
+`npm run metrics` stays the quick way from the terminal. For the case study, export with
+`wrangler d1 execute … --json`.
 
 ## Not now
 

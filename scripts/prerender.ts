@@ -42,7 +42,6 @@ writeFileSync(
   'dist/robots.txt',
   `User-agent: *
 Disallow: /api/
-Disallow: /stats
 
 Sitemap: ${entry.SITE_URL}/sitemap.xml
 `,
