@@ -1,8 +1,11 @@
-// Pure parsing and validation for content/statements.csv.
+// Pure parsing and validation for the statements CSV (STATEMENTS_SOURCE).
 // Used by build-statements.ts (plain Node) and by the unit tests.
 import Papa from 'papaparse'
 import { CULTURE_CODES, TOPICS } from '../src/content/schema.ts'
 import type { CultureCode, Obviousness, Statement, Topic } from '../src/content/schema.ts'
+
+/** The bank the game ships: the extended one (783 rows) since the random-countries release. */
+export const STATEMENTS_SOURCE = 'content/statements-extended.csv'
 
 export const REQUIRED_COLUMNS = [
   'id',

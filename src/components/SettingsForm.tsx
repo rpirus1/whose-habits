@@ -49,16 +49,7 @@ export function ModeCards({
 }
 
 /** The lobby's compact mode switch, above the country grid. */
-function ModeSwitch({
-  value,
-  onChange,
-  count,
-}: {
-  value: GameMode
-  onChange: (mode: GameMode) => void
-  /** Picked countries, beside the mode line (so the hint below the grid has its spot alone). */
-  count: number
-}) {
+function ModeSwitch({ value, onChange }: { value: GameMode; onChange: (mode: GameMode) => void }) {
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-3 font-medium">Countries</legend>
@@ -85,15 +76,12 @@ function ModeSwitch({
           )
         })}
       </div>
-      <p className="text-muted-foreground flex items-baseline justify-between gap-3 text-sm">
-        {MODE_COPY[value].line}
-        {value === 'pick' && <CountryCount count={count} />}
-      </p>
+      <p className="text-muted-foreground text-sm">{MODE_COPY[value].line}</p>
     </fieldset>
   )
 }
 
-/** "2 of 2–6": how many countries are picked. Sits above the grid, never in the hint's spot. */
+/** "2 of 2–6": how many countries are picked, in the Pick countries step's header. */
 export function CountryCount({ count }: { count: number }) {
   return (
     <span className="text-muted-foreground shrink-0 text-sm font-normal tabular-nums">
@@ -249,11 +237,7 @@ export function SettingsForm({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4">
-        <ModeSwitch
-          value={mode}
-          onChange={(m) => onChange(withMode(value, m))}
-          count={value.cultures.length}
-        />
+        <ModeSwitch value={mode} onChange={(m) => onChange(withMode(value, m))} />
         {mode === 'pick' && <CountryPicker value={value} onChange={onChange} keepMinimum />}
       </div>
       <GameOptions value={value} onChange={onChange} />

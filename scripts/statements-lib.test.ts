@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { eligibleCount, parseStatementsCsv } from './statements-lib.ts'
+import { eligibleCount, parseStatementsCsv, STATEMENTS_SOURCE } from './statements-lib.ts'
 
 const HEADER = 'id,text,fits,note,obviousness,topic,source,reviewed,reviewer,comments'
 const good =
@@ -71,7 +71,7 @@ nl-001,A statement that is long enough.,NL,Note.,1,home,${source},,,`).errors
   })
 
   it('keeps the bundled statements file valid', () => {
-    const { errors } = parseStatementsCsv(readFileSync('content/statements.csv', 'utf8'))
+    const { errors } = parseStatementsCsv(readFileSync(STATEMENTS_SOURCE, 'utf8'))
     expect(errors).toEqual([])
   })
 })

@@ -20,14 +20,14 @@ npm run dev                  # also reachable from phones on the same Wi-Fi
 | `npm run db:migrate`                           | Apply new migrations to the live D1 database (before deploying code that needs them)        |
 | `npm run metrics:local` / `npm run metrics`    | Success-signal queries (`scripts/metrics.sql`) on local or live D1                          |
 | `npm run stats:local` / `npm run stats:deploy` | The private stats page (`stats/`) on localhost with local D1, or deploy it                  |
-| `npm run content`                              | Validate `content/statements.csv` and write `src/content/statements.json`                   |
+| `npm run content`                              | Validate `content/statements-extended.csv` and write `src/content/statements.json`          |
 | `npm test`                                     | Unit tests (Vitest)                                                                         |
 | `npm run build`                                | Content + type check + production build                                                     |
 | `npm run lint` / `npm run format`              | Oxlint / Prettier                                                                           |
 
 ## Editing statements
 
-Open `content/statements.csv` in Google Sheets or Excel, edit, export as CSV (UTF-8) over the same file, then run `npm run content`. Errors point to the row number.
+The game ships `content/statements-extended.csv` (783 statements; `content/statements.csv` is the older 500). Open it in Google Sheets or Excel, edit, export as CSV (UTF-8) over the same file, then run `npm run content`. Errors point to the row number.
 
 ## Privacy and analytics
 

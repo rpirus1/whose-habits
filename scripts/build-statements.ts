@@ -1,10 +1,11 @@
-// Validates content/statements.csv and writes src/content/statements.json.
+// Validates the statements CSV (STATEMENTS_SOURCE, the extended bank) and writes
+// src/content/statements.json.
 // Run: npm run content   (ONLY_REVIEWED=1 ships reviewed statements only;
-// STATEMENTS=content/statements-extended.csv builds from another CSV)
+// STATEMENTS=content/statements.csv builds from another CSV)
 import { readFileSync, writeFileSync } from 'node:fs'
-import { coverageReport, parseStatementsCsv } from './statements-lib.ts'
+import { coverageReport, parseStatementsCsv, STATEMENTS_SOURCE } from './statements-lib.ts'
 
-const SOURCE = process.env.STATEMENTS || 'content/statements.csv'
+const SOURCE = process.env.STATEMENTS || STATEMENTS_SOURCE
 const TARGET = 'src/content/statements.json'
 const onlyReviewed = ['1', 'true', 'yes'].includes(process.env.ONLY_REVIEWED ?? '')
 
