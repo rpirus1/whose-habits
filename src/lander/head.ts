@@ -1,8 +1,8 @@
-// Head tags only the prerendered landing page gets: canonical and JSON-LD. The shared tags
+// Head tags only the prerendered landing page gets: canonical, robots and JSON-LD. The shared tags
 // (title, description, Open Graph) live in index.html, so room links keep their previews.
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '../game/types'
 import { FAQ } from './content'
-import { MAKER_NAME } from './contact'
+import { LINKEDIN_URL, MAKER_NAME } from './contact'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './site'
 
 export function structuredData() {
@@ -31,7 +31,7 @@ export function structuredData() {
         inLanguage: 'en',
         isAccessibleForFree: true,
         offers: { '@type': 'Offer', price: 0, priceCurrency: 'EUR' },
-        author: { '@type': 'Person', name: MAKER_NAME },
+        author: { '@type': 'Person', name: MAKER_NAME, sameAs: [LINKEDIN_URL] },
       },
       {
         '@type': 'FAQPage',
@@ -51,6 +51,8 @@ export function headTags(): string {
   const json = JSON.stringify(structuredData()).replace(/</g, '\u003c')
   return [
     `<link rel="canonical" href="${SITE_URL}/" />`,
+    // Lets Google show the large share image and full snippets in results.
+    '<meta name="robots" content="max-image-preview:large, max-snippet:-1" />',
     `<script type="application/ld+json">${json}</script>`,
   ].join('\n    ')
 }

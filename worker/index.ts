@@ -4,7 +4,7 @@
 // wrangler.toml), and every request that matched no file: those get the app shell.
 // The stats page is a separate, private Worker (stats/).
 import { isPreviewHost, MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
-import { fromOwnPage, PRIVATE_HEADERS, routeRequest, SHELL_PATH } from './routes'
+import { fromOwnPage, routeRequest, SHELL_PATH } from './routes'
 import { withinLimit } from './rateLimit'
 
 interface Env {
@@ -35,7 +35,7 @@ async function serveApp(request: Request, url: URL, env: Env): Promise<Response>
   const shell = await env.ASSETS.fetch(new URL(SHELL_PATH, url))
   const headers = new Headers(shell.headers)
   // _headers rules match the asset's path (/app), not this URL, so set these here.
-  if (route.private) for (const [k, v] of Object.entries(PRIVATE_HEADERS)) headers.set(k, v)
+  for (const [k, v] of Object.entries(route.headers)) headers.set(k, v)
   return new Response(request.method === 'HEAD' ? null : shell.body, {
     status: route.status,
     headers,
