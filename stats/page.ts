@@ -19,6 +19,8 @@ export interface Filters {
   scope: DataScope
   from: string | null
   to: string | null
+  /** Amsterdam day of the first real (test = 0) event: the launch. Null while all events are tests. */
+  realSince?: string | null
 }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
@@ -26,15 +28,18 @@ const validDay = (v: string | null): v is string =>
   !!v && DAY.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`))
 
 /**
- * Until launch every event is a test (workers.dev), so the page shows all events by default.
- * `?data=real` limits it to real players; `?from=` / `?to=` limit the dates.
+ * Before launch every event is a test (events reaching the game on `*.workers.dev`, localhost or
+ * `?test=1`), so the page shows all events. From the first real event on (players on
+ * www.whosehabits.com) it shows real players by default. `?data=all` / `?data=real` choose
+ * explicitly; `?from=` / `?to=` limit the dates.
  */
-export function parseFilters(params: URLSearchParams): Filters {
-  const scope: DataScope = params.get('data') === 'real' ? 'real' : 'all'
+export function parseFilters(params: URLSearchParams, realSince: string | null = null): Filters {
+  const data = params.get('data')
+  const scope: DataScope = data === 'real' || data === 'all' ? data : realSince ? 'real' : 'all'
   let from = validDay(params.get('from')) ? params.get('from') : null
   let to = validDay(params.get('to')) ? params.get('to') : null
   if (from && to && from > to) [from, to] = [to, from]
-  return { scope, from, to }
+  return { scope, from, to, realSince }
 }
 
 /**
@@ -82,7 +87,8 @@ export const PAGES = [
 /** Query string for the shared filters plus any page-specific ones (`extra`). */
 export function filterQuery(f: Filters, extra: Record<string, string> = {}): string {
   const p = new URLSearchParams()
-  if (f.scope === 'real') p.set('data', 'real')
+  // Always explicit: the default depends on whether real events exist yet.
+  p.set('data', f.scope)
   if (f.from) p.set('from', f.from)
   if (f.to) p.set('to', f.to)
   for (const [k, v] of Object.entries(extra)) if (v) p.set(k, v)
@@ -117,7 +123,7 @@ function renderFilters(f: Filters, now: Date, extra: Record<string, string>): st
 <div class="fields">
 <label>From <input type="date" name="from" value="${escape(f.from ?? '')}" max="${today}"></label>
 <label>To <input type="date" name="to" value="${escape(f.to ?? '')}" max="${today}"></label>
-<label>Data <select name="data">${option('all', 'All events (incl. test)')}${option('real', 'Real players only')}</select></label>
+<label>Data <select name="data">${option('all', 'All events (incl. test)')}${option('real', f.realSince ? `Real players (since ${formatDay(f.realSince)})` : 'Real players only (none yet)')}</select></label>
 ${hidden}<button type="submit">Apply</button>
 </div>
 </form>`
@@ -217,6 +223,7 @@ const STYLES = `
   nav a[aria-current] { color: var(--fg); border-bottom: 2px solid var(--accent); }
   h1 { font-size: 22px; margin: 0 0 4px; }
   h2 { font-size: 16px; margin: 28px 0 8px; }
+  h3 { font-size: 14px; margin: 18px 0 6px; }
   a { color: var(--accent); }
   .meta, .empty, .hint { color: var(--muted); }
   .hint { font-size: 13px; margin: 4px 0 8px; }

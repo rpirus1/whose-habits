@@ -105,9 +105,10 @@ describe('parseEvent', () => {
 })
 
 describe('isPreviewHost', () => {
-  it('treats the workers.dev preview URL as test traffic, and nothing else', () => {
+  it('treats the workers.dev preview URL as test traffic, and the own domain as real', () => {
     expect(isPreviewHost('culture-clash.ruslan-pirus.workers.dev')).toBe(true)
-    expect(isPreviewHost('cultureclash.app')).toBe(false)
+    expect(isPreviewHost('www.whosehabits.com')).toBe(false)
+    expect(isPreviewHost('whosehabits.com')).toBe(false)
     expect(isPreviewHost('notworkers.dev')).toBe(false)
   })
 })

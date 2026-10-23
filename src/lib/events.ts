@@ -87,8 +87,9 @@ type EventBody =
 export const MAX_EVENT_BYTES = 1024
 
 /**
- * Until the game launches on its own domain, every event (from the workers.dev preview URL) is
- * a test. The Worker decides this by its own host name, so cached older clients are covered too.
+ * Events reaching the Worker on `*.workers.dev` are tests. Before launch that was every event;
+ * since www.whosehabits.com it's old cached tabs and previews, while the custom domain stores
+ * real events. The Worker decides by its own host name, so older clients are covered too.
  */
 export const isPreviewHost = (hostname: string) =>
   hostname === 'workers.dev' || hostname.endsWith('.workers.dev')

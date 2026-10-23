@@ -80,7 +80,7 @@ export function renderStatementsBody(
   const option = (value: string, label: string, selected: string) =>
     `<option value="${escape(value)}"${value === selected ? ' selected' : ''}>${escape(label)}</option>`
   const hiddenShared = Object.entries({
-    data: filters.scope === 'real' ? 'real' : '',
+    data: filters.scope,
     from: filters.from ?? '',
     to: filters.to ?? '',
   })

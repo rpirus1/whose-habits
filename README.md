@@ -46,8 +46,9 @@ are not. The lander's privacy section says this.
 
 Your own playtests don't count: events from `localhost`, the dev server, or a device that
 opened any page with `?test=1` are stored with `test = 1` and left out of every query
-(`?test=0` turns it off again). Until launch on a custom domain, everything on the
-`workers.dev` URL is stored as a test too. The numbers are on a private stats page, a separate
+(`?test=0` turns it off again; the flag is per address, so set it once on
+www.whosehabits.com too). Everything that reaches the `workers.dev` URL is stored as a test,
+so before launch every event was one; events on www.whosehabits.com count as real. The numbers are on a private stats page, a separate
 Worker (`stats/`) behind Cloudflare Access that only the owner's email can open, or via
 `npm run metrics`. What each number means and how the page is protected:
 [docs/METRICS.md](docs/METRICS.md).
