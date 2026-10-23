@@ -10,7 +10,7 @@ Each entry: what and why, date added, where it came from.
 ### "Buy Me a Coffee" link on the lander
 
 An optional way to support the maker. It unlocks nothing and stays out of the game itself.
-Added 2026-10-22. From Ruslan, via the main chat. Approach approved, start planned for 2026-10-23 in the lander chat.
+Added 2026-10-22. From Ruslan, via the main chat. **Done:** the link is on the lander (`COFFEE_URL` in `src/lander/contact.ts`) and the account is active.
 
 **Approach**
 
