@@ -16,6 +16,8 @@ stats site at `https://culture-clash-stats.ruslan-pirus.workers.dev` has:
     Yes / Maybe / No / Didn't answer, where 100% = every player on the final screen.
   - **Completed games by group size:** a bar for each player count from 2 to 12. Under each bar: % of started
     games completed, and % of players on the final screen who said yes.
+  - **Picked vs random countries** (added for random mode): started, all rounds played, ended early, not
+    finished, and % "Yes", per mode. Games without a `mode` (older builds) count as picked.
   - **Actually played again**, and **Guest → host**.
   - **Games per week:** calendar weeks (Mon–Sun, labelled "19–25.10"), up to the current week, stacked as
     all rounds played vs ended early or not finished.
@@ -46,6 +48,7 @@ New events (`src/lib/events.ts`, all anonymous):
 Changed events:
 
 - `report` adds `v`, `heldMs` and `nth`.
+- `game_started.mode` is `pick` or `random` (from the UI session; random games have `cultures: []`).
 - `game_started.source` can be `lander`. The lander's "Host a game" links go to `/new?from=lander`, and the guest
   CTA goes to `/new?from=cta`.
 

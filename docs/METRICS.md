@@ -68,6 +68,12 @@ should ever count.
 - Query: CTA taps → rooms that started a game with `source = 'guest_cta'`.
   _The link change is in `FinalView.tsx` (waits); the `/new` and `useHostGame` side can land first._
 
+### Countries mode (added 2026-10-23)
+
+`game_started` has `mode: 'pick' | 'random'`. Rows from older builds have no `mode`: they were all picked. In
+random games `cultures` is empty (each round draws its own 4 countries), so any country-mix stats must leave
+random games out. The dashboard compares the two modes: completed, ended early, not finished, and "Yes" votes.
+
 ### 4. Traffic and sources (H)
 
 Cloudflare Web Analytics (cookieless) for visits, referrers and countries. Enable it for the Worker in the

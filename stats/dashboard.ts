@@ -1,8 +1,8 @@
 // The Dashboard: the signals that decide the product's direction (completed games, which group
-// sizes work, would/did people play again, guest → host), games per calendar week, and the lander
+// sizes work, picked vs random countries, would/did people play again, guest → host), games per calendar week, and the lander
 // and join funnels. Computed in JS from one filtered query (pure, tested); the detailed
 // metrics.sql tables follow under "All numbers". Days and weeks are Amsterdam time.
-import { escape, renderSections, type Filters, type QueryResult } from './page'
+import { escape, renderSections, renderTable, type Filters, type QueryResult } from './page'
 import { addDays, localDay, mondayOf, weekLabel } from './time'
 
 /** Every event the dashboard needs. `test = 0` is swapped for the page filters (filterSql). */
@@ -40,6 +40,19 @@ export interface SizeRow {
   atFinal: number
 }
 
+/** Games where the host picked the countries vs random countries each round. */
+export type GameMode = 'pick' | 'random'
+
+export interface ModeRow {
+  started: number
+  completed: number
+  endedEarly: number
+  notFinished: number
+  /** "Yes" votes and players on the final screen, in completed games. */
+  yes: number
+  atFinal: number
+}
+
 export interface WeekRow {
   /** Monday, YYYY-MM-DD. */
   week: string
@@ -58,6 +71,7 @@ export interface DashboardNumbers {
   completed5: number
   playAgain: { full: PlayAgain; early: PlayAgain }
   sizes: SizeRow[]
+  modes: Record<GameMode, ModeRow>
   finished: number
   replays: number
   ctaTaps: number
@@ -84,7 +98,7 @@ export function dashboardNumbers(
 ): DashboardNumbers {
   const started = new Map<
     string,
-    { players: number; replay: boolean; source: string; day: string }
+    { players: number; replay: boolean; source: string; mode: GameMode; day: string }
   >()
   const finished = new Map<string, { atEnd: number; early: boolean }>()
   const votes = new Map<string, { yes: number; maybe: number; no: number }>()
@@ -106,6 +120,8 @@ export function dashboardNumbers(
             players: Number(d.players) || 0,
             replay: d.replay === true,
             source: String(d.source ?? 'direct'),
+            // Builds before random mode sent no mode: those games were all picked.
+            mode: d.mode === 'random' ? 'random' : 'pick',
             day: localDay(row.created_at),
           })
         }
@@ -178,6 +194,20 @@ export function dashboardNumbers(
     })
   }
 
+  const modes = {} as Record<GameMode, ModeRow>
+  for (const mode of ['pick', 'random'] as const) {
+    const ofMode = games.filter(([, g]) => g.mode === mode)
+    const done = ofMode.filter(([id]) => isCompleted(id))
+    modes[mode] = {
+      started: ofMode.length,
+      completed: done.length,
+      endedEarly: ofMode.filter(([id]) => finished.get(id)?.early === true).length,
+      notFinished: ofMode.filter(([id]) => !finished.has(id)).length,
+      yes: done.reduce((s, [id]) => s + (votes.get(id)?.yes ?? 0), 0),
+      atFinal: done.reduce((s, [id]) => s + (finished.get(id)?.atEnd ?? 0), 0),
+    }
+  }
+
   return {
     started: games.length,
     completed: games.filter(([id]) => isCompleted(id)).length,
@@ -186,6 +216,7 @@ export function dashboardNumbers(
     completed5: games.filter(([id, g]) => isCompleted(id) && g.players >= 5).length,
     playAgain,
     sizes,
+    modes,
     finished: finished.size,
     replays: games.filter(([, g]) => g.replay).length,
     ctaTaps: n.ctaTaps,
@@ -304,6 +335,24 @@ function sizeChart(sizes: SizeRow[]): string {
 ${cols}</svg></div>`
 }
 
+/** Picked vs random countries side by side: how games end, and who would play again. */
+function modeTable(modes: Record<GameMode, ModeRow>): string {
+  if (!modes.pick.started && !modes.random.started) return '<p class="empty">No games yet.</p>'
+  const share = (n: number, of: number) => (of ? `${n} (${pct(n / of)})` : `${n}`)
+  const row = (label: string, m: ModeRow) => ({
+    Countries: label,
+    Started: m.started,
+    'All rounds played': share(m.completed, m.started),
+    'Ended early': share(m.endedEarly, m.started),
+    'Not finished': share(m.notFinished, m.started),
+    'Said "Yes"': m.atFinal ? `${pct(m.yes / m.atFinal)} of ${m.atFinal}` : '–',
+  })
+  return renderTable([
+    row('Picked by the host', modes.pick),
+    row('Random each round', modes.random),
+  ])
+}
+
 function weeklyChart(weeks: WeekRow[]): string {
   if (!weeks.length) return '<p class="empty">No games yet.</p>'
   const max = Math.max(1, ...weeks.map((w) => w.completed + w.other))
@@ -358,6 +407,9 @@ ${playAgainBar('Ended early', d.playAgain.early)}
 <h2>Completed games by group size</h2>
 <p class="hint">Bars: games with all rounds played. Under each: share of started games that were completed, and share of players on the final screen who said "Yes" to playing again. Which group size the game suits best.</p>
 ${sizeChart(d.sizes)}
+<h2>Picked vs random countries</h2>
+<p class="hint">Shares are of started games. "Said Yes": players on the final screen of games with all rounds played who said "Yes" to playing again. Games from before random mode count as picked.</p>
+${modeTable(d.modes)}
 <h2>Games per week</h2>
 ${weeklyChart(d.weeks)}
 <h2>Lander → game</h2>

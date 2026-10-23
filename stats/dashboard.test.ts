@@ -28,7 +28,7 @@ describe('dashboardNumbers', () => {
     finish('g2', 4, true),
     vote('g2', 'no'),
     start('g3', 5, { source: 'guest_cta' }),
-    start('g4', 6),
+    start('g4', 6, { mode: 'random', cultures: [] }),
     finish('g4', 6),
     row('host_cta_click', {}, 'g1'),
     row('lander_click', { target: 'host_hero' }),
@@ -67,6 +67,25 @@ describe('dashboardNumbers', () => {
     expect(d.sizes.find((s) => s.players === 5)).toMatchObject({ started: 1, completed: 0 })
   })
 
+  it('splits picked and random countries, counting games without a mode as picked', () => {
+    expect(d.modes.pick).toEqual({
+      started: 3,
+      completed: 1,
+      endedEarly: 1,
+      notFinished: 1,
+      yes: 2,
+      atFinal: 5,
+    })
+    expect(d.modes.random).toEqual({
+      started: 1,
+      completed: 1,
+      endedEarly: 0,
+      notFinished: 0,
+      yes: 0,
+      atFinal: 6,
+    })
+  })
+
   it('shows calendar weeks up to the current one, even when it has no games yet', () => {
     expect(d.weeks).toEqual([
       { week: '2026-10-12', completed: 1, other: 0 },
@@ -92,5 +111,7 @@ describe('dashboardNumbers', () => {
     expect(html).toContain('Yes <strong>18%</strong>')
     expect(html).toContain('26.10–1.11')
     expect(html).toContain('Completed games by number of players')
+    expect(html).toContain('Random each round')
+    expect(html).toContain('1 (33%)')
   })
 })
