@@ -1,6 +1,6 @@
 # Whose Habits
 
-A phone-based party game for international friends. The host picks 2–6 of 10 countries (or lets the game pick at random), friends join by link or QR, and everyone guesses which country each everyday habit comes from.
+A free, phone-based party game for international friends. The host picks 2–6 of 10 countries (or lets the game pick at random), friends join by link or QR code, and everyone guesses which country each everyday habit belongs to.
 
 Live at https://www.whosehabits.com. The bare domain and the old `workers.dev` address redirect there (see [Deploy](#deploy)). The code still uses the old working name `culture-clash` for the repository, the Worker and the D1 database; renaming them would change those addresses, so they stay.
 
@@ -34,17 +34,20 @@ The game ships `content/statements-extended.csv` (783 statements; `content/state
 ## Privacy and analytics
 
 No accounts, no cookies, no personal data. The app sends a few anonymous events (game
-started/finished, each round's answer counts per country, replaced statements, "play again?"
+started/finished with its settings and where the host came from, each round's answer counts per country, replaced statements, "play again?"
 vote, reports with a reason, share and host clicks, lander button taps, and counts of the steps
 into a room) to
 `worker/index.ts`, which validates them (`src/lib/events.ts`) and stores them in
-Cloudflare D1. No names, player ids or IP addresses are stored. Room links are unguessable
-and marked `noindex`.
+Cloudflare D1. No names, player ids or IP addresses are stored. The Worker counts events per IP address for a
+minute (Cloudflare rate limiting, `worker/rateLimit.ts`) to block spam; that count isn’t stored.
+Room links are unguessable and marked `noindex`. The full list players see is the Privacy
+section in the lander footer (`src/lander/Lander.tsx`): keep it in step with `src/lib/events.ts`.
 
 Cloudflare Workers Logs is on (`[observability.logs]` in `wrangler.toml`) to catch errors: it keeps
-request logs (which can include IP addresses) for 3 days on the free plan (7 on paid). Only requests
-that reach the Worker are logged (`/api/*`, `/r/*`, `/new`); the lander and static files
-are not. The lander's privacy section says this.
+request logs (which can include IP addresses and room links) for 3 days on the free plan (7 on
+paid). The Worker runs first for every request (`run_worker_first = true`, so old addresses can 301
+to https://www.whosehabits.com), so every request to the site is logged: the lander, static files,
+game pages and `/api/*`. The lander's privacy section says this.
 
 Your own playtests don't count: events from `localhost`, the dev server, or a device that
 opened any page with `?test=1` are stored with `test = 1` and left out of every query

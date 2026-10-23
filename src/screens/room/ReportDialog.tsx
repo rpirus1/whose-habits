@@ -8,8 +8,8 @@ import { useCountdown } from '@/hooks/useCountdown'
 const LABELS: Record<(typeof REPORT_REASONS)[number], string> = {
   incorrect: 'Incorrect',
   outdated: 'Outdated',
-  not_unique: 'Not unique',
-  offensive: 'Offensive',
+  not_unique: 'Fits more countries',
+  offensive: 'Unfair or offensive',
 }
 
 /**

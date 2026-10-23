@@ -172,7 +172,7 @@ function PlayAgainPoll({ gameId, role }: { gameId: string; role: 'host' | 'guest
 
   return (
     <section className="bg-card flex flex-col gap-3 rounded-2xl p-4 text-center">
-      <h2 className="font-medium">{vote ? 'Thanks for telling us!' : 'Would you play again?'}</h2>
+      <h2 className="font-medium">{vote ? 'Thanks for telling me!' : 'Would you play again?'}</h2>
       <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Would you play again?">
         {VOTES.map(({ value, label }) => (
           <button

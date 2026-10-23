@@ -136,8 +136,8 @@ Setup, once:
 Filters (in the URL, so a view can be bookmarked):
 
 - **Dates:** the presets Today / 7 days / 30 days / All time, or From and To dates (Amsterdam days, inclusive, shown as DD/MM/YYYY).
-- **Data:** _All events_ (the default, because every event is a test until launch) or _Real players only_
-  (`?data=real`). `npm run metrics` always counts real players only.
+- **Data:** _Real players only_ (`?data=real`; the default once a real event exists) or _All events_
+  (`?data=all`; the default until then). `npm run metrics` always counts real players only.
 - **How it works:** the page swaps each `test = 0` in `metrics.sql` for the filters (`filterSql` in `stats/page.ts`),
   so every new query must keep `test = 0` on each read of `events`. A test checks this.
 

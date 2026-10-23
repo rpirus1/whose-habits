@@ -109,7 +109,7 @@ function GameControls({
         </Button>
       </div>
       <p className="text-muted-foreground text-xs">
-        Back shows earlier answers (view only). Skip swaps the statement for a new one.
+        Back shows earlier answers (view only). Skip swaps the habit for a new one.
       </p>
     </div>
   )

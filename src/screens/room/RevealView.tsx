@@ -53,7 +53,7 @@ export function RevealView({
 
       {snapshot.viewing ? (
         <p className="bg-muted rounded-xl px-4 py-2 text-center text-sm">
-          The host is looking back at an earlier statement.
+          The host is looking back at an earlier habit.
         </p>
       ) : (
         <MyResult reveal={reveal} meId={meId} />
@@ -93,7 +93,7 @@ export function RevealView({
               ? 'Back to the question'
               : isLast && !snapshot.viewing
                 ? 'See final scores'
-                : 'Next statement'}
+                : 'Next habit'}
           </Button>
         ) : (
           <p className="text-muted-foreground text-center text-sm">Waiting for the host…</p>
@@ -150,7 +150,7 @@ function ReportButton({ statementId, open, done }: { statementId: string } & Rep
           open(statementId)
         }}
       >
-        <FlagIcon /> {reported ? 'Reported' : 'Report this statement'}
+        <FlagIcon /> {reported ? 'Reported' : 'Report this habit'}
       </Button>
       {asking && (
         <ReportDialog

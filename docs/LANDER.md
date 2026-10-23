@@ -158,18 +158,22 @@ Link: LinkedIn.
 - **Privacy** (short paragraph, can open a `<details>` with the full list). What actually happens,
   from `src/lib/analytics.ts`, `src/lib/events.ts` and the realtime code:
   - No cookies, no ads, no tracking scripts, no third-party analytics.
-  - The game sends a few anonymous game events to our own server (Cloudflare D1): a game started
-    (number of players, countries, rounds, seconds per question, replay or not), a game finished
-    (rounds played, players at start and end, ended early), the play-again vote, clicks on Share and
-    "Host your own game", and a reported statement's id. Each carries a random game id.
+  - The game sends a few anonymous events to our own server (Cloudflare D1). The current list is in
+    the lander footer (`src/lander/Lander.tsx`), which must match `src/lib/events.ts`: game started
+    (players, picked or random countries, rounds, seconds, replay, source), game finished, round
+    results (answer counts per country), skipped or unknown statements, the play-again vote, Share and
+    "Host your own game" taps, reports (statement id, reason, pause length), join steps and lander
+    button taps. Each game event carries a random game id.
+  - Cloudflare rate limiting counts events per IP address for a minute to block spam (not stored).
     **No names, no player ids, no IP addresses are stored.** The lander only counts taps on its buttons (`lander_click`, no ids).
   - Names you type travel to the other players in the room through Supabase Realtime while you
     play; they aren't stored on a server.
   - Your phone keeps your theme choice and rooms you can rejoin in `localStorage` (rooms expire after 12 hours).
   - Hosting: Cloudflare serves the site and, like any web host, sees IP addresses to deliver pages.
     Workers Logs (`[observability.logs]` in `wrangler.toml`) keeps request logs for 3 days (free
-    plan) to catch errors: only requests that reach the Worker (`/api/*`, `/r/*`, `/new`),
-    not the lander or static files. The lander says so.
+    plan) to catch errors. The Worker runs first for every request (`run_worker_first = true`, for
+    the 301 to https://www.whosehabits.com), so all requests are logged, the lander and static files
+    included; logs can include IP addresses and room links. The lander says so.
   - Wording aimed at an EU visitor: what, why (to see if people enjoy the game and which settings
     work), no profiling, contact for questions. Supabase runs in the EU (Ireland).
 - **Feedback / contact:** feedback@whosehabits.com (also for reports and privacy questions).
@@ -180,8 +184,8 @@ Link: LinkedIn.
 ## 4. SEO
 
 All absolute URLs come from **one constant**, `SITE_URL` (env `VITE_SITE_URL`, default
-`https://culture-clash.ruslan-pirus.workers.dev`). Switching to `https://whosehabits.com` is a
-one-line change; it updates canonical, og:url, og:image, sitemap, robots and JSON-LD at once.
+`https://culture-clash.ruslan-pirus.workers.dev`). Production sets it to `https://www.whosehabits.com` in
+`.env.production`; it drives canonical, og:url, og:image, sitemap, robots, llms.txt and JSON-LD at once.
 (`index.html`'s hard-coded og:url/og:image also move to this constant.)
 
 - **Title** (≤ 60 chars): `Whose Habits: a free party game for international friends`

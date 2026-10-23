@@ -336,7 +336,7 @@ function Samples() {
           They’re playful generalisations, not rules about people: plenty of Brazilians have never
           clapped at a gate. I research and polish them with help from AI, and your feedback is what
           makes them better. Spotted one that’s wrong or feels unfair? Tap Report in the game. I
-          read every report and fix or remove the statement.
+          read every report and fix or remove the habit.
         </p>
       </aside>
     </Section>
@@ -501,9 +501,10 @@ function Footer() {
             Privacy
           </h2>
           <p className="text-muted-foreground">
-            No cookies, no ads, no tracking scripts. The game sends a few anonymous events to our
-            own database, to see whether people enjoy it and which settings work. No names, no
-            player ids, no IP addresses are stored. On this page we only count taps on its buttons.
+            No cookies, no ads, no tracking scripts. The game sends a few anonymous events to my own
+            database, to see whether people enjoy it and which settings work. Only I can see the
+            numbers. No names, no player ids, no IP addresses are stored. On this page I only count
+            taps on its buttons.
           </p>
           <details className="group">
             <summary className="text-foreground flex min-h-11 cursor-pointer list-none items-center gap-1 font-medium [&::-webkit-details-marker]:hidden">
@@ -515,21 +516,22 @@ function Footer() {
             </summary>
             <ul className="text-muted-foreground mt-2 list-disc space-y-2 pl-5">
               <li>
-                A game started: number of players, the countries, rounds and seconds per question,
-                and whether it was a replay. A game finished: rounds played, players at the start
-                and end, whether it ended early. Each game has a random id.
+                A game started: number of players, picked or random countries (and which ones),
+                rounds and seconds per question, whether it was a replay, and whether the host came
+                from this page or after playing as a guest. A game finished: rounds played, players
+                at the start and end, whether it ended early. Each game has a random id.
               </li>
               <li>
                 Votes on “play again?”, taps on Share and “Host your own game”, and the id of a
-                statement someone reported with the reason they picked.
+                habit someone reported, with the reason they picked and how long the game paused.
               </li>
               <li>
-                For each round: which statement it was and how many players picked each country. Not
-                who picked what.
+                For each round: which habit it was and how many players picked each country. Not who
+                picked what. Also habits the host skipped or nobody knew.
               </li>
               <li>
                 Counts of steps into a game: a room link opened, a name entered, joined, reached the
-                end. And taps on this page’s buttons. The room code is never sent.
+                end. And taps on this page’s buttons. These events never include the room code.
               </li>
               <li>
                 Names you type go to the other players in your room while you play, through Supabase
@@ -541,7 +543,9 @@ function Footer() {
               </li>
               <li>
                 Cloudflare hosts the site and, like any web host, sees IP addresses to deliver the
-                pages. It also keeps request logs for 3 days, so we can catch errors.
+                pages. It counts events per IP address for a minute to block spam, and keeps logs of
+                every request to the site for 3 days so I can catch errors. These can include IP
+                addresses and room links.
               </li>
             </ul>
             <p className="text-muted-foreground mt-2">
