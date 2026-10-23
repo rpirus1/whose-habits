@@ -4,6 +4,7 @@ import { MODE_COPY } from '@/lib/gameMode'
 import { isRandom } from '@/game/types'
 import { PlayerList } from '@/components/PlayerList'
 import { QrShare } from '@/components/QrShare'
+import { HowToPlay } from '@/screens/room/HowToPlay'
 import type { PublicPlayer, Snapshot } from '@/game/protocol'
 import { enterScreen } from '@/lib/motion'
 import { cn } from '@/lib/utils'
@@ -50,6 +51,8 @@ export function LobbyView({
           {rounds} rounds · {seconds}s to answer
         </p>
       </section>
+
+      <HowToPlay seconds={seconds} random={random} />
 
       <PlayerList players={snapshot.players} meId={meId} onKick={onKick} />
     </div>
