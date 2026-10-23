@@ -4,7 +4,7 @@
 // only the allowed email gets in, via a one-time code sent to that inbox. See docs/METRICS.md.
 import METRICS_SQL from '../scripts/metrics.sql'
 import { accessKeys, verifyAccessToken } from './access'
-import { renderStats, splitQueries } from './page'
+import { filterParams, filterSql, parseFilters, renderStats, splitQueries } from './page'
 
 interface Env {
   DB: D1Database
@@ -21,7 +21,7 @@ const HEADERS = {
   'Referrer-Policy': 'no-referrer',
   'X-Frame-Options': 'DENY',
   'Content-Security-Policy':
-    "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'",
+    "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'",
 }
 
 export default {
@@ -35,13 +35,16 @@ export default {
     const url = new URL(request.url)
     if (url.pathname !== '/') return new Response('Not found', { status: 404, headers: HEADERS })
 
+    const filters = parseFilters(url.searchParams)
+    const params = filterParams(filters)
     const queries = splitQueries(METRICS_SQL)
     const results = await env.DB.batch<Record<string, unknown>>(
-      queries.map((q) => env.DB.prepare(q.sql)),
+      queries.map((q) => env.DB.prepare(filterSql(q.sql)).bind(...params)),
     )
     const page = renderStats(
       queries.map((q, i) => ({ title: q.title, rows: results[i]?.results ?? [] })),
       new Date(),
+      filters,
     )
     return new Response(page, {
       headers: { ...HEADERS, 'Content-Type': 'text/html; charset=utf-8' },

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { renderStats, splitQueries } from './page'
+import { filterParams, filterSql, parseFilters, renderStats, splitQueries } from './page'
 
 describe('splitQueries', () => {
   it('finds every numbered query in metrics.sql, without the file header', () => {
@@ -36,5 +36,54 @@ describe('renderStats', () => {
     expect(html).not.toContain('<b>x</b>')
     expect(html).toContain('No data yet.')
     expect(html).toContain('2026-10-19 12:00 UTC')
+  })
+})
+
+describe('filters', () => {
+  const parse = (q: string) => parseFilters(new URLSearchParams(q))
+
+  it('shows all events and all time by default, real players with ?data=real', () => {
+    expect(parse('')).toEqual({ scope: 'all', from: null, to: null })
+    expect(parse('data=real').scope).toBe('real')
+  })
+
+  it('keeps valid dates, drops junk, and swaps a reversed range', () => {
+    expect(parse('from=2026-10-01&to=2026-10-23')).toMatchObject({
+      from: '2026-10-01',
+      to: '2026-10-23',
+    })
+    expect(parse('from=yesterday&to=2026-13-45')).toMatchObject({ from: null, to: null })
+    expect(parse('from=2026-10-23&to=2026-10-01')).toMatchObject({
+      from: '2026-10-01',
+      to: '2026-10-23',
+    })
+  })
+
+  it('binds test, from and an exclusive end of the last day', () => {
+    expect(filterParams({ scope: 'real', from: '2026-10-01', to: '2026-10-31' })).toEqual([
+      0,
+      '2026-10-01T00:00:00.000Z',
+      '2026-11-01T00:00:00.000Z',
+    ])
+    expect(filterParams({ scope: 'all', from: null, to: null })).toEqual([1, '', '9999'])
+  })
+
+  it('filters every read of events in metrics.sql', () => {
+    const sql = readFileSync(new URL('../scripts/metrics.sql', import.meta.url), 'utf8')
+    for (const q of splitQueries(sql)) {
+      const filtered = filterSql(q.sql)
+      expect(filtered).not.toMatch(/\btest = 0\b(?! OR)/)
+      // One filter per FROM events, so no subquery escapes the date range.
+      expect(filtered.match(/created_at >= \?2/g)?.length).toBe(q.sql.match(/FROM events/g)?.length)
+    }
+  })
+
+  it('renders the presets with the current one marked, and describes the filters', () => {
+    const now = new Date('2026-10-23T12:00:00Z')
+    const html = renderStats([], now, { scope: 'real', from: '2026-10-17', to: '2026-10-23' })
+    expect(html).toContain(
+      'class="chip on" href="?data=real&amp;from=2026-10-17&amp;to=2026-10-23">7 days',
+    )
+    expect(html).toContain('Real players only · 2026-10-17 to 2026-10-23 (UTC days)')
   })
 })

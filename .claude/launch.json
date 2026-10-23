@@ -7,6 +7,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev:api"],
       "port": 8788
+    },
+    {
+      "name": "stats",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "stats:local"],
+      "port": 8790
     }
   ]
 }

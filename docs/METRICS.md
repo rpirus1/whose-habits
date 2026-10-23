@@ -97,8 +97,8 @@ A **separate, private Worker** (`stats/`, named `culture-clash-stats`) at
 
 Who can open it: only the owner, from any device.
 
-1. **Cloudflare Access** guards the whole address. The policy allows one email. Opening the page asks for that
-   email and sends a one-time code to it, and the session lasts as long as the Access app allows.
+1. **Cloudflare Access** guards the whole address (set up 2026-10-23 with the "Cloudflare account" policy: only
+   members of the Cloudflare account, i.e. the owner, can get in).
 2. **The Worker checks Access's token** (`stats/access.ts`): signature, audience, issuer and expiry. If the token
    is missing or wrong, the Worker refuses, and until `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` are set it refuses everyone.
    Per-version preview URLs are off (`preview_urls = false`).
@@ -113,6 +113,14 @@ Setup, once:
 3. `npx wrangler secret put ACCESS_TEAM_DOMAIN -c stats/wrangler.toml` and
    `npx wrangler secret put ACCESS_AUD -c stats/wrangler.toml`
 4. On the game Worker, remove the old password: `npx wrangler secret delete STATS_TOKEN`.
+
+Filters (in the URL, so a view can be bookmarked):
+
+- **Dates:** the presets Today / 7 days / 30 days / All time, or From and To dates (UTC days, inclusive).
+- **Data:** _All events_ (the default, because every event is a test until launch) or _Real players only_
+  (`?data=real`). `npm run metrics` always counts real players only.
+- **How it works:** the page swaps each `test = 0` in `metrics.sql` for the filters (`filterSql` in `stats/page.ts`),
+  so every new query must keep `test = 0` on each read of `events`. A test checks this.
 
 Locally: `npm run stats:local` serves the page at `http://localhost:8790` from the local D1, without Access.
 `npm run metrics` stays the quick way from the terminal. For the case study, export with
