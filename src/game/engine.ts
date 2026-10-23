@@ -8,15 +8,19 @@
 //   question ──skip / everyone "I don't know"──▶ question (replacement, same index)
 //   any ──end──▶ final ──playAgain──▶ lobby
 //   reveal ──reportOpen──▶ on hold (Next and Back wait) ──reportDone / 10 s──▶ reveal
+//   question/reveal ──host alone (left/kicked: now; dropped: 15 s)──▶ paused, waiting for players
+//                   ──someone back + Continue──▶ resumes   (End still works)
 import { CULTURE_CODES } from '@/content/schema'
 import type { CultureCode } from '@/content/schema'
 import { MAX_CULTURES, MIN_CULTURES } from '@/content/cultures'
 import { scoreRound } from './scoring'
 import { eligibleStatements, pickReplacement, planGame } from './selection'
 import {
+  ALONE_GRACE_MS,
   ANSWER_GRACE_MS,
   MAX_NAME_LENGTH,
   MAX_PLAYERS,
+  MIN_PLAYERS_TO_PLAY,
   MIN_PLAYERS_TO_START,
   REPORT_HOLD_MS,
   REPORT_REASONS,
@@ -145,7 +149,47 @@ function shownReveal(s: GameState): Round | undefined {
 
 export function reduce(state: GameState, action: Action, ctx: EngineContext): GameState {
   const draft = structuredClone(state)
-  return apply(draft, action, ctx) ? draft : state
+  const changed = apply(draft, action, ctx)
+  // Checked after every action: presence, leave, kick and tick can all leave the host alone.
+  const held = updateAloneHold(draft, ctx)
+  return changed || held ? draft : state
+}
+
+/** True when enough players are connected to play on (the host counts). */
+export function enoughPlayers(state: GameState): boolean {
+  return state.players.filter((p) => p.connected).length >= MIN_PLAYERS_TO_PLAY
+}
+
+/**
+ * Holds a running game when the host is the only one left. Players who left or were removed
+ * can't come back on their own, so that holds at once; a dropped connection gets
+ * ALONE_GRACE_MS first (a locked phone usually reconnects within it).
+ */
+function updateAloneHold(s: GameState, ctx: EngineContext): boolean {
+  if (s.phase !== 'question' && s.phase !== 'reveal') {
+    if (s.aloneSince == null && !s.waitingForPlayers) return false
+    s.aloneSince = null
+    s.waitingForPlayers = false
+    return true
+  }
+  if (enoughPlayers(s)) {
+    if (s.aloneSince == null) return false
+    s.aloneSince = null
+    return true
+  }
+  if (s.waitingForPlayers) return false
+  const mayReconnect = s.players.some((p) => !p.isHost && !p.left)
+  if (mayReconnect) {
+    if (s.aloneSince == null) {
+      s.aloneSince = ctx.now
+      return true
+    }
+    if (ctx.now - s.aloneSince < ALONE_GRACE_MS) return false
+  }
+  if (!s.paused) apply(s, { type: 'pause' }, ctx)
+  s.waitingForPlayers = true
+  s.aloneSince = null
+  return true
 }
 
 /** Mutates the draft; returns false when the action doesn't apply (state stays the same object). */
@@ -253,13 +297,18 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
 
     case 'resume': {
       if (!s.paused) return false
+      // Waiting for players: Continue works only once someone is back.
+      if (s.waitingForPlayers) {
+        if (!enoughPlayers(s)) return false
+        s.waitingForPlayers = false
+      }
       resume(s, ctx)
       return true
     }
 
     case 'back': {
       const round = currentRound(s)
-      if (!round || openReports(s, ctx.now).length) return false
+      if (!round || s.waitingForPlayers || openReports(s, ctx.now).length) return false
       const target = (s.viewing ?? round.index) - 1
       if (target < 0) return false
       if (s.phase === 'question' && !s.paused) {
@@ -271,6 +320,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
     }
 
     case 'next': {
+      if (s.waitingForPlayers) return false
       if (s.phase === 'question' && s.viewing !== null) {
         // Back during a live question: Next returns to it (resuming if Back paused it).
         s.viewing = null
@@ -285,7 +335,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
     }
 
     case 'skip': {
-      if (s.phase !== 'question' || s.viewing !== null) return false
+      if (s.phase !== 'question' || s.viewing !== null || s.waitingForPlayers) return false
       replaceStatement(s, ctx)
       return true
     }

@@ -11,6 +11,10 @@ export const ROUND_OPTIONS = [10, 15, 20] as const
 export const SECONDS_OPTIONS = [15, 20, 30] as const
 export const MAX_PLAYERS = 12
 export const MIN_PLAYERS_TO_START = 2
+/** Connected players (host included) needed to keep a game going. A solo mode would set 1. */
+export const MIN_PLAYERS_TO_PLAY = 2
+/** A dropped connection gets this long to come back before the game holds for the host. */
+export const ALONE_GRACE_MS = 15_000
 export const MAX_NAME_LENGTH = 20
 /** Answers that arrive this long after endsAt still count (network delay). */
 export const ANSWER_GRACE_MS = 500
@@ -116,6 +120,10 @@ export interface GameState {
   pausedByBack: boolean
   /** Reports this game. Open ones hold the reveal: Next and Back wait for them. */
   reports?: Report[]
+  /** Host clock time the host became the only connected player, while others may reconnect. */
+  aloneSince?: number | null
+  /** Paused because nobody else is here: only End, or Continue once someone is back. */
+  waitingForPlayers?: boolean
 }
 
 /** Everything the pure engine needs from the outside world. */

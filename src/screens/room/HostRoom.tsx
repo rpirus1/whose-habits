@@ -8,6 +8,7 @@ import { canStart, currentRound } from '@/game/engine'
 import type { GameState } from '@/game/types'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { recentStatementIds, useHostGame } from '@/realtime/useHostGame'
+import { AloneDialog } from './AloneDialog'
 import { ConnectionBanner } from './ConnectionBanner'
 import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
@@ -79,6 +80,15 @@ export function HostRoom({ initial }: { initial: GameState }) {
             done: (statementId, reason) =>
               dispatch({ type: 'reportDone', playerId: state.hostId, statementId, reason }),
           }}
+        />
+      )}
+
+      {state.waitingForPlayers && (
+        <AloneDialog
+          roomCode={state.roomCode}
+          backNames={state.players.filter((p) => p.connected && !p.isHost).map((p) => p.name)}
+          onContinue={() => dispatch({ type: 'resume' })}
+          onEnd={() => dispatch({ type: 'end' })}
         />
       )}
     </Screen>

@@ -3,7 +3,7 @@ import { createGame, currentRound, joinRejection, openReports, reduce } from './
 import type { Action } from './engine'
 import { seededRandom } from './random'
 import { byId, makeBank } from './testing'
-import { ANSWER_GRACE_MS, MAX_PLAYERS, REPORT_HOLD_MS } from './types'
+import { ALONE_GRACE_MS, ANSWER_GRACE_MS, MAX_PLAYERS, REPORT_HOLD_MS } from './types'
 import type { Choice, EngineContext, GameState, Settings } from './types'
 
 const bank = makeBank(['PL', 'NL'], 12)
@@ -516,5 +516,76 @@ describe('report hold', () => {
     h.run({ type: 'playAgain', gameId: 'g2' })
     h.run({ type: 'start', gameId: 'g2' })
     expect(h.s.reports).toEqual([])
+  })
+})
+
+describe('host left alone', () => {
+  it('holds at once when the last other players leave or are removed', () => {
+    const h = harness()
+    h.run({ type: 'leave', playerId: 'ann' })
+    expect(h.s.waitingForPlayers).toBeFalsy()
+    h.run({ type: 'kick', playerId: 'bob' })
+    expect(h.s.waitingForPlayers).toBe(true)
+    expect(h.s.paused).toBe(true)
+    expect(h.s.endsAt).toBeNull()
+    expect(h.s.remainingMs).toBe(20_000)
+  })
+
+  it('gives a dropped connection the grace period before holding', () => {
+    const h = harness()
+    h.run({ type: 'presence', onlineIds: [] })
+    expect(h.s.waitingForPlayers).toBeFalsy()
+    h.advance(ALONE_GRACE_MS - 1000)
+    expect(h.s.waitingForPlayers).toBeFalsy()
+    h.advance(1000)
+    expect(h.s.waitingForPlayers).toBe(true)
+  })
+
+  it('does not hold when someone reconnects within the grace period', () => {
+    const h = harness()
+    h.run({ type: 'presence', onlineIds: [] })
+    h.advance(5000)
+    h.run({ type: 'presence', onlineIds: ['ann'] })
+    expect(h.s.aloneSince).toBeNull()
+    h.advance(ALONE_GRACE_MS)
+    expect(h.s.waitingForPlayers).toBeFalsy()
+  })
+
+  it('blocks play while waiting; Continue works only once someone is back', () => {
+    const h = harness()
+    h.run({ type: 'leave', playerId: 'ann' })
+    h.run({ type: 'leave', playerId: 'bob' })
+    const held = h.s
+    for (const type of ['resume', 'next', 'back', 'skip'] as const) h.run({ type })
+    h.answer('host', h.round.answer)
+    h.advance(60_000)
+    expect(h.s).toBe(held)
+
+    h.run({ type: 'join', playerId: 'ann', name: 'ann' })
+    expect(h.s.waitingForPlayers).toBe(true) // the host decides when to go on
+    h.run({ type: 'resume' })
+    expect(h.s.waitingForPlayers).toBe(false)
+    expect(h.s.paused).toBe(false)
+    expect(h.s.endsAt).toBe(h.ctx.now + 20_000)
+  })
+
+  it('holds on a reveal too, and End still finishes the game', () => {
+    const h = harness()
+    h.answerAll('right')
+    expect(h.s.phase).toBe('reveal')
+    h.run({ type: 'kick', playerId: 'ann' })
+    h.run({ type: 'kick', playerId: 'bob' })
+    expect(h.s.waitingForPlayers).toBe(true)
+    h.run({ type: 'end' })
+    expect(h.s.phase).toBe('final')
+    expect(h.s.waitingForPlayers).toBe(false)
+  })
+
+  it('never holds in the lobby', () => {
+    const h = harness({ start: false })
+    h.run({ type: 'leave', playerId: 'ann' })
+    h.run({ type: 'leave', playerId: 'bob' })
+    h.advance(ALONE_GRACE_MS * 2)
+    expect(h.s.waitingForPlayers).toBeFalsy()
   })
 })
