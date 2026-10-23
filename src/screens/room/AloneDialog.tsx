@@ -42,7 +42,7 @@ export function AloneDialog({
       {someoneBack ? (
         <>
           <h2 id="alone-title" className="font-heading text-xl font-bold" aria-live="polite">
-            {joinNames(backNames)} {backNames.length === 1 ? 'is' : 'are'} here
+            {whoIsHere(backNames)}
           </h2>
           <p id="alone-text" className="text-muted-foreground mt-1">
             Continue when everyone is ready. Scores are saved.
@@ -87,7 +87,9 @@ export function AloneDialog({
   )
 }
 
-function joinNames(names: string[]): string {
-  if (names.length <= 2) return names.join(' and ')
-  return `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`
+/** Names for one or two players; with more, a count keeps the title short. */
+function whoIsHere(names: string[]): string {
+  if (names.length === 1) return `${names[0]} is here`
+  if (names.length === 2) return `${names[0]} and ${names[1]} are here`
+  return `${names.length} players are here`
 }
