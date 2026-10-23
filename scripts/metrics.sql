@@ -130,7 +130,7 @@ GROUP BY statement_id
 ORDER BY reports DESC
 LIMIT 50;
 
--- 8. Games per day (last 30 days with games)
+-- 8. Games per day (UTC days, last 30 with games)
 SELECT substr(created_at, 1, 10) AS day, COUNT(DISTINCT game_id) AS games
 FROM events
 WHERE type = 'game_started' AND test = 0

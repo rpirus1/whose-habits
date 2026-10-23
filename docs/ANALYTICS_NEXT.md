@@ -8,12 +8,21 @@ Plan only, written 2026-10-22 and updated the same day for report flow v2 and th
 Everything below is built, except 1.1 (Web Analytics needs the dashboard toggle or a site token). The private
 stats site at `https://culture-clash-stats.ruslan-pirus.workers.dev` has:
 
-- **Dashboard (`/`):**
-  - Tiles for the success signals: 5+ player sessions, median player finish, would play again, actually
-    replayed, guest → host.
-  - Games per week.
+- **Dashboard (`/`)**, reworked on 2026-10-23 after Ruslan's feedback (early stage: only the signals that set
+  direction):
+  - **Completed games:** the big number is games with all rounds played. Small numbers: ended early, not
+    finished, started, and 5+ players against the brief's target of 3.
+  - **Would you play again?** Two 100% bars: games with all rounds played, and games ended early. Each splits
+    Yes / Maybe / No / Didn't answer, where 100% = every player on the final screen.
+  - **Completed games by group size:** a bar for each player count from 2 to 12. Under each bar: % of started
+    games completed, and % of players on the final screen who said yes.
+  - **Actually played again**, and **Guest → host**.
+  - **Games per week:** calendar weeks (Mon–Sun, labelled "19–25.10"), up to the current week, stacked as
+    all rounds played vs ended early or not finished.
   - The Lander → game funnel and the Guests joining funnel.
   - The metrics.sql tables under "All numbers".
+- **Later, trends:** once there are 3+ weeks of data, each signal gets a weekly line and the change against the
+  previous week. Hidden until then, so one or two weeks don't draw a misleading line.
 - **Statements (`/statements`):**
   - The review queue: needs action / review / watch, with why.
   - Per statement: shown, % correct, "don't know", culture picked instead, reports per reason (and the rate),
@@ -22,7 +31,8 @@ stats site at `https://culture-clash-stats.ruslan-pirus.workers.dev` has:
   - By culture and by topic.
   - Report holds (the health numbers below).
   - **Download CSV** (`/statements.csv`).
-- **Shared filters:** date presets and range, plus all events or real players only.
+- **Shared filters:** date presets and range, plus all events or real players only. Days and weeks are
+  Amsterdam time; dates are shown as DD/MM/YYYY (the date pickers follow the device's own format).
 
 New events (`src/lib/events.ts`, all anonymous):
 

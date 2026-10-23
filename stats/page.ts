@@ -1,4 +1,5 @@
 // Shared parts of the stats pages: filters, layout, tables, and splitting metrics.sql (pure, tested).
+import { addDays, dayStartUtc, formatDay, localDateTime, localDay } from './time'
 
 export interface Query {
   title: string
@@ -13,7 +14,7 @@ export interface QueryResult {
 /** Which events to count: everything (incl. test events), or real players only. */
 export type DataScope = 'all' | 'real'
 
-/** Page filters from the URL. Dates are UTC days (YYYY-MM-DD), both inclusive; null = open. */
+/** Page filters from the URL. Dates are Amsterdam days (YYYY-MM-DD), both inclusive; null = open. */
 export interface Filters {
   scope: DataScope
   from: string | null
@@ -51,13 +52,12 @@ export function filterSql(sql: string): string {
 export function filterParams(f: Filters): [number, string, string] {
   return [
     f.scope === 'all' ? 1 : 0,
-    f.from ? `${f.from}T00:00:00.000Z` : '',
-    f.to ? `${addDays(f.to, 1)}T00:00:00.000Z` : '9999',
+    f.from ? dayStartUtc(f.from) : '',
+    f.to ? dayStartUtc(addDays(f.to, 1)) : '9999',
   ]
 }
 
-export const addDays = (day: string, n: number) =>
-  new Date(Date.parse(`${day}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10)
+export { addDays }
 
 /**
  * Splits metrics.sql into its queries. Each query starts with a "-- N. Title" comment and ends
@@ -92,7 +92,7 @@ export function filterQuery(f: Filters, extra: Record<string, string> = {}): str
 
 /** Presets, the date fields and the data switch. A plain GET form: works without JavaScript. */
 function renderFilters(f: Filters, now: Date, extra: Record<string, string>): string {
-  const today = now.toISOString().slice(0, 10)
+  const today = localDay(now)
   const presets: { label: string; from: string | null; to: string | null }[] = [
     { label: 'Today', from: today, to: today },
     { label: '7 days', from: addDays(today, -6), to: today },
@@ -128,15 +128,18 @@ function describeFilters(f: Filters): string {
   const range =
     f.from && f.to
       ? f.from === f.to
-        ? f.from
-        : `${f.from} to ${f.to}`
+        ? formatDay(f.from)
+        : `${formatDay(f.from)} to ${formatDay(f.to)}`
       : f.from
-        ? `from ${f.from}`
+        ? `from ${formatDay(f.from)}`
         : f.to
-          ? `until ${f.to}`
+          ? `until ${formatDay(f.to)}`
           : 'all time'
-  return `${scope} · ${range} (UTC days)`
+  return `${scope} · ${range} (Amsterdam time)`
 }
+
+/** Dates in query results (YYYY-MM-DD) are shown as DD/MM/YYYY. */
+const showDate = (v: unknown) => (typeof v === 'string' && DAY.test(v) ? formatDay(v) : v)
 
 /** A plain table from query rows (column names as headers). */
 export function renderTable(rows: Record<string, unknown>[]): string {
@@ -144,7 +147,7 @@ export function renderTable(rows: Record<string, unknown>[]): string {
   const columns = Object.keys(rows[0]!)
   const head = columns.map((c) => `<th>${escape(c)}</th>`).join('')
   const body = rows
-    .map((r) => `<tr>${columns.map((c) => `<td>${escape(r[c])}</td>`).join('')}</tr>`)
+    .map((r) => `<tr>${columns.map((c) => `<td>${escape(showDate(r[c]))}</td>`).join('')}</tr>`)
     .join('')
   return `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`
 }
@@ -169,7 +172,7 @@ export function renderLayout({ path, filters, now, body, extra = {} }: LayoutOpt
     (p) =>
       `<a href="${escape(p.path + filterQuery(filters))}"${p.path === path ? ' aria-current="page"' : ''}>${p.label}</a>`,
   ).join('')
-  const updated = now.toISOString().slice(0, 16).replace('T', ' ')
+  const updated = localDateTime(now)
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -182,7 +185,7 @@ export function renderLayout({ path, filters, now, body, extra = {} }: LayoutOpt
 <body>
 <header><h1>Culture Clash stats</h1><nav>${nav}</nav></header>
 ${renderFilters(filters, now, extra)}
-<p class="meta">${escape(describeFilters(filters))}. Updated ${escape(updated)} UTC. Definitions: docs/METRICS.md and docs/ANALYTICS_NEXT.md.</p>
+<p class="meta">${escape(describeFilters(filters))}. Updated ${escape(updated)}. Definitions: docs/METRICS.md and docs/ANALYTICS_NEXT.md.</p>
 ${body}
 </body>
 </html>`
@@ -248,5 +251,20 @@ const STYLES = `
   details { margin-top: 28px; }
   summary { cursor: pointer; font-weight: 600; }
   svg text { fill: var(--muted); font-size: 11px; }
+  svg text.num { fill: var(--fg); font-weight: 600; }
+  svg text.axis { fill: var(--fg); font-size: 12px; font-weight: 600; }
   svg .bar { fill: var(--accent); }
+  svg .bar-other { fill: var(--line); }
+  .stack-block { margin: 10px 0 16px; max-width: 640px; }
+  .stack-title { font-weight: 600; margin-bottom: 6px; }
+  .stack { display: flex; height: 26px; border-radius: 6px; overflow: hidden; background: var(--card); }
+  .seg.yes, .dot.yes { background: var(--ok); }
+  .seg.maybe, .dot.maybe { background: var(--warn); }
+  .seg.no, .dot.no { background: var(--bad); }
+  .seg.none, .dot.none { background: var(--line); }
+  .dot.yes-bar { background: var(--accent); }
+  .dot.other-bar { background: var(--line); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 6px; font-size: 14px; }
+  .key { display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 `

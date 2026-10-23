@@ -14,7 +14,7 @@ describe('splitQueries', () => {
       'Did they actually play again? (replays started from "Play again in this room")',
       'Guest to host (tapped "Host your own game", then started a game in their own room)',
       'Reported statements (review these before each content update)',
-      'Games per day (last 30 days with games)',
+      'Games per day (UTC days, last 30 with games)',
     ])
     for (const q of queries) {
       expect(q.sql).toMatch(/SELECT/)
@@ -35,7 +35,7 @@ describe('renderStats', () => {
     expect(html).toContain('&lt;b&gt;x&lt;/b&gt;')
     expect(html).not.toContain('<b>x</b>')
     expect(html).toContain('No data yet.')
-    expect(html).toContain('2026-10-19 12:00 UTC')
+    expect(html).toContain('Updated 19/10/2026 14:00.') // Amsterdam time
   })
 })
 
@@ -62,8 +62,8 @@ describe('filters', () => {
   it('binds test, from and an exclusive end of the last day', () => {
     expect(filterParams({ scope: 'real', from: '2026-10-01', to: '2026-10-31' })).toEqual([
       0,
-      '2026-10-01T00:00:00.000Z',
-      '2026-11-01T00:00:00.000Z',
+      '2026-09-30T22:00:00.000Z',
+      '2026-10-31T23:00:00.000Z',
     ])
     expect(filterParams({ scope: 'all', from: null, to: null })).toEqual([1, '', '9999'])
   })
@@ -84,6 +84,6 @@ describe('filters', () => {
     expect(html).toContain(
       'class="chip on" href="?data=real&amp;from=2026-10-17&amp;to=2026-10-23">7 days',
     )
-    expect(html).toContain('Real players only · 2026-10-17 to 2026-10-23 (UTC days)')
+    expect(html).toContain('Real players only · 17/10/2026 to 23/10/2026 (Amsterdam time)')
   })
 })

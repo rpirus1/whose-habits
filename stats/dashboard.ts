@@ -1,7 +1,9 @@
-// The Dashboard: the brief's success signals as tiles, games per week, and the lander and join
-// funnels. Computed in JS from one filtered query (pure, tested); the detailed metrics.sql
-// tables follow under "All numbers".
-import { addDays, escape, renderSections, type QueryResult } from './page'
+// The Dashboard: the signals that decide the product's direction (completed games, which group
+// sizes work, would/did people play again, guest → host), games per calendar week, and the lander
+// and join funnels. Computed in JS from one filtered query (pure, tested); the detailed
+// metrics.sql tables follow under "All numbers". Days and weeks are Amsterdam time.
+import { escape, renderSections, type Filters, type QueryResult } from './page'
+import { addDays, localDay, mondayOf, weekLabel } from './time'
 
 /** Every event the dashboard needs. `test = 0` is swapped for the page filters (filterSql). */
 export const DASHBOARD_SQL = `SELECT type, game_id, data, created_at FROM events
@@ -15,16 +17,47 @@ export interface DashboardRow {
   created_at: string
 }
 
-export interface DashboardNumbers {
-  games: number
-  games5: number
-  avgPlayers: number | null
-  completed: number
-  /** Median per-game share of starting players still there at the last round. */
-  medianFinish: number | null
-  games80: number
-  votes: number
+export const MIN_PLAYERS = 2
+export const MAX_PLAYERS = 12
+
+/** Answers to "Would you play again?" against everyone who saw the final screen. */
+export interface PlayAgain {
+  /** Players on the final screen (connected when the game ended). */
+  players: number
   yes: number
+  maybe: number
+  no: number
+  /** Players who didn't vote (never below 0). */
+  none: number
+}
+
+export interface SizeRow {
+  players: number
+  started: number
+  completed: number
+  /** "Yes" votes and players on the final screen, in completed games of this size. */
+  yes: number
+  atFinal: number
+}
+
+export interface WeekRow {
+  /** Monday, YYYY-MM-DD. */
+  week: string
+  completed: number
+  /** Started that week but not played to the last round. */
+  other: number
+}
+
+export interface DashboardNumbers {
+  started: number
+  /** All rounds played. */
+  completed: number
+  endedEarly: number
+  /** Started, but no final screen reached (host left or closed the game). */
+  notFinished: number
+  completed5: number
+  playAgain: { full: PlayAgain; early: PlayAgain }
+  sizes: SizeRow[]
   finished: number
   replays: number
   ctaTaps: number
@@ -32,8 +65,7 @@ export interface DashboardNumbers {
   shares: number
   lander: { host: number; joinCode: number; rejoin: number; roomsFromLander: number }
   join: { opened: number; named: number; joined: number; final: number }
-  /** Games started per week (Monday, UTC), oldest first. */
-  weeks: { week: string; games: number }[]
+  weeks: WeekRow[]
 }
 
 const parse = (data: string): Record<string, unknown> => {
@@ -44,15 +76,19 @@ const parse = (data: string): Record<string, unknown> => {
   }
 }
 
-export function dashboardNumbers(rows: DashboardRow[]): DashboardNumbers {
+const emptyPlayAgain = (): PlayAgain => ({ players: 0, yes: 0, maybe: 0, no: 0, none: 0 })
+
+export function dashboardNumbers(
+  rows: DashboardRow[],
+  range: { now: Date; filters: Filters },
+): DashboardNumbers {
   const started = new Map<
     string,
-    { players: number; replay: boolean; source: string; at: string }
+    { players: number; replay: boolean; source: string; day: string }
   >()
   const finished = new Map<string, { atEnd: number; early: boolean }>()
+  const votes = new Map<string, { yes: number; maybe: number; no: number }>()
   const n = {
-    votes: 0,
-    yes: 0,
     ctaTaps: 0,
     shares: 0,
     host: 0,
@@ -60,6 +96,7 @@ export function dashboardNumbers(rows: DashboardRow[]): DashboardNumbers {
     rejoin: 0,
     join: { opened: 0, named: 0, joined: 0, final: 0 },
   }
+
   for (const row of rows) {
     const d = parse(row.data)
     switch (row.type) {
@@ -69,7 +106,7 @@ export function dashboardNumbers(rows: DashboardRow[]): DashboardNumbers {
             players: Number(d.players) || 0,
             replay: d.replay === true,
             source: String(d.source ?? 'direct'),
-            at: row.created_at,
+            day: localDay(row.created_at),
           })
         }
         break
@@ -79,10 +116,12 @@ export function dashboardNumbers(rows: DashboardRow[]): DashboardNumbers {
           early: d.endedEarly === true,
         })
         break
-      case 'play_again_vote':
-        n.votes++
-        if (d.vote === 'yes') n.yes++
+      case 'play_again_vote': {
+        const v = votes.get(row.game_id) ?? { yes: 0, maybe: 0, no: 0 }
+        if (d.vote === 'yes' || d.vote === 'maybe' || d.vote === 'no') v[d.vote]++
+        votes.set(row.game_id, v)
         break
+      }
       case 'host_cta_click':
         n.ctaTaps++
         break
@@ -107,28 +146,46 @@ export function dashboardNumbers(rows: DashboardRow[]): DashboardNumbers {
     }
   }
 
+  const isCompleted = (id: string) => finished.get(id)?.early === false
   const games = [...started.entries()]
-  const rates = games
-    .filter(([, g]) => g.players > 0)
-    .map(([id, g]) => {
-      const f = finished.get(id)
-      return f && !f.early ? Math.min(1, f.atEnd / g.players) : 0
+
+  // Would play again: everyone on the final screen, split by how the game ended.
+  const playAgain = { full: emptyPlayAgain(), early: emptyPlayAgain() }
+  for (const [id, f] of finished) {
+    const group = f.early ? playAgain.early : playAgain.full
+    const v = votes.get(id) ?? { yes: 0, maybe: 0, no: 0 }
+    group.players += f.atEnd
+    group.yes += v.yes
+    group.maybe += v.maybe
+    group.no += v.no
+  }
+  for (const g of [playAgain.full, playAgain.early]) {
+    // A vote can come from someone who dropped just before the end: never count more voters than players.
+    g.players = Math.max(g.players, g.yes + g.maybe + g.no)
+    g.none = g.players - g.yes - g.maybe - g.no
+  }
+
+  const sizes: SizeRow[] = []
+  for (let p = MIN_PLAYERS; p <= MAX_PLAYERS; p++) {
+    const ofSize = games.filter(([, g]) => g.players === p)
+    const done = ofSize.filter(([id]) => isCompleted(id))
+    sizes.push({
+      players: p,
+      started: ofSize.length,
+      completed: done.length,
+      yes: done.reduce((s, [id]) => s + (votes.get(id)?.yes ?? 0), 0),
+      atFinal: done.reduce((s, [id]) => s + (finished.get(id)?.atEnd ?? 0), 0),
     })
-  const weekly = new Map<string, number>()
-  for (const [, g] of games) {
-    const week = mondayOf(g.at.slice(0, 10))
-    weekly.set(week, (weekly.get(week) ?? 0) + 1)
   }
 
   return {
-    games: games.length,
-    games5: games.filter(([, g]) => g.players >= 5).length,
-    avgPlayers: games.length ? games.reduce((s, [, g]) => s + g.players, 0) / games.length : null,
-    completed: games.filter(([id]) => finished.get(id)?.early === false).length,
-    medianFinish: median(rates),
-    games80: rates.filter((r) => r >= 0.8).length,
-    votes: n.votes,
-    yes: n.yes,
+    started: games.length,
+    completed: games.filter(([id]) => isCompleted(id)).length,
+    endedEarly: games.filter(([id]) => finished.get(id)?.early === true).length,
+    notFinished: games.filter(([id]) => !finished.has(id)).length,
+    completed5: games.filter(([id, g]) => isCompleted(id) && g.players >= 5).length,
+    playAgain,
+    sizes,
     finished: finished.size,
     replays: games.filter(([, g]) => g.replay).length,
     ctaTaps: n.ctaTaps,
@@ -141,31 +198,35 @@ export function dashboardNumbers(rows: DashboardRow[]): DashboardNumbers {
       roomsFromLander: games.filter(([, g]) => g.source === 'lander' && !g.replay).length,
     },
     join: n.join,
-    weeks: fillWeeks(weekly),
+    weeks: calendarWeeks(games, isCompleted, range),
   }
 }
 
-function mondayOf(day: string): string {
-  const weekday = (new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7 // Monday = 0
-  return addDays(day, -weekday)
-}
-
-/** Every week from the first one with games to the last, so gaps show as empty bars. */
-function fillWeeks(weekly: Map<string, number>): { week: string; games: number }[] {
-  const weeks = [...weekly.keys()].sort()
-  if (!weeks.length) return []
-  const out = []
-  for (let w = weeks[0]!; w <= weeks.at(-1)!; w = addDays(w, 7)) {
-    out.push({ week: w, games: weekly.get(w) ?? 0 })
+/**
+ * Monday–Sunday weeks from the first week in range (the From date, or the first game) to the
+ * current week (or the To date). A new week shows up as soon as it starts, even with no games.
+ */
+function calendarWeeks(
+  games: [string, { day: string }][],
+  isCompleted: (id: string) => boolean,
+  { now, filters }: { now: Date; filters: Filters },
+): WeekRow[] {
+  const today = localDay(now)
+  const days = games.map(([, g]) => g.day).sort()
+  const first = filters.from ?? days[0]
+  if (!first) return []
+  const last = filters.to && filters.to < today ? filters.to : today
+  const byWeek = new Map<string, WeekRow>()
+  for (let w = mondayOf(first); w <= mondayOf(last); w = addDays(w, 7)) {
+    byWeek.set(w, { week: w, completed: 0, other: 0 })
   }
-  return out.slice(-26)
-}
-
-function median(values: number[]): number | null {
-  if (!values.length) return null
-  const sorted = [...values].sort((a, b) => a - b)
-  const mid = Math.floor(sorted.length / 2)
-  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
+  for (const [id, g] of games) {
+    const row = byWeek.get(mondayOf(g.day))
+    if (!row) continue
+    if (isCompleted(id)) row.completed++
+    else row.other++
+  }
+  return [...byWeek.values()].slice(-26)
 }
 
 const pct = (x: number | null) => (x === null ? '–' : `${Math.round(x * 100)}%`)
@@ -185,43 +246,101 @@ function funnel(steps: { label: string; n: number }[]): string {
     .join('')}</div>`
 }
 
-function weeklyChart(weeks: { week: string; games: number }[]): string {
-  if (!weeks.length) return '<p class="empty">No games yet.</p>'
-  const max = Math.max(1, ...weeks.map((w) => w.games))
-  const barW = 28
-  const gap = 8
-  const h = 120
-  const width = weeks.length * (barW + gap)
-  const bars = weeks
-    .map((w, i) => {
-      const bh = Math.round((w.games / max) * (h - 30))
-      const x = i * (barW + gap)
-      return `<g><title>Week of ${w.week}: ${w.games} games</title><rect class="bar" x="${x}" y="${h - 18 - bh}" width="${barW}" height="${bh}" rx="3"></rect><text x="${x + barW / 2}" y="${h - 22 - bh}" text-anchor="middle">${w.games || ''}</text><text x="${x + barW / 2}" y="${h - 4}" text-anchor="middle">${w.week.slice(5)}</text></g>`
+/** One 100% bar: Yes / Maybe / No / Didn't answer, with % and counts underneath. */
+function playAgainBar(title: string, g: PlayAgain): string {
+  if (!g.players) {
+    return `<div class="stack-block"><div class="stack-title">${escape(title)}</div><p class="empty">No games yet.</p></div>`
+  }
+  const parts = [
+    { key: 'yes', label: 'Yes', n: g.yes },
+    { key: 'maybe', label: 'Maybe', n: g.maybe },
+    { key: 'no', label: 'No', n: g.no },
+    { key: 'none', label: "Didn't answer", n: g.none },
+  ]
+  const bar = parts
+    .filter((p) => p.n)
+    .map(
+      (p) =>
+        `<span class="seg ${p.key}" style="width:${(p.n / g.players) * 100}%" title="${p.label}: ${p.n}"></span>`,
+    )
+    .join('')
+  const legend = parts
+    .map(
+      (p) =>
+        `<span class="key"><span class="dot ${p.key}"></span>${p.label} <strong>${pct(p.n / g.players)}</strong> <span class="hint">(${p.n})</span></span>`,
+    )
+    .join('')
+  return `<div class="stack-block"><div class="stack-title">${escape(title)} <span class="hint">· ${g.players} players on the final screen</span></div><div class="stack" role="img" aria-label="${escape(title)}">${bar}</div><div class="legend">${legend}</div></div>`
+}
+
+/** Completed games per group size (2–12), with completion rate and "yes" share under each bar. */
+function sizeChart(sizes: SizeRow[]): string {
+  if (!sizes.some((s) => s.started)) return '<p class="empty">No games yet.</p>'
+  const max = Math.max(1, ...sizes.map((s) => s.completed))
+  const colW = 52
+  const barW = 30
+  const chartH = 110
+  const h = chartH + 64
+  const width = sizes.length * colW
+  const cols = sizes
+    .map((s, i) => {
+      const x = i * colW
+      const cx = x + colW / 2
+      const bh = Math.round((s.completed / max) * (chartH - 22))
+      const done = s.started ? pct(s.completed / s.started) : '–'
+      const yes = s.atFinal ? pct(s.yes / s.atFinal) : '–'
+      return `<g><title>${s.players} players: ${s.completed} completed of ${s.started} started · ${yes} said yes</title>
+<rect class="bar" x="${cx - barW / 2}" y="${chartH - bh}" width="${barW}" height="${bh}" rx="3"></rect>
+<text x="${cx}" y="${chartH - bh - 5}" text-anchor="middle" class="num">${s.completed || ''}</text>
+<text x="${cx}" y="${chartH + 16}" text-anchor="middle" class="axis">${s.players}</text>
+<text x="${cx}" y="${chartH + 36}" text-anchor="middle">${done}</text>
+<text x="${cx}" y="${chartH + 54}" text-anchor="middle">${yes}</text></g>`
     })
     .join('')
-  return `<div class="scroll"><svg width="${width}" height="${h}" viewBox="0 0 ${width} ${h}" role="img" aria-label="Games started per week">${bars}</svg></div>`
+  return `<div class="scroll"><svg width="${width + 70}" height="${h}" viewBox="-70 0 ${width + 70} ${h}" role="img" aria-label="Completed games by number of players">
+<text x="-66" y="${chartH + 16}" class="axis">players</text>
+<text x="-66" y="${chartH + 36}">% completed</text>
+<text x="-66" y="${chartH + 54}">% said yes</text>
+${cols}</svg></div>`
+}
+
+function weeklyChart(weeks: WeekRow[]): string {
+  if (!weeks.length) return '<p class="empty">No games yet.</p>'
+  const max = Math.max(1, ...weeks.map((w) => w.completed + w.other))
+  const colW = 64
+  const barW = 36
+  const chartH = 120
+  const h = chartH + 22
+  const width = weeks.length * colW
+  const bars = weeks
+    .map((w, i) => {
+      const cx = i * colW + colW / 2
+      const total = w.completed + w.other
+      const hc = Math.round((w.completed / max) * (chartH - 22))
+      const ho = Math.round((w.other / max) * (chartH - 22))
+      return `<g><title>${weekLabel(w.week)}: ${w.completed} completed, ${w.other} not completed</title>
+<rect class="bar" x="${cx - barW / 2}" y="${chartH - hc}" width="${barW}" height="${hc}"></rect>
+<rect class="bar-other" x="${cx - barW / 2}" y="${chartH - hc - ho}" width="${barW}" height="${ho}"></rect>
+<text x="${cx}" y="${chartH - hc - ho - 5}" text-anchor="middle" class="num">${total || ''}</text>
+<text x="${cx}" y="${chartH + 16}" text-anchor="middle">${weekLabel(w.week)}</text></g>`
+    })
+    .join('')
+  return `<div class="legend"><span class="key"><span class="dot yes-bar"></span>All rounds played</span><span class="key"><span class="dot other-bar"></span>Ended early or not finished</span></div>
+<div class="scroll"><svg width="${width}" height="${h}" viewBox="0 0 ${width} ${h}" role="img" aria-label="Games per calendar week">${bars}</svg></div>`
 }
 
 export function renderDashboardBody(d: DashboardNumbers, details: QueryResult[]): string {
-  const finish = d.medianFinish
   const tiles = [
     tile(
-      'Sessions with 5+ players',
-      `${d.games5}`,
-      `target 3 · of ${d.games} games · avg ${d.avgPlayers === null ? '–' : d.avgPlayers.toFixed(1)} players`,
-      d.games5 >= 3 ? 'ok' : '',
+      'Completed games',
+      `${d.completed}`,
+      `all rounds played · ${d.endedEarly} ended early · ${d.notFinished} not finished · ${d.started} started<br>5+ players: ${d.completed5} (target 3)`,
+      d.completed5 >= 3 ? 'ok' : '',
     ),
-    tile(
-      'Players who finish (median game)',
-      pct(finish),
-      `target 80% · ${d.games80} of ${d.games} games at 80%+ · ${d.completed} games completed`,
-      finish === null ? '' : finish >= 0.8 ? 'ok' : 'warn',
-    ),
-    tile('Would play again', pct(ratio(d.yes, d.votes)), `"yes" of ${d.votes} votes`),
     tile(
       'Actually played again',
       pct(ratio(d.replays, d.finished)),
-      `${d.replays} replays after ${d.finished} finished games`,
+      `${d.replays} replays after ${d.finished} games that reached the final screen`,
     ),
     tile(
       'Guest → host',
@@ -232,6 +351,13 @@ export function renderDashboardBody(d: DashboardNumbers, details: QueryResult[])
 
   return `<h2>Success signals</h2>
 <div class="tiles">${tiles}</div>
+<h2>Would you play again?</h2>
+<p class="hint">100% = every player on the final screen, host included. Games ended early are shown apart: people may have stopped because they didn't like it.</p>
+${playAgainBar('All rounds played', d.playAgain.full)}
+${playAgainBar('Ended early', d.playAgain.early)}
+<h2>Completed games by group size</h2>
+<p class="hint">Bars: games with all rounds played. Under each: share of started games that were completed, and share of players on the final screen who said "Yes" to playing again. Which group size the game suits best.</p>
+${sizeChart(d.sizes)}
 <h2>Games per week</h2>
 ${weeklyChart(d.weeks)}
 <h2>Lander → game</h2>

@@ -70,7 +70,10 @@ export default {
           env.DB.prepare(filterSql(DASHBOARD_SQL)).bind(...params),
           ...queries.map((q) => env.DB.prepare(filterSql(q.sql)).bind(...params)),
         ])
-        const numbers = dashboardNumbers((events?.results ?? []) as unknown as DashboardRow[])
+        const numbers = dashboardNumbers((events?.results ?? []) as unknown as DashboardRow[], {
+          now,
+          filters,
+        })
         const details = queries.map((q, i) => ({ title: q.title, rows: results[i]?.results ?? [] }))
         return html(
           renderLayout({ path: '/', filters, now, body: renderDashboardBody(numbers, details) }),
