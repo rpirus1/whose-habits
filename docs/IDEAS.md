@@ -41,6 +41,24 @@ Added 2026-10-22. From Ruslan, via the main chat. **Done:** the link is on the l
 3. Update the FAQ, privacy text, `README.md` and `docs/LANDER.md`.
 4. Add a test that the lander loads no third-party scripts.
 
+### Serve statements per game from the Worker
+
+Stop shipping the whole statement database to every browser. Today all statements, with their answers and notes, ship in one public JS file (`SettingsForm-*.js`, about 250 KB). Anyone can download the full set in seconds, and a guest can look up answers during a game.
+Added 2026-10-23. From the security audit in the Bugs chat. Start planned for Monday 2026-10-26.
+
+- Keep the database inside the Worker (bundled module, D1 or KV), not in `dist/`. The host's `/new` asks the Worker for one game's statements (the chosen countries, N rounds) and gets only those.
+- Rate-limit that endpoint per IP and per day, so collecting the whole set takes hundreds of games instead of one download.
+- Trade-offs: starting a game needs a network call, so offline or slow starts need handling. The host still sees its own game's answers, which is fine. The stats Worker's `statements.json` and the dev screens need a new source too.
+- Rough size: about a day.
+
+### Plant traceable statements in the set
+
+Add a handful of statements with unique, deliberate wording (or small factual quirks) that wouldn't appear anywhere else. If the set turns up in another game or dataset, they prove it was copied. Pairs with the new LICENSE and `content/NOTICE.md` (all rights reserved, EU database right).
+Added 2026-10-23. From the security audit in the Bugs chat. Start planned for Monday 2026-10-26.
+
+- Keep the list of traps private, not in the public repo.
+- Rough size: under an hour, once the content is in a private place (depends on the item above).
+
 ## Ideas
 
 ### Extra culture packs
