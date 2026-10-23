@@ -58,6 +58,11 @@ Worker (`stats/`) behind Cloudflare Access that only the owner's email can open,
 `npm run metrics`. What each number means and how the page is protected:
 [docs/METRICS.md](docs/METRICS.md).
 
+## License
+
+The source code is MIT. The statements (`content/`, see `content/NOTICE.md`), the docs and the
+brand (name, logo, art) are © Ruslan Pirus, all rights reserved. Details in `LICENSE`.
+
 ## Deploy
 
 Every push to `main` deploys:

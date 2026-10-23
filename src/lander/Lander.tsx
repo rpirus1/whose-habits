@@ -582,7 +582,7 @@ function Footer() {
           <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline">
             {FEEDBACK_EMAIL}
           </a>
-          <br />© 2026 Ruslan Pirus
+          <br />© 2026 Ruslan Pirus. The statements and game content: all rights reserved.
         </p>
       </div>
     </footer>
