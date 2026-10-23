@@ -115,3 +115,72 @@ describe('dashboardNumbers', () => {
     expect(html).toContain('1 (33%)')
   })
 })
+
+describe('dashboardNumbers: every stored field', () => {
+  const rows = [
+    start('s1', 4, { mode: 'pick', cultures: ['NL', 'DE'], rounds: 10, seconds: 20 }),
+    row(
+      'game_finished',
+      { playersAtStart: 4, playersAtEnd: 3, roundsPlayed: 10, totalRounds: 10, endedEarly: false },
+      's1',
+    ),
+    start('s2', 5, { mode: 'pick', cultures: ['NL', 'BR', 'US'], rounds: 10, seconds: 30 }),
+    row(
+      'game_finished',
+      { playersAtStart: 5, playersAtEnd: 5, roundsPlayed: 4, totalRounds: 10, endedEarly: true },
+      's2',
+    ),
+    start('s3', 3, { mode: 'random', cultures: [], rounds: 5, seconds: 20 }),
+    row(
+      'game_finished',
+      { playersAtStart: 3, playersAtEnd: 4, roundsPlayed: 5, totalRounds: 5, endedEarly: false },
+      's3',
+    ),
+    row('play_again_vote', { vote: 'yes', role: 'host' }, 's1'),
+    row('play_again_vote', { vote: 'no', role: 'guest' }, 's1'),
+    row('share_click', { role: 'guest' }, 's1'),
+    row('share_click', { role: 'host' }, 's1'),
+    row('share_click', { role: 'guest' }, 's3'),
+    row('lander_click', { target: 'host_header' }),
+    row('lander_click', { target: 'host_footer' }),
+    row('lander_click', { target: 'host_footer' }),
+  ]
+  const d = dashboardNumbers(rows, { now, filters: all })
+
+  it('counts games per setting, with countries from picked games only', () => {
+    expect(d.setup.rounds).toEqual([
+      { value: 5, started: 1, completed: 1 },
+      { value: 10, started: 2, completed: 1 },
+    ])
+    expect(d.setup.seconds).toEqual([
+      { value: 20, started: 2, completed: 2 },
+      { value: 30, started: 1, completed: 0 },
+    ])
+    expect(d.setup.countries).toEqual([
+      { value: 2, started: 1, completed: 1 },
+      { value: 3, started: 1, completed: 0 },
+    ])
+    expect(d.setup.topCountries[0]).toEqual({ culture: 'NL', games: 2 })
+  })
+
+  it('shows where early games stopped, and who left completed games (never below 0)', () => {
+    expect(d.setup.stoppedAt).toEqual([{ roundsPlayed: 4, totalRounds: 10, games: 1 }])
+    expect(d.setup.leftMidGame).toEqual({ atStart: 7, left: 1 })
+  })
+
+  it('splits votes and shares by role, and lander taps by button', () => {
+    expect(d.votesByRole.host).toEqual({ yes: 1, maybe: 0, no: 0 })
+    expect(d.votesByRole.guest).toEqual({ yes: 0, maybe: 0, no: 1 })
+    expect(d.sharesByRole).toEqual({ host: 1, guest: 2 })
+    expect(d.lander.hostButtons).toEqual({ header: 1, hero: 0, footer: 2 })
+    expect(d.lander.host).toBe(3)
+  })
+
+  it('renders the settings section', () => {
+    const html = renderDashboardBody(d, [])
+    expect(html).toContain('Game settings')
+    expect(html).toContain('4 of 10')
+    expect(html).toContain('NL 2 · BR 1')
+    expect(html).toContain('header 1 · hero 0 · footer 2')
+  })
+})

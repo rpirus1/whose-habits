@@ -37,10 +37,23 @@ percentage. A stated "yes" is weaker evidence than an actual replay, which is wh
 
 Migration 0002 is applied to live D1 (2026-10-19), and the 13 playtest events from that day are marked `test = 1`.
 
-**Pre-launch rule:** until the game is published on its own domain, every event that reaches the Worker on
-`*.workers.dev` is stored as a test (`isPreviewHost` in `src/lib/events.ts`). Launch checklist: add the custom
-domain, then the events from that domain count as real automatically. Remove the rule only if `workers.dev` itself
-should ever count.
+**Test vs real, and the launch.** Every event that reaches the Worker on `*.workers.dev` is stored as a test
+(`isPreviewHost` in `src/lib/events.ts`), so before launch every event was one. Events on www.whosehabits.com are
+real unless the device is marked (`?test=1`, localhost, the dev server). After the move:
+
+- **The stats default follows the data.** The stats pages show all events while no real event exists, and real
+  players only from the first real event on. That first event's day is the launch, shown as "Real players (since
+  DD/MM/YYYY)" in the Data switch. "All events (incl. test)" stays one click away (`?data=all`). Nothing to set by
+  hand.
+- **Mark your own devices again.** `cc:test` lives in `localStorage`, which is per address: open
+  `https://www.whosehabits.com/?test=1` once on every phone and laptop you playtest on, or those games count as real.
+- **Old tabs on workers.dev.** A tab opened before the redirect keeps playing (rooms run on Supabase, not on the host)
+  and keeps posting events to `workers.dev/api/event`, stored as tests, as long as the redirect leaves `/api/event`
+  alone. A 301 on that path would turn the beacon's POST into a GET on the new host, so those events would be lost
+  (nothing else breaks).
+- **Not counted twice.** `trackOnce` keys are per address too, so a device that sent `game_finished` on workers.dev
+  could send it again on www for the same game. Only games that span the move are affected, and the dashboard and
+  queries count each game id once.
 
 ## What we build, in order
 
@@ -48,8 +61,8 @@ should ever count.
 
 - **Mark test games.** On `localhost`, or after opening any page with `?test=1` (remembered in `localStorage`
   as `cc:test`), events carry `test: true`. Migration `0002` adds `test INTEGER NOT NULL DEFAULT 0` to `events`,
-  and the Worker stores it. Every query in `scripts/metrics.sql` filters `test = 0`. Before launch, the Worker
-  also marks every event on `*.workers.dev` as a test (see Status).
+  and the Worker stores it. Every query in `scripts/metrics.sql` filters `test = 0`. The Worker also marks
+  every event on `*.workers.dev` as a test (see Status).
 - **One vote per person per game.** Today, changing a vote sends a second event. Send it with `trackOnce`
   (`vote:${gameId}`) so only the first tap counts. Changing it in the UI still works.
   _Touches `src/screens/room/FinalView.tsx`, so this waits for the room-screen session (see Coordination)._

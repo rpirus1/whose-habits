@@ -61,6 +61,27 @@ export interface WeekRow {
   other: number
 }
 
+/** Started and completed games for one setting value (rounds, seconds, number of countries). */
+export interface SettingRow {
+  value: number
+  started: number
+  completed: number
+}
+
+/** The host's settings, where games ended early, and who left mid-game. */
+export interface SetupNumbers {
+  rounds: SettingRow[]
+  seconds: SettingRow[]
+  /** Countries per game, picked games only (random games send no countries). */
+  countries: SettingRow[]
+  /** How often each country was picked, most first (picked games only). */
+  topCountries: { culture: string; games: number }[]
+  /** Games ended early, by rounds played out of the total. */
+  stoppedAt: { roundsPlayed: number; totalRounds: number; games: number }[]
+  /** Completed games: players at the start, and how many of them were gone by the end. */
+  leftMidGame: { atStart: number; left: number }
+}
+
 export interface DashboardNumbers {
   started: number
   /** All rounds played. */
@@ -77,7 +98,18 @@ export interface DashboardNumbers {
   ctaTaps: number
   roomsFromCta: number
   shares: number
-  lander: { host: number; joinCode: number; rejoin: number; roomsFromLander: number }
+  sharesByRole: { host: number; guest: number }
+  /** Play-again votes by who voted, against all games that reached the final screen. */
+  votesByRole: Record<'host' | 'guest', { yes: number; maybe: number; no: number }>
+  setup: SetupNumbers
+  lander: {
+    host: number
+    /** "Host a game" taps per button. */
+    hostButtons: { header: number; hero: number; footer: number }
+    joinCode: number
+    rejoin: number
+    roomsFromLander: number
+  }
   join: { opened: number; named: number; joined: number; final: number }
   weeks: WeekRow[]
 }
@@ -98,14 +130,32 @@ export function dashboardNumbers(
 ): DashboardNumbers {
   const started = new Map<
     string,
-    { players: number; replay: boolean; source: string; mode: GameMode; day: string }
+    {
+      players: number
+      replay: boolean
+      source: string
+      mode: GameMode
+      day: string
+      rounds: number
+      seconds: number
+      cultures: string[]
+    }
   >()
-  const finished = new Map<string, { atEnd: number; early: boolean }>()
+  const finished = new Map<
+    string,
+    { atEnd: number; early: boolean; atStart: number; roundsPlayed: number; totalRounds: number }
+  >()
   const votes = new Map<string, { yes: number; maybe: number; no: number }>()
   const n = {
     ctaTaps: 0,
     shares: 0,
+    sharesByRole: { host: 0, guest: 0 },
+    votesByRole: {
+      host: { yes: 0, maybe: 0, no: 0 },
+      guest: { yes: 0, maybe: 0, no: 0 },
+    },
     host: 0,
+    hostButtons: { header: 0, hero: 0, footer: 0 },
     joinCode: 0,
     rejoin: 0,
     join: { opened: 0, named: 0, joined: 0, final: 0 },
@@ -123,6 +173,9 @@ export function dashboardNumbers(
             // Builds before random mode sent no mode: those games were all picked.
             mode: d.mode === 'random' ? 'random' : 'pick',
             day: localDay(row.created_at),
+            rounds: Number(d.rounds) || 0,
+            seconds: Number(d.seconds) || 0,
+            cultures: Array.isArray(d.cultures) ? d.cultures.map(String) : [],
           })
         }
         break
@@ -130,11 +183,17 @@ export function dashboardNumbers(
         finished.set(row.game_id, {
           atEnd: Number(d.playersAtEnd) || 0,
           early: d.endedEarly === true,
+          atStart: Number(d.playersAtStart) || 0,
+          roundsPlayed: Number(d.roundsPlayed) || 0,
+          totalRounds: Number(d.totalRounds) || 0,
         })
         break
       case 'play_again_vote': {
         const v = votes.get(row.game_id) ?? { yes: 0, maybe: 0, no: 0 }
-        if (d.vote === 'yes' || d.vote === 'maybe' || d.vote === 'no') v[d.vote]++
+        if (d.vote === 'yes' || d.vote === 'maybe' || d.vote === 'no') {
+          v[d.vote]++
+          if (d.role === 'host' || d.role === 'guest') n.votesByRole[d.role][d.vote]++
+        }
         votes.set(row.game_id, v)
         break
       }
@@ -143,8 +202,12 @@ export function dashboardNumbers(
         break
       case 'share_click':
         n.shares++
+        if (d.role === 'host' || d.role === 'guest') n.sharesByRole[d.role]++
         break
       case 'lander_click':
+        if (d.target === 'host_header') n.hostButtons.header++
+        else if (d.target === 'host_hero') n.hostButtons.hero++
+        else if (d.target === 'host_footer') n.hostButtons.footer++
         if (String(d.target).startsWith('host_')) n.host++
         else if (d.target === 'join_code') n.joinCode++
         else if (d.target === 'rejoin') n.rejoin++
@@ -222,14 +285,78 @@ export function dashboardNumbers(
     ctaTaps: n.ctaTaps,
     roomsFromCta: games.filter(([, g]) => g.source === 'guest_cta' && !g.replay).length,
     shares: n.shares,
+    sharesByRole: n.sharesByRole,
+    votesByRole: n.votesByRole,
+    setup: setupNumbers(games, finished, isCompleted),
     lander: {
       host: n.host,
+      hostButtons: n.hostButtons,
       joinCode: n.joinCode,
       rejoin: n.rejoin,
       roomsFromLander: games.filter(([, g]) => g.source === 'lander' && !g.replay).length,
     },
     join: n.join,
     weeks: calendarWeeks(games, isCompleted, range),
+  }
+}
+
+function setupNumbers(
+  games: [string, { mode: GameMode; rounds: number; seconds: number; cultures: string[] }][],
+  finished: Map<
+    string,
+    { early: boolean; atStart: number; atEnd: number; roundsPlayed: number; totalRounds: number }
+  >,
+  isCompleted: (id: string) => boolean,
+): SetupNumbers {
+  const bySetting = (pick: (g: (typeof games)[number][1]) => number, ofGames = games) => {
+    const rows = new Map<number, SettingRow>()
+    for (const [id, g] of ofGames) {
+      const value = pick(g)
+      if (!value) continue // not sent (malformed or older rows): left out rather than shown as 0
+      const row = rows.get(value) ?? { value, started: 0, completed: 0 }
+      row.started++
+      if (isCompleted(id)) row.completed++
+      rows.set(value, row)
+    }
+    return [...rows.values()].sort((a, b) => a.value - b.value)
+  }
+  const picked = games.filter(([, g]) => g.mode === 'pick' && g.cultures.length)
+
+  const countryGames = new Map<string, number>()
+  for (const [, g] of picked) {
+    for (const c of new Set(g.cultures)) countryGames.set(c, (countryGames.get(c) ?? 0) + 1)
+  }
+
+  const stopped = new Map<string, SetupNumbers['stoppedAt'][number]>()
+  const leftMidGame = { atStart: 0, left: 0 }
+  for (const f of finished.values()) {
+    if (f.early && f.totalRounds) {
+      const key = `${f.roundsPlayed}/${f.totalRounds}`
+      const row = stopped.get(key) ?? {
+        roundsPlayed: f.roundsPlayed,
+        totalRounds: f.totalRounds,
+        games: 0,
+      }
+      row.games++
+      stopped.set(key, row)
+    } else if (!f.early) {
+      leftMidGame.atStart += f.atStart
+      // Late joiners can make the end count higher: count leavers per game, never below 0.
+      leftMidGame.left += Math.max(0, f.atStart - f.atEnd)
+    }
+  }
+
+  return {
+    rounds: bySetting((g) => g.rounds),
+    seconds: bySetting((g) => g.seconds),
+    countries: bySetting((g) => g.cultures.length, picked),
+    topCountries: [...countryGames]
+      .map(([culture, n]) => ({ culture, games: n }))
+      .sort((a, b) => b.games - a.games || a.culture.localeCompare(b.culture)),
+    stoppedAt: [...stopped.values()].sort(
+      (a, b) => a.totalRounds - b.totalRounds || a.roundsPlayed - b.roundsPlayed,
+    ),
+    leftMidGame,
   }
 }
 
@@ -378,6 +505,38 @@ function weeklyChart(weeks: WeekRow[]): string {
 <div class="scroll"><svg width="${width}" height="${h}" viewBox="0 0 ${width} ${h}" role="img" aria-label="Games per calendar week">${bars}</svg></div>`
 }
 
+/** Settings tables: games started and completed per value, and where early games stopped. */
+const roleVotes = (v: { yes: number; maybe: number; no: number }) =>
+  `${v.yes} yes, ${v.maybe} maybe, ${v.no} no`
+
+function setupSection(s: SetupNumbers): string {
+  const rows = (label: string, list: SettingRow[], unit: string) =>
+    list.map((r) => ({
+      Setting: label,
+      Value: `${r.value}${unit}`,
+      Started: r.started,
+      'All rounds played': `${r.completed} (${pct(ratio(r.completed, r.started))})`,
+    }))
+  const settings = [
+    ...rows('Rounds', s.rounds, ''),
+    ...rows('Time to answer', s.seconds, ' s'),
+    ...rows('Countries (picked games)', s.countries, ''),
+  ]
+  const top = s.topCountries.length
+    ? s.topCountries.map((c) => `${escape(c.culture)} ${c.games}`).join(' · ')
+    : 'no picked games yet'
+  const stopped = s.stoppedAt.map((r) => ({
+    'Stopped after round': `${r.roundsPlayed} of ${r.totalRounds}`,
+    Games: r.games,
+  }))
+  const left = s.leftMidGame
+  return `${renderTable(settings)}
+<p class="hint">Most picked countries (games): ${top}.</p>
+<h3>Where games ended early</h3>
+${renderTable(stopped)}
+<p class="hint">Players who left during games with all rounds played: ${left.left} of ${left.atStart} who started (${pct(ratio(left.left, left.atStart))}).</p>`
+}
+
 export function renderDashboardBody(d: DashboardNumbers, details: QueryResult[]): string {
   const tiles = [
     tile(
@@ -394,7 +553,7 @@ export function renderDashboardBody(d: DashboardNumbers, details: QueryResult[])
     tile(
       'Guest → host',
       `${d.roomsFromCta}`,
-      `rooms started after ${d.ctaTaps} "Host your own game" taps · ${d.shares} shares`,
+      `rooms started after ${d.ctaTaps} "Host your own game" taps · ${d.shares} shares (${d.sharesByRole.host} by hosts, ${d.sharesByRole.guest} by guests)`,
     ),
   ].join('')
 
@@ -404,12 +563,16 @@ export function renderDashboardBody(d: DashboardNumbers, details: QueryResult[])
 <p class="hint">100% = every player on the final screen, host included. Games ended early are shown apart: people may have stopped because they didn't like it.</p>
 ${playAgainBar('All rounds played', d.playAgain.full)}
 ${playAgainBar('Ended early', d.playAgain.early)}
+<p class="hint">Votes by who voted: hosts ${roleVotes(d.votesByRole.host)} · guests ${roleVotes(d.votesByRole.guest)}.</p>
 <h2>Completed games by group size</h2>
 <p class="hint">Bars: games with all rounds played. Under each: share of started games that were completed, and share of players on the final screen who said "Yes" to playing again. Which group size the game suits best.</p>
 ${sizeChart(d.sizes)}
 <h2>Picked vs random countries</h2>
 <p class="hint">Shares are of started games. "Said Yes": players on the final screen of games with all rounds played who said "Yes" to playing again. Games from before random mode count as picked.</p>
 ${modeTable(d.modes)}
+<h2>Game settings</h2>
+<p class="hint">The host's choices, and which ones get played to the end. Random games send no countries, so they're left out of the country rows.</p>
+${setupSection(d.setup)}
 <h2>Games per week</h2>
 ${weeklyChart(d.weeks)}
 <h2>Lander → game</h2>
@@ -418,6 +581,7 @@ ${funnel([
   { label: '"Host a game" taps', n: d.lander.host },
   { label: 'games started from the lander', n: d.lander.roomsFromLander },
 ])}
+<p class="hint">"Host a game" taps by button: header ${d.lander.hostButtons.header} · hero ${d.lander.hostButtons.hero} · footer ${d.lander.hostButtons.footer}.</p>
 <p class="hint">Also: ${d.lander.joinCode} joins with a code · ${d.lander.rejoin} "Back to the last game" taps.</p>
 <h2>Guests joining</h2>
 <p class="hint">Guests who opened a room link on a device that hadn't joined that room before.</p>

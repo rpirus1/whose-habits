@@ -18,7 +18,11 @@ stats site at `https://culture-clash-stats.ruslan-pirus.workers.dev` has:
     games completed, and % of players on the final screen who said yes.
   - **Picked vs random countries** (added for random mode): started, all rounds played, ended early, not
     finished, and % "Yes", per mode. Games without a `mode` (older builds) count as picked.
-  - **Actually played again**, and **Guest → host**.
+  - **Game settings** (so every stored field shows somewhere): games and % completed per number of rounds, answer
+    time and number of countries (picked games); the most picked countries; where games ended early (round X of
+    Y); players who left during completed games.
+  - **Actually played again**, and **Guest → host** (shares split by host and guest).
+  - Smaller splits in the hints: play-again votes by host vs guest, and "Host a game" taps per lander button.
   - **Games per week:** calendar weeks (Mon–Sun, labelled "19–25.10"), up to the current week, stacked as
     all rounds played vs ended early or not finished.
   - The Lander → game funnel and the Guests joining funnel.
@@ -33,7 +37,8 @@ stats site at `https://culture-clash-stats.ruslan-pirus.workers.dev` has:
   - By culture and by topic.
   - Report holds (the health numbers below).
   - **Download CSV** (`/statements.csv`).
-- **Shared filters:** date presets and range, plus all events or real players only. Days and weeks are
+- **Shared filters:** date presets and range, plus all events or real players only. Real players is the default
+  from the first real event (the launch on www.whosehabits.com); until then, all events. Days and weeks are
   Amsterdam time; dates are shown as DD/MM/YYYY (the date pickers follow the device's own format).
 
 New events (`src/lib/events.ts`, all anonymous):
@@ -59,8 +64,8 @@ Statement text, topic and review state come from `stats/statements.json`, built 
 
 - Anonymous events in D1, all checked by `parseEvent` (`src/lib/events.ts`): `game_started` (with `replay` and
   `source`), `game_finished`, `play_again_vote`, `host_cta_click`, `share_click`, `report` (statement id only).
-- A `test` column. Dev devices and `?test=1` count as tests, and so does **everything on `workers.dev` until launch**.
-  Every live event so far is therefore test data.
+- A `test` column. Dev devices and `?test=1` count as tests, and so does **everything on `workers.dev`**. Every event
+  before the launch on www.whosehabits.com is therefore test data.
 - `scripts/metrics.sql` (8 queries) is shown on the private stats Worker (`stats/`, behind Cloudflare Access, only your email) and via `npm run metrics`.
 - Reports: today one per device per statement, with the id only. No statement text, no times shown, and nothing
   ties a report to the version of the row it was about.

@@ -21,6 +21,7 @@ import {
   type Filters,
 } from './page'
 import STATEMENTS from './statements.json'
+import { localDay } from './time'
 import {
   aggregateStatements,
   holdHealth,
@@ -57,7 +58,7 @@ export default {
       return new Response('Not allowed.', { status: 403, headers: HEADERS })
     }
     const url = new URL(request.url)
-    const filters = parseFilters(url.searchParams)
+    const filters = parseFilters(url.searchParams, await realSince(env.DB))
     const now = new Date()
     const html = (body: string) =>
       new Response(body, { headers: { ...HEADERS, 'Content-Type': 'text/html; charset=utf-8' } })
@@ -106,6 +107,17 @@ export default {
 const CATALOG = new Map((STATEMENTS as StatementInfo[]).map((s) => [s.id, s]))
 const CULTURES = [...new Set([...CATALOG.keys()].map((id) => id.slice(0, 2).toUpperCase()))].sort()
 const TOPICS = [...new Set([...CATALOG.values()].map((s) => s.topic))].sort()
+
+/**
+ * The Amsterdam day of the first real event, or null while every event is a test. Real events
+ * start when players use www.whosehabits.com (workers.dev, localhost and ?test=1 are tests).
+ */
+async function realSince(db: D1Database): Promise<string | null> {
+  const row = await db
+    .prepare('SELECT MIN(created_at) AS first FROM events WHERE test = 0')
+    .first<{ first: string | null }>()
+  return row?.first ? localDay(row.first) : null
+}
 
 /** Statement signals and hold health for the filters. */
 async function statementData(db: D1Database, filters: Filters, currentOnly: boolean) {

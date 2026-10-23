@@ -42,9 +42,20 @@ describe('renderStats', () => {
 describe('filters', () => {
   const parse = (q: string) => parseFilters(new URLSearchParams(q))
 
-  it('shows all events and all time by default, real players with ?data=real', () => {
-    expect(parse('')).toEqual({ scope: 'all', from: null, to: null })
+  it('shows all events and all time by default while every event is a test', () => {
+    expect(parse('')).toEqual({ scope: 'all', from: null, to: null, realSince: null })
     expect(parse('data=real').scope).toBe('real')
+  })
+
+  it('switches the default to real players from the first real event (the launch)', () => {
+    const launched = (q: string) => parseFilters(new URLSearchParams(q), '2026-11-02')
+    expect(launched('')).toMatchObject({ scope: 'real', realSince: '2026-11-02' })
+    expect(launched('data=all').scope).toBe('all')
+    const now = new Date('2026-11-03T12:00:00Z')
+    const html = renderStats([], now, launched('data=all'))
+    expect(html).toContain('Real players (since 02/11/2026)')
+    // Links keep the explicit choice, since the default is now "real".
+    expect(html).toContain('href="?data=all">All time')
   })
 
   it('keeps valid dates, drops junk, and swaps a reversed range', () => {
