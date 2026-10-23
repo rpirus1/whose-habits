@@ -544,7 +544,7 @@ function Footer() {
               <li>
                 Cloudflare hosts the site and, like any web host, sees IP addresses to deliver the
                 pages. It counts events per IP address for a minute to block spam, and keeps logs of
-                every request to the site for 3 days so I can catch errors. These can include IP
+                requests to its pages for 3 days so I can catch errors. These can include IP
                 addresses and room links.
               </li>
             </ul>

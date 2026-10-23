@@ -20,10 +20,25 @@ binding = "ASSETS"
 # index.html is the prerendered landing page, so it can't be the SPA fallback. Paths that
 # match no file (/new, /r/<room>, unknown pages) go to the Worker, which serves app.html.
 not_found_handling = "none"
-# Every request reaches the Worker first, so old addresses can redirect; it then serves the
-# file from the assets binding, or the app shell when there is none.
+# Pages reach the Worker first, so old addresses can redirect; it then serves the file from
+# the assets binding, or the app shell when there is none. Scripts, styles, fonts and icons
+# skip it: they're most of each page load, and every Worker run counts toward the plan's
+# daily request limit (100,000 on the free plan). Static files are free and unlimited.
+# On an old address they're served as is; the page that loads them has already redirected.
 # (The stats page is a separate private Worker: stats/wrangler.toml.)
-run_worker_first = true
+run_worker_first = [
+  "/*",
+  "!/assets/*",
+  "!/favicon.svg",
+  "!/favicon-32.png",
+  "!/apple-touch-icon.png",
+  "!/icon-192.png",
+  "!/icon-512.png",
+  "!/icon-maskable-512.png",
+  "!/logo.svg",
+  "!/og-image.png",
+  "!/manifest.webmanifest",
+]
 
 [[d1_databases]]
 binding = "DB"
@@ -33,13 +48,18 @@ migrations_dir = "migrations"
 
 # Rate limits per IP address (worker/rateLimit.ts). A party of 12 phones behind one Wi-Fi
 # sends a handful of events per game, far below this; a script flooding D1 is cut off.
+# Approximate: counted per Cloudflare location and synced in the background, so a burst can
+# get well past it (a 240-request test on 23 Oct 2026 was never limited). Flood protection
+# for the whole site belongs in a zone rate limiting rule (Security → WAF), which runs before
+# the Worker and so also saves its request quota.
 [[ratelimits]]
 name = "EVENT_LIMIT"
 namespace_id = "1001"
 simple = { limit = 60, period = 60 }
 
-# Workers Logs, to catch errors: kept 3 days on the free plan (7 on paid). Every request reaches
-# this Worker (run_worker_first), so every request to the site is logged, the lander included.
+# Workers Logs, to catch errors: kept 3 days on the free plan (7 on paid). Every request that
+# reaches this Worker is logged: pages (the lander included), room links and /api/*, but not
+# the static files that skip it (run_worker_first above).
 # Set here, not only in the dashboard, so a deploy from main can't switch it off.
 # The lander's privacy section mentions these logs: keep the two in step.
 [observability.logs]

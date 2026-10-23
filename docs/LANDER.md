@@ -171,9 +171,9 @@ Link: LinkedIn.
   - Your phone keeps your theme choice and rooms you can rejoin in `localStorage` (rooms expire after 12 hours).
   - Hosting: Cloudflare serves the site and, like any web host, sees IP addresses to deliver pages.
     Workers Logs (`[observability.logs]` in `wrangler.toml`) keeps request logs for 3 days (free
-    plan) to catch errors. The Worker runs first for every request (`run_worker_first = true`, for
-    the 301 to https://www.whosehabits.com), so all requests are logged, the lander and static files
-    included; logs can include IP addresses and room links. The lander says so.
+    plan) to catch errors. The Worker runs first for page requests (`run_worker_first`, for the
+    301 to https://www.whosehabits.com), so those are logged, the lander included; scripts, styles,
+    fonts and icons skip it. Logs can include IP addresses and room links. The lander says so.
   - Wording aimed at an EU visitor: what, why (to see if people enjoy the game and which settings
     work), no profiling, contact for questions. Supabase runs in the EU (Ireland).
 - **Feedback / contact:** feedback@whosehabits.com (also for reports and privacy questions).

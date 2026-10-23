@@ -45,9 +45,9 @@ section in the lander footer (`src/lander/Lander.tsx`): keep it in step with `sr
 
 Cloudflare Workers Logs is on (`[observability.logs]` in `wrangler.toml`) to catch errors: it keeps
 request logs (which can include IP addresses and room links) for 3 days on the free plan (7 on
-paid). The Worker runs first for every request (`run_worker_first = true`, so old addresses can 301
-to https://www.whosehabits.com), so every request to the site is logged: the lander, static files,
-game pages and `/api/*`. The lander's privacy section says this.
+paid). Every request the Worker handles is logged: the lander and other pages, room links and
+`/api/*`. Scripts, styles, fonts and icons skip the Worker (`run_worker_first` lists them), so they
+neither count toward the free plan's 100,000 Worker requests a day nor show up in the logs. The lander's privacy section says this.
 
 Your own playtests don't count: events from `localhost`, the dev server, or a device that
 opened any page with `?test=1` are stored with `test = 1` and left out of every query
@@ -72,6 +72,6 @@ Every push to `main` gets a release note and an `rN` git tag (`git tag -n99 -l '
 what changed between two releases, run `git diff rN..rM`.
 
 The Worker serves `www.whosehabits.com` and `whosehabits.com` (custom domains in `wrangler.toml`)
-and sees every request first: the bare domain and `culture-clash.<account>.workers.dev` get a 301
+and sees every page request first (not static files, see `run_worker_first`): the bare domain and `culture-clash.<account>.workers.dev` get a 301
 to www (`canonicalRedirect` in `worker/routes.ts`), except `/api/*`, so tabs still open on the old
 address can keep sending events. Those are stored as tests.

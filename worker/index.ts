@@ -50,7 +50,11 @@ async function serveApp(request: Request, url: URL, env: Env): Promise<Response>
 /** Stores one anonymous product event in D1. Only known, validated fields are kept. */
 async function handleEvent(request: Request, env: Env): Promise<Response> {
   if (!fromOwnPage(request)) return new Response(null, { status: 403 })
-  if (!(await withinLimit(env.EVENT_LIMIT, request))) return new Response(null, { status: 429 })
+  if (!(await withinLimit(env.EVENT_LIMIT, request))) {
+    // In Workers Logs, so we can see whether (and how often) the approximate limit trips.
+    console.warn('event rate-limited')
+    return new Response(null, { status: 429 })
+  }
 
   const text = await request.text()
   if (text.length > MAX_EVENT_BYTES) return new Response(null, { status: 413 })
