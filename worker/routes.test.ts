@@ -1,13 +1,21 @@
 import { describe, expect, it } from 'vitest'
 import { withinLimit } from './rateLimit'
-import { fromOwnPage, routeRequest } from './routes'
+import { fromOwnPage, PRIVATE_HEADERS, routeRequest } from './routes'
 
 const route = (path: string) => routeRequest(new URL(path, 'https://example.com'))
 
 describe('routeRequest', () => {
   it('serves the shell for game routes', () => {
-    expect(route('/new')).toEqual({ kind: 'shell', status: 200, private: false })
-    expect(route('/r/k7m2-x9qp-4tdv')).toEqual({ kind: 'shell', status: 200, private: true })
+    expect(route('/new')).toEqual({
+      kind: 'shell',
+      status: 200,
+      headers: { 'X-Robots-Tag': 'noindex' },
+    })
+    expect(route('/r/k7m2-x9qp-4tdv')).toEqual({
+      kind: 'shell',
+      status: 200,
+      headers: PRIVATE_HEADERS,
+    })
   })
 
   it('redirects a valid join code to its room, in any format', () => {
@@ -30,8 +38,8 @@ describe('routeRequest', () => {
   })
 
   it('gives unknown pages the shell with a 404, and missing files a plain 404', () => {
-    expect(route('/nope')).toEqual({ kind: 'shell', status: 404, private: false })
-    expect(route('/dev')).toEqual({ kind: 'shell', status: 404, private: false })
+    expect(route('/nope')).toEqual({ kind: 'shell', status: 404, headers: {} })
+    expect(route('/dev')).toEqual({ kind: 'shell', status: 404, headers: {} })
     expect(route('/favicon.ico')).toEqual({ kind: 'missing' })
   })
 })

@@ -1,6 +1,6 @@
 // Prerenders the landing page into dist/index.html after `vite build`, and keeps the empty
 // shell as dist/app.html for the game routes (the Worker serves it, see worker/routes.ts).
-// Also writes sitemap.xml and robots.txt. Run by `npm run build`, after the SSR build of
+// Also writes sitemap.xml, robots.txt and llms.txt. Run by `npm run build`, after the SSR build of
 // src/lander/entry-server.tsx into dist-ssr/.
 import { readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
@@ -8,6 +8,7 @@ import { pathToFileURL } from 'node:url'
 interface ServerEntry {
   render(): string
   headTags(): string
+  llmsTxt(): string
   SITE_URL: string
 }
 
@@ -37,17 +38,38 @@ writeFileSync(
 </urlset>
 `,
 )
-// /r/ stays crawlable on purpose: crawlers must fetch a room page to see its noindex.
+// Everyone may crawl the public pages, AI crawlers included: the game wants to be found and
+// recommended, and nothing here is private. /r/ and /new stay crawlable on purpose: crawlers
+// must fetch them to see their noindex. The named crawlers get the same rules; they're listed
+// so the choice is explicit (a crawler that has its own group ignores the * group).
+const AI_CRAWLERS = [
+  'GPTBot',
+  'OAI-SearchBot',
+  'ChatGPT-User',
+  'ClaudeBot',
+  'Claude-SearchBot',
+  'Claude-User',
+  'PerplexityBot',
+  'Perplexity-User',
+  'Google-Extended',
+  'Applebot-Extended',
+  'CCBot',
+]
 writeFileSync(
   'dist/robots.txt',
   `User-agent: *
+Disallow: /api/
+
+${AI_CRAWLERS.map((bot) => `User-agent: ${bot}`).join('\n')}
 Disallow: /api/
 
 Sitemap: ${entry.SITE_URL}/sitemap.xml
 `,
 )
 
+writeFileSync('dist/llms.txt', entry.llmsTxt())
+
 rmSync(SSR_DIR, { recursive: true, force: true })
 console.log(
-  'Prerendered / into dist/index.html; shell in dist/app.html; sitemap and robots written.',
+  'Prerendered / into dist/index.html; shell in dist/app.html; sitemap, robots, llms.txt written.',
 )

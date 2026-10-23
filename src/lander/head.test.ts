@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { FAQ } from './content'
 import { headTags, structuredData } from './head'
 import { formatTypedCode, parseJoinInput } from './join'
+import { llmsTxt } from './llms'
 
 describe('landing page head', () => {
   it('puts every FAQ entry into the FAQPage JSON-LD', () => {
@@ -17,6 +18,15 @@ describe('landing page head', () => {
     const tags = headTags()
     expect(tags).toMatch(/<link rel="canonical" href="https:\/\/[^"]+\/" \/>/)
     expect(tags.match(/<\/script>/g)).toHaveLength(1)
+  })
+})
+
+describe('llms.txt', () => {
+  it('starts with the name and summary, and carries every FAQ entry', () => {
+    const txt = llmsTxt()
+    expect(txt).toMatch(/^# Whose Habits\n\n> \S/)
+    for (const { q, a } of FAQ) expect(txt).toContain(`### ${q}\n\n${a}`)
+    expect(txt).not.toMatch(/undefined|\[object/)
   })
 })
 

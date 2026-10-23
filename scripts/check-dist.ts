@@ -19,11 +19,17 @@ expect(!shell.includes('rel="canonical"'), 'app.html: must not carry the canonic
 expect(shell.includes('property="og:image"'), 'app.html: lost its link preview tags')
 
 expect(read('dist/sitemap.xml').includes('<loc>https://'), 'sitemap.xml: missing')
-expect(read('dist/robots.txt').includes('Sitemap: https://'), 'robots.txt: missing')
+const robots = read('dist/robots.txt')
+expect(robots.includes('Sitemap: https://'), 'robots.txt: missing')
+expect(!/^Disallow: \/\s*$/m.test(robots), 'robots.txt: blocks the whole site')
+expect(lander.includes('name="robots"') && !/noindex/.test(lander), 'index.html: robots meta')
+const llms = read('dist/llms.txt')
+expect(llms.startsWith('# Whose Habits') && llms.includes('## FAQ'), 'llms.txt: missing')
+expect(!/undefined|\[object/.test(llms), 'llms.txt: has a broken value')
 expect(/Content-Security-Policy: .*'sha256-/.test(read('dist/_headers')), '_headers: no CSP')
 
 if (errors.length) {
   for (const e of errors) console.error(`  dist check  ${e}`)
   process.exit(1)
 }
-console.log('dist check passed: prerendered lander, app shell, sitemap, robots, CSP.')
+console.log('dist check passed: prerendered lander, app shell, sitemap, robots, llms.txt, CSP.')

@@ -1,4 +1,4 @@
-// Copy for the landing page. The FAQ feeds both the page and its FAQPage JSON-LD, so the two
+// Copy for the landing page. The FAQ feeds the page, its FAQPage JSON-LD and llms.txt, so they
 // can't drift. Sample statements are copied from content/statements.csv; a test checks they
 // still match it.
 import type { CultureCode } from '../content/schema.ts'
@@ -41,6 +41,22 @@ export const HERO_QUESTION: Sample & { options: readonly CultureCode[] } = {
   note: "'Bater palmas' (clapping) works when the door is far behind a wall or gate; doorbells were long a luxury.",
   options: ['MX', 'BR', 'IT', 'TR'],
 }
+
+/** How to play, in three steps (the page pairs each with a picture). */
+export const STEPS: readonly { title: string; text: string }[] = [
+  {
+    title: 'Host a game',
+    text: 'Pick 2 to 6 countries, the number of rounds and the time per question.',
+  },
+  {
+    title: 'Friends join',
+    text: 'They scan the QR code or open the link on their own phone. No app, no account.',
+  },
+  {
+    title: 'Guess and score',
+    text: 'Read the habit, pick the country. A point for every right answer, a bonus for the first one in.',
+  },
+]
 
 export interface Faq {
   q: string

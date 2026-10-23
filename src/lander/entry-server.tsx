@@ -6,6 +6,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { Lander } from './Lander'
 
 export { headTags } from './head'
+export { llmsTxt } from './llms'
 export { SITE_URL } from './site'
 
 export function render(): string {

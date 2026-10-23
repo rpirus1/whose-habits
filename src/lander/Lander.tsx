@@ -26,7 +26,7 @@ import hostArt from './art/step-1-host.svg'
 import joinArt from './art/step-2-join.svg'
 import scoreArt from './art/step-3-score.svg'
 import makerPhoto from './art/maker.webp'
-import { FAQ, HERO_QUESTION, SAMPLES } from './content'
+import { FAQ, HERO_QUESTION, SAMPLES, STEPS } from './content'
 import { CountryCarousel } from './CountryCarousel'
 import { FlipCard } from './FlipCard'
 import { JoinWithCode } from './JoinWithCode'
@@ -230,24 +230,8 @@ function ExampleQuestion() {
 }
 
 // Edit the pictures in src/lander/art/*.svg (plain SVG, opens in Figma). Each one moves with a
-// small CSS animation in its own <style>.
-const STEPS: { title: string; text: string; art: string }[] = [
-  {
-    art: hostArt,
-    title: 'Host a game',
-    text: 'Pick 2 to 6 countries, the number of rounds and the time per question.',
-  },
-  {
-    art: joinArt,
-    title: 'Friends join',
-    text: 'They scan the QR code or open the link on their own phone. No app, no account.',
-  },
-  {
-    art: scoreArt,
-    title: 'Guess and score',
-    text: 'Read the habit, pick the country. A point for every right answer, a bonus for the first one in.',
-  },
-]
+// small CSS animation in its own <style>. The words are in content.ts (llms.txt uses them too).
+const STEP_ART = [hostArt, joinArt, scoreArt]
 
 function HowToPlay() {
   return (
@@ -258,10 +242,10 @@ function HowToPlay() {
       background="dots"
     >
       <ol className="grid gap-4 md:grid-cols-3">
-        {STEPS.map(({ title, text, art }, i) => (
+        {STEPS.map(({ title, text }, i) => (
           <li key={title} className="bg-card ring-border rounded-2xl p-5 ring-1 md:p-6">
             <div className="bg-muted flex justify-center rounded-xl py-5">
-              <img src={art} alt="" width={160} height={96} className="h-24 w-auto" />
+              <img src={STEP_ART[i]} alt="" width={160} height={96} className="h-24 w-auto" />
             </div>
             <p className="text-muted-foreground mt-5 text-sm font-medium tabular-nums">
               Step {i + 1}

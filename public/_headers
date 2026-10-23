@@ -5,6 +5,10 @@
   X-Robots-Tag: noindex, nofollow
   Referrer-Policy: no-referrer
 
+# llms.txt repeats the lander for AI assistants: not a page for search results.
+/llms.txt
+  X-Robots-Tag: noindex
+
 # The app shell, served by the Worker for game routes. Not a page of its own.
 /app
   X-Robots-Tag: noindex
