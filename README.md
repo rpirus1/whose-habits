@@ -42,9 +42,10 @@ Room links are unguessable and marked `noindex`. The full list players see is th
 section in the lander footer (`src/lander/Lander.tsx`): keep it in step with `src/lib/events.ts`.
 
 Cloudflare Workers Logs is on (`[observability.logs]` in `wrangler.toml`) to catch errors: it keeps
-request logs (which can include IP addresses) for 3 days on the free plan (7 on paid). Only requests
-that reach the Worker are logged (`/api/*`, `/r/*`, `/new`); the lander and static files
-are not. The lander's privacy section says this.
+request logs (which can include IP addresses and room links) for 3 days on the free plan (7 on
+paid). The Worker runs first for every request (`run_worker_first = true`, so old addresses can 301
+to https://www.whosehabits.com), so every request to the site is logged: the lander, static files,
+game pages and `/api/*`. The lander's privacy section says this.
 
 Your own playtests don't count: events from `localhost`, the dev server, or a device that
 opened any page with `?test=1` are stored with `test = 1` and left out of every query

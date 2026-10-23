@@ -559,9 +559,9 @@ function Footer() {
               </li>
               <li>
                 Cloudflare hosts the site and, like any web host, sees IP addresses to deliver the
-                pages. It counts events per IP address for a minute to block spam. For game pages
-                and events (not this page), it keeps request logs for 3 days so I can catch errors;
-                these can include IP addresses and room links.
+                pages. It counts events per IP address for a minute to block spam, and keeps logs of
+                every request to the site for 3 days so I can catch errors. These can include IP
+                addresses and room links.
               </li>
             </ul>
             <p className="text-muted-foreground mt-2">
