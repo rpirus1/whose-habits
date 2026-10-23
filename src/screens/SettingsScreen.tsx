@@ -2,7 +2,7 @@ import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
-import { CountryPicker, GameOptions, ModeCards } from '@/components/SettingsForm'
+import { CountryCount, CountryPicker, GameOptions, ModeCards } from '@/components/SettingsForm'
 import { countriesNeeded, MODE_COPY } from '@/lib/gameMode'
 import { Screen } from '@/components/Screen'
 import { StickyFooter } from '@/components/StickyFooter'
@@ -111,6 +111,11 @@ export function SettingsScreen() {
           </Button>
         )}
         <h1 className="font-heading text-2xl font-bold">{TITLES[step]}</h1>
+        {step === 'countries' && (
+          <span className="ml-auto">
+            <CountryCount count={settings.cultures.length} />
+          </span>
+        )}
       </header>
 
       {step === 'mode' && (
@@ -119,7 +124,7 @@ export function SettingsScreen() {
 
       {step === 'countries' && (
         <>
-          <CountryPicker value={settings} onChange={setSettings} legend={false} />
+          <CountryPicker value={settings} onChange={setSettings} />
           <StickyFooter>
             <Button
               size="xl"

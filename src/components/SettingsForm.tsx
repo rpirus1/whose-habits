@@ -49,47 +49,69 @@ export function ModeCards({
 }
 
 /** The lobby's compact mode switch, above the country grid. */
-function ModeSwitch({ value, onChange }: { value: GameMode; onChange: (mode: GameMode) => void }) {
+function ModeSwitch({
+  value,
+  onChange,
+  count,
+}: {
+  value: GameMode
+  onChange: (mode: GameMode) => void
+  /** Picked countries, beside the mode line (so the hint below the grid has its spot alone). */
+  count: number
+}) {
   return (
     <fieldset className="flex flex-col gap-2">
       <legend className="mb-3 font-medium">Countries</legend>
       <div className="bg-muted grid grid-cols-2 gap-1 rounded-full p-1" role="radiogroup">
-        {(['pick', 'random'] as const).map((mode) => (
-          <button
-            key={mode}
-            type="button"
-            role="radio"
-            aria-checked={mode === value}
-            onClick={() => onChange(mode)}
-            className={cn(
-              'h-11 rounded-full font-medium transition-colors',
-              mode === value
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {mode === 'pick' ? 'Choose' : 'Random'}
-          </button>
-        ))}
+        {(['pick', 'random'] as const).map((mode) => {
+          const Icon = MODE_COPY[mode].icon
+          return (
+            <button
+              key={mode}
+              type="button"
+              role="radio"
+              aria-checked={mode === value}
+              onClick={() => onChange(mode)}
+              className={cn(
+                'flex h-12 items-center justify-center gap-2 rounded-full font-medium transition-colors',
+                mode === value
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              <Icon className="size-5" aria-hidden />
+              {mode === 'pick' ? 'Choose' : 'Random'}
+            </button>
+          )
+        })}
       </div>
-      <p className="text-muted-foreground text-sm">{MODE_COPY[value].line}</p>
+      <p className="text-muted-foreground flex items-baseline justify-between gap-3 text-sm">
+        {MODE_COPY[value].line}
+        {value === 'pick' && <CountryCount count={count} />}
+      </p>
     </fieldset>
   )
 }
 
-/** The country grid with its count and hint. */
+/** "2 of 2–6": how many countries are picked. Sits above the grid, never in the hint's spot. */
+export function CountryCount({ count }: { count: number }) {
+  return (
+    <span className="text-muted-foreground shrink-0 text-sm font-normal tabular-nums">
+      {count} of {MIN_CULTURES}–{MAX_CULTURES}
+    </span>
+  )
+}
+
+/** The country grid with its hint. */
 export function CountryPicker({
   value,
   onChange,
   keepMinimum = false,
-  legend = true,
 }: {
   value: Settings
   onChange: (settings: Settings) => void
   /** Refuse to untick below the minimum (in the lobby, where the game must stay valid). */
   keepMinimum?: boolean
-  /** Show the "Countries" title (the settings step has its own heading). */
-  legend?: boolean
 }) {
   // The culture the host just tried to tick or untick past a limit, which limit, and a counter so
   // repeat taps shake again.
@@ -129,22 +151,10 @@ export function CountryPicker({
       ? `Up to ${MAX_CULTURES} countries. Untick one to swap it.`
       : `Keep at least ${MIN_CULTURES} countries.`
     : ''
-  const count = (
-    <span className="text-muted-foreground text-sm font-normal">
-      {value.cultures.length} of {MIN_CULTURES}–{MAX_CULTURES}
-    </span>
-  )
 
   return (
     <fieldset className="flex flex-col gap-3">
-      {legend ? (
-        <legend className="mb-3 flex w-full items-baseline justify-between font-medium">
-          Countries
-          {count}
-        </legend>
-      ) : (
-        <legend className="sr-only">Countries</legend>
-      )}
+      <legend className="sr-only">Countries</legend>
       <div className="grid grid-cols-2 gap-2">
         {CULTURES.map((culture) => {
           const selected = value.cultures.includes(culture.code)
@@ -185,7 +195,6 @@ export function CountryPicker({
       <p className={cn('text-muted-foreground text-sm', !hint && 'sr-only')} aria-live="polite">
         {hint}
       </p>
-      {!legend && <p className="text-right">{count}</p>}
     </fieldset>
   )
 }
@@ -240,10 +249,12 @@ export function SettingsForm({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4">
-        <ModeSwitch value={mode} onChange={(m) => onChange(withMode(value, m))} />
-        {mode === 'pick' && (
-          <CountryPicker value={value} onChange={onChange} keepMinimum legend={false} />
-        )}
+        <ModeSwitch
+          value={mode}
+          onChange={(m) => onChange(withMode(value, m))}
+          count={value.cultures.length}
+        />
+        {mode === 'pick' && <CountryPicker value={value} onChange={onChange} keepMinimum />}
       </div>
       <GameOptions value={value} onChange={onChange} />
     </div>
