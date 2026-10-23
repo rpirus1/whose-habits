@@ -70,11 +70,13 @@ export function ReportDialog({ onDone }: { onDone: (reason: ReportReason) => voi
         <p id="report-hint" className="text-muted-foreground mt-1 text-sm" aria-live="off">
           The game waits for you: {Math.ceil(left / 1000)} s
         </p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        {/* One column: every label fits on one line, and a list reads top to bottom. */}
+        <div className="mt-4 flex flex-col gap-2">
           {REPORT_REASONS.map((reason, i) => (
             <Button
               key={reason}
               size="xl"
+              className="w-full"
               variant="outline"
               autoFocus={i === 0}
               onClick={() => finish(reason)}
