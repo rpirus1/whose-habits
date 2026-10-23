@@ -158,10 +158,13 @@ Link: LinkedIn.
 - **Privacy** (short paragraph, can open a `<details>` with the full list). What actually happens,
   from `src/lib/analytics.ts`, `src/lib/events.ts` and the realtime code:
   - No cookies, no ads, no tracking scripts, no third-party analytics.
-  - The game sends a few anonymous game events to our own server (Cloudflare D1): a game started
-    (number of players, countries, rounds, seconds per question, replay or not), a game finished
-    (rounds played, players at start and end, ended early), the play-again vote, clicks on Share and
-    "Host your own game", and a reported statement's id. Each carries a random game id.
+  - The game sends a few anonymous events to our own server (Cloudflare D1). The current list is in
+    the lander footer (`src/lander/Lander.tsx`), which must match `src/lib/events.ts`: game started
+    (players, picked or random countries, rounds, seconds, replay, source), game finished, round
+    results (answer counts per country), skipped or unknown statements, the play-again vote, Share and
+    "Host your own game" taps, reports (statement id, reason, pause length), join steps and lander
+    button taps. Each game event carries a random game id.
+  - Cloudflare rate limiting counts events per IP address for a minute to block spam (not stored).
     **No names, no player ids, no IP addresses are stored.** The lander only counts taps on its buttons (`lander_click`, no ids).
   - Names you type travel to the other players in the room through Supabase Realtime while you
     play; they aren't stored on a server.

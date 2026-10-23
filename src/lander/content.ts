@@ -78,6 +78,6 @@ export const FAQ: readonly Faq[] = [
   },
   {
     q: 'A habit feels wrong. How can I report it?',
-    a: `Tap Report on the answer screen and pick what’s wrong, or write to ${FEEDBACK_EMAIL} with the statement and what you’d change. I read every report, and statements get fixed or removed.`,
+    a: `Tap Report on the answer screen and pick what’s wrong, or write to ${FEEDBACK_EMAIL} with the habit and what you’d change. I read every report, and habits get fixed or removed.`,
   },
 ]

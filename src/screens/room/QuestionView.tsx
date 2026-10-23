@@ -108,7 +108,7 @@ function StatusLine({
   answeredEarlier: boolean
 }) {
   const text = !canAnswer
-    ? "You joined mid-round. You'll play from the next statement."
+    ? "You joined mid-round. You'll play from the next habit."
     : paused
       ? 'Paused by the host'
       : timeUp

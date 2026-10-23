@@ -1,6 +1,6 @@
-# Culture Clash (working title)
+# Whose Habits
 
-A phone-based party game for mixed groups. The host picks 2–6 cultures, friends join by link or QR, and everyone guesses which culture each statement fits best.
+A free, phone-based party game for international friends. The host picks 2–6 countries, friends join by link or QR code, and everyone guesses which country each everyday habit belongs to. Moving to whosehabits.com; until then it runs on the workers.dev preview URL. Brand and tone of voice: [docs/BRAND.md](docs/BRAND.md).
 
 See [docs/PLAN.md](docs/PLAN.md) for the product and technical plan and [docs/CONTENT_RULES.md](docs/CONTENT_RULES.md) for how statements are written and reviewed.
 
@@ -32,12 +32,14 @@ The game ships `content/statements-extended.csv` (783 statements; `content/state
 ## Privacy and analytics
 
 No accounts, no cookies, no personal data. The app sends a few anonymous events (game
-started/finished, each round's answer counts per country, replaced statements, "play again?"
+started/finished with its settings and where the host came from, each round's answer counts per country, replaced statements, "play again?"
 vote, reports with a reason, share and host clicks, lander button taps, and counts of the steps
 into a room) to
 `worker/index.ts`, which validates them (`src/lib/events.ts`) and stores them in
-Cloudflare D1. No names, player ids or IP addresses are stored. Room links are unguessable
-and marked `noindex`.
+Cloudflare D1. No names, player ids or IP addresses are stored. The Worker counts events per IP address for a
+minute (Cloudflare rate limiting, `worker/rateLimit.ts`) to block spam; that count isn’t stored.
+Room links are unguessable and marked `noindex`. The full list players see is the Privacy
+section in the lander footer (`src/lander/Lander.tsx`): keep it in step with `src/lib/events.ts`.
 
 Cloudflare Workers Logs is on (`[observability.logs]` in `wrangler.toml`) to catch errors: it keeps
 request logs (which can include IP addresses) for 3 days on the free plan (7 on paid). Only requests
