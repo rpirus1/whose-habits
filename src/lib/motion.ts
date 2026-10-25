@@ -9,3 +9,10 @@ export const enterScreen =
 /** A highlight inside a screen, e.g. the correct answer at the reveal, pops in a beat later. */
 export const enterHighlight =
   'motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-90 motion-safe:duration-300 motion-safe:delay-150 motion-safe:fill-mode-backwards'
+
+/**
+ * Something small arriving: a player joining, the countdown pill, the points badge. One style for
+ * every new effect, so they read as one family: a quick fade and grow from the centre.
+ */
+export const popIn =
+  'motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-75 motion-safe:duration-300 motion-safe:ease-out'

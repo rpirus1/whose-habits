@@ -47,6 +47,19 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   /* A short sideways shake: "can't do that" feedback, e.g. unticking the last-but-one culture. */
   --animate-shake: shake 0.4s ease-in-out;
+  /* The fact card's bulb lighting up once, a beat after the reveal: "Now you do". */
+  --animate-glow: glow 1.2s ease-out 0.4s both;
+  @keyframes glow {
+    0%,
+    100% {
+      transform: scale(1);
+      filter: none;
+    }
+    35% {
+      transform: scale(1.35);
+      filter: drop-shadow(0 0 6px var(--highlight));
+    }
+  }
   @keyframes shake {
     0%,
     100% {
@@ -164,4 +177,22 @@
 /* Toasts: sonner sets its own system font on the toaster, outside any layer. */
 html [data-sonner-toaster] {
   font-family: var(--font-sans);
+}
+
+/* Next countdown ring (RevealView): the stroke empties over --countdown-ms. pathLength="1" on
+   the circle makes a full ring 1 unit long. With reduced motion the ring stays full and only
+   the number changes. */
+.countdown-ring {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .countdown-ring {
+    animation: countdown-drain var(--countdown-ms) linear forwards;
+  }
+}
+@keyframes countdown-drain {
+  to {
+    stroke-dashoffset: 1;
+  }
 }

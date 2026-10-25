@@ -1,3 +1,4 @@
+import { haptic } from '@/lib/haptics'
 import { CultureButton } from '@/components/CultureButton'
 import { TimerBar } from '@/components/TimerBar'
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,10 @@ export function QuestionView({
   const msLeft = useCountdown(question.endsAt, question.remainingMs, clockOffset)
   const totalMs = snapshot.settings.seconds * 1000
   const canAnswer = question.answeringIds.includes(meId)
+  const choose = (choice: Choice) => {
+    haptic('tap')
+    onChoose(choice)
+  }
   const locked = !canAnswer || snapshot.paused || msLeft <= 0
   const answering = snapshot.players.filter(
     (p) => p.connected && question.answeringIds.includes(p.id),
@@ -73,7 +78,7 @@ export function QuestionView({
               code={code}
               selected={myChoice === code}
               disabled={locked}
-              onClick={() => onChoose(code)}
+              onClick={() => choose(code)}
             />
           ))}
         </div>
@@ -82,7 +87,7 @@ export function QuestionView({
           size="xl"
           disabled={locked}
           aria-pressed={myChoice === 'unknown'}
-          onClick={() => onChoose('unknown')}
+          onClick={() => choose('unknown')}
         >
           I don't know
         </Button>

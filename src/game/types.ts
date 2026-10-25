@@ -20,6 +20,8 @@ export const MAX_NAME_LENGTH = 20
 export const ANSWER_GRACE_MS = 500
 /** A report holds the game this long while the reporter picks a reason. */
 export const REPORT_HOLD_MS = 10_000
+/** After the host taps Next on a reveal, everyone gets this long to finish reading. */
+export const NEXT_COUNTDOWN_MS = 2_000
 
 /** The reasons a reporter can pick, in pop-up order. Closing it gives 'none'. */
 export const REPORT_REASONS = [
@@ -29,7 +31,7 @@ export const REPORT_REASONS = [
   'offensive',
 ] as const satisfies readonly ReportReason[]
 
-/** 'pick': the host's 2–6 countries every round. 'random': 4 new countries every round. */
+/** 'pick': the host's 2–6 countries every round. 'random': 4 random countries every round. */
 export const GAME_MODES = ['pick', 'random'] as const
 export type GameMode = (typeof GAME_MODES)[number]
 
@@ -146,6 +148,8 @@ export interface GameState {
   aloneSince?: number | null
   /** Paused because nobody else is here: only End, or Continue once someone is back. */
   waitingForPlayers?: boolean
+  /** Host clock time the Next countdown on a reveal ends; then the next question starts. */
+  nextAt?: number | null
 }
 
 /** Everything the pure engine needs from the outside world. */

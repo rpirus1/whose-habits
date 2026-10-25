@@ -15,7 +15,7 @@ export const MODE_COPY: Record<GameMode, { title: string; line: string; icon: Lu
   },
   random: {
     title: 'Random countries',
-    line: `${OPTIONS_PER_ROUND} new countries every round, from all ${CULTURE_CODES.length}.`,
+    line: `${OPTIONS_PER_ROUND} random countries every round, from all ${CULTURE_CODES.length}.`,
     icon: Shuffle,
   },
 }

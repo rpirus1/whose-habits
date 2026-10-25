@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { createGame, reduce } from './engine'
+import { createGame } from './engine'
 import type { Action } from './engine'
 import { finalSummary, parseGuestMessage, parseHostMessage, toSnapshot } from './protocol'
 import { seededRandom } from './random'
-import { byId, makeBank } from './testing'
+import { byId, makeBank, reduceThroughCountdown } from './testing'
 import type { EngineContext, GameState } from './types'
 
 const bank = makeBank(['PL', 'NL'], 12)
@@ -16,7 +16,7 @@ function started() {
     hostId: 'host',
     settings: { cultures: ['PL', 'NL'], rounds: 10, seconds: 20 },
   })
-  const run = (a: Action) => (s = reduce(s, a, ctx))
+  const run = (a: Action) => (s = reduceThroughCountdown(s, a, ctx))
   run({ type: 'join', playerId: 'ann', name: 'Ann' })
   run({ type: 'start', gameId: 'g1' })
   return {

@@ -1,5 +1,6 @@
 import { Shuffle } from 'lucide-react'
 import { CultureList } from '@/components/CultureList'
+import { InAppBrowserBanner } from '@/components/InAppBrowserBanner'
 import { MODE_COPY } from '@/lib/gameMode'
 import { isRandom } from '@/game/types'
 import { PlayerList } from '@/components/PlayerList'
@@ -26,6 +27,7 @@ export function LobbyView({
 
   return (
     <div className={cn('flex flex-col gap-6', enterScreen)}>
+      <InAppBrowserBanner />
       {isHost ? (
         <QrShare roomCode={snapshot.roomCode} />
       ) : (

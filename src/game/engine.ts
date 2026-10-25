@@ -25,6 +25,7 @@ import {
   MAX_PLAYERS,
   MIN_PLAYERS_TO_PLAY,
   MIN_PLAYERS_TO_START,
+  NEXT_COUNTDOWN_MS,
   REPORT_HOLD_MS,
   REPORT_REASONS,
   ROUND_OPTIONS,
@@ -296,6 +297,11 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
           expired = true
         }
       }
+      if (s.phase === 'reveal' && s.nextAt != null) {
+        if (ctx.now < s.nextAt) return expired
+        advance(s, ctx)
+        return true
+      }
       if (s.phase !== 'question' || s.paused || s.endsAt === null) return expired
       if (ctx.now < s.endsAt + ANSWER_GRACE_MS) return false
       closeRound(s)
@@ -305,6 +311,8 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
     case 'pause': {
       if (s.paused || (s.phase !== 'question' && s.phase !== 'reveal')) return false
       s.paused = true
+      // A pause (or nobody left) cancels the Next countdown; the host taps Next again.
+      s.nextAt = null
       if (s.phase === 'question' && s.endsAt !== null) {
         s.remainingMs = Math.max(0, s.endsAt - ctx.now)
         s.endsAt = null
@@ -328,6 +336,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       if (!round || s.waitingForPlayers || openReports(s, ctx.now).length) return false
       const target = (s.viewing ?? round.index) - 1
       if (target < 0) return false
+      s.nextAt = null
       if (s.phase === 'question' && !s.paused) {
         apply(s, { type: 'pause' }, ctx)
         s.pausedByBack = true
@@ -344,10 +353,10 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
         if (s.pausedByBack) resume(s, ctx)
         return true
       }
-      if (s.phase !== 'reveal' || openReports(s, ctx.now).length) return false
-      // From a reveal (or an earlier reveal via Back): on to the next unplayed statement.
-      if (s.rounds.length >= s.totalRounds || !s.queue.length) finish(s)
-      else startQuestion(s, ctx)
+      if (s.phase !== 'reveal' || s.nextAt != null || openReports(s, ctx.now).length) return false
+      // From a reveal (or an earlier reveal via Back): a short countdown, so everyone can finish
+      // reading, then the tick moves on to the next unplayed statement.
+      s.nextAt = ctx.now + NEXT_COUNTDOWN_MS
       return true
     }
 
@@ -395,6 +404,8 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
         )
       )
         return false
+      // A report during the Next countdown cancels it: the reporter is still reading.
+      s.nextAt = null
       ;(s.reports ??= []).push({
         playerId: action.playerId,
         statementId: action.statementId,
@@ -454,6 +465,13 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       return true
     }
   }
+}
+
+/** The Next countdown ended: the next question, or the final scores after the last round. */
+function advance(s: GameState, ctx: EngineContext) {
+  s.nextAt = null
+  if (s.rounds.length >= s.totalRounds || !s.queue.length) finish(s)
+  else startQuestion(s, ctx)
 }
 
 function startQuestion(s: GameState, ctx: EngineContext) {
@@ -541,6 +559,7 @@ function resume(s: GameState, ctx: EngineContext) {
 
 function finish(s: GameState) {
   s.phase = 'final'
+  s.nextAt = null
   s.endsAt = null
   s.remainingMs = null
   s.paused = false

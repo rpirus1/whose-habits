@@ -16,6 +16,7 @@ import { Link } from 'react-router'
 import { Brand } from '@/components/Brand'
 import { Flag } from '@/components/Flag'
 import { Badge } from '@/components/ui/badge'
+import { InAppBrowserBanner } from '@/components/InAppBrowserBanner'
 import { Button } from '@/components/ui/button'
 import { CULTURES, getCulture } from '@/content/cultures'
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '@/game/types'
@@ -132,6 +133,7 @@ function Hero() {
       )}
     >
       <div className="flex flex-col gap-8">
+        <InAppBrowserBanner className="max-w-md" />
         <div>
           <Badge variant="highlight" className="h-7 px-3 text-sm">
             Free party game · {PLAYERS} players
@@ -173,20 +175,19 @@ function Hero() {
   )
 }
 
-/** Closed the tab mid-game? A quiet way back into the most recent room. */
+/** Closed the tab mid-game? The way back into the most recent room, right under Host. */
 function ResumeGame() {
   const hydrated = useHydrated()
   const room = useMemo(() => (hydrated ? lastRoom() : undefined), [hydrated])
   if (!room) return null
 
   return (
-    <Button asChild variant="ghost" size="lg" className="text-primary-soft self-center">
+    <Button asChild variant="secondary" size="xl" className="w-full">
       <Link
         to={`/r/${room.roomCode}`}
         onClick={() => track({ type: 'lander_click', target: 'rejoin' })}
       >
         Back to the last game
-        <ChevronRight data-icon="inline-end" aria-hidden />
       </Link>
     </Button>
   )

@@ -26,6 +26,7 @@
   "dependencies": {
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@supabase/realtime-js": "^2.118.0",
+    "canvas-confetti": "1.9.4",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.0",
     "country-flag-icons": "^1.6.20",
@@ -41,6 +42,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261019.1",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/canvas-confetti": "1.9.0",
     "@types/node": "^24.19.2",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.3.0",

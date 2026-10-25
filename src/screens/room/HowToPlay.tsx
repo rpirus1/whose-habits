@@ -1,4 +1,5 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Lightbulb, Pointer, Trophy, type LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { OPTIONS_PER_ROUND } from '@/game/selection'
 import { POINTS_CORRECT, POINTS_FIRST_CORRECT_BONUS } from '@/game/scoring'
 
@@ -18,8 +19,8 @@ export function HowToPlay({ seconds, random }: { seconds: number; random: boolea
           aria-hidden
         />
       </summary>
-      <ol className="flex list-decimal flex-col gap-2 px-4 pb-4 pl-8 text-sm leading-snug">
-        <li>
+      <ol className="flex flex-col gap-3 px-4 pb-4 text-sm leading-snug">
+        <Step icon={Pointer}>
           <strong>
             A habit pops up on everyone’s phone. Tap the country you think it belongs to.
           </strong>{' '}
@@ -27,20 +28,32 @@ export function HowToPlay({ seconds, random }: { seconds: number; random: boolea
             You have {seconds} seconds.
             {random && ` Each round shows ${OPTIONS_PER_ROUND} different countries.`}
           </span>
-        </li>
-        <li>
+        </Step>
+        <Step icon={Trophy}>
           <strong>
             Right answer: {points(POINTS_CORRECT)}. Fastest right answer:{' '}
             {points(POINTS_FIRST_CORRECT_BONUS, 'bonus ')}.
           </strong>
-        </li>
-        <li>
+        </Step>
+        <Step icon={Lightbulb}>
           <strong>Not sure? Tap “I don’t know”.</strong>{' '}
           <span className="text-muted-foreground">
             After each round you’ll see the answer and a short fact.
           </span>
-        </li>
+        </Step>
       </ol>
     </details>
+  )
+}
+
+/** One rule, with its icon in the same round chip as the player initials. */
+function Step({ icon: Icon, children }: { icon: LucideIcon; children: ReactNode }) {
+  return (
+    <li className="flex items-start gap-3">
+      <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-full">
+        <Icon className="text-primary size-5" aria-hidden />
+      </span>
+      <p className="pt-0.5">{children}</p>
+    </li>
   )
 }

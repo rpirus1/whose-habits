@@ -53,6 +53,7 @@ export function GameView({
           key={`reveal-${snapshot.reveal.index}-${snapshot.viewing}`}
           snapshot={snapshot}
           meId={meId}
+          clockOffset={clockOffset}
           onNext={onNext}
           onReport={onReport}
         />

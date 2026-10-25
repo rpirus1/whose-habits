@@ -113,6 +113,8 @@ export interface Snapshot {
   final: FinalSummary | null
   /** Host clock time a report hold ends, or null. Anonymous: not who is reporting. */
   holdUntil: number | null
+  /** Host clock time the Next countdown on a reveal ends, or null. Optional: older hosts lack it. */
+  nextAt?: number | null
 }
 
 export function toSnapshot(
@@ -161,6 +163,7 @@ export function toSnapshot(
     viewing: s.viewing !== null,
     final: s.phase === 'final' ? finalSummary(s, statements) : null,
     holdUntil: holdEnd(s),
+    nextAt: s.nextAt ?? null,
   }
 }
 
@@ -383,6 +386,7 @@ const isSnapshot = shape({
     }),
   ),
   holdUntil: nullable(num),
+  nextAt: optional(nullable(num)),
 })
 
 const isHostMessage: Record<HostMessage['type'], Check> = {

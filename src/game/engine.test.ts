@@ -3,18 +3,25 @@ import { CULTURE_CODES } from '@/content/schema'
 import { createGame, currentRound, joinRejection, openReports, reduce } from './engine'
 import type { Action } from './engine'
 import { seededRandom } from './random'
-import { byId, makeBank } from './testing'
-import { ALONE_GRACE_MS, ANSWER_GRACE_MS, MAX_PLAYERS, REPORT_HOLD_MS } from './types'
+import { byId, makeBank, reduceThroughCountdown } from './testing'
+import {
+  ALONE_GRACE_MS,
+  ANSWER_GRACE_MS,
+  MAX_PLAYERS,
+  NEXT_COUNTDOWN_MS,
+  REPORT_HOLD_MS,
+} from './types'
 import type { Choice, EngineContext, GameState, Settings } from './types'
 
 const bank = makeBank(['PL', 'NL'], 12)
 const settings: Settings = { cultures: ['PL', 'NL'], rounds: 10, seconds: 20 }
 
 /** Host-side harness with a controllable clock. */
-function harness(opts: { guests?: string[]; start?: boolean } = {}) {
+function harness(opts: { guests?: string[]; start?: boolean; countdown?: boolean } = {}) {
   const ctx: EngineContext = { now: 1_000_000, statements: byId(bank), random: seededRandom(42) }
   let state: GameState = createGame({ roomCode: 'BCDF', hostId: 'host', hostName: '', settings })
-  const run = (action: Action) => (state = reduce(state, action, ctx))
+  const run = (action: Action) =>
+    (state = (opts.countdown ? reduce : reduceThroughCountdown)(state, action, ctx))
   for (const id of opts.guests ?? ['ann', 'bob']) run({ type: 'join', playerId: id, name: id })
   if (opts.start ?? true) run({ type: 'start', gameId: 'g1' })
   return {
@@ -330,6 +337,60 @@ describe('replacement', () => {
   })
 })
 
+describe('next countdown', () => {
+  function atReveal() {
+    const h = harness({ countdown: true })
+    h.answerAll('right')
+    expect(h.s.phase).toBe('reveal')
+    return h
+  }
+
+  it('waits NEXT_COUNTDOWN_MS after Next, then starts the next question', () => {
+    const h = atReveal()
+    h.run({ type: 'next' })
+    expect(h.s).toMatchObject({ phase: 'reveal', nextAt: h.ctx.now + NEXT_COUNTDOWN_MS })
+    const counting = h.s
+    expect(h.run({ type: 'next' })).toBe(counting)
+    h.advance(NEXT_COUNTDOWN_MS - 1)
+    expect(h.s.phase).toBe('reveal')
+    h.advance(1)
+    expect(h.s).toMatchObject({ phase: 'question', nextAt: null })
+    expect(h.s.rounds).toHaveLength(2)
+  })
+
+  it('is cancelled by a pause, by Back and by a report; Next starts it again', () => {
+    const h = atReveal()
+    const statementId = h.round.statementId
+    h.run({ type: 'next' })
+    h.run({ type: 'pause' })
+    expect(h.s.nextAt).toBeNull()
+    h.run({ type: 'resume' })
+    h.advance(NEXT_COUNTDOWN_MS)
+    expect(h.s.phase).toBe('reveal')
+
+    h.run({ type: 'next' })
+    h.run({ type: 'reportOpen', playerId: 'ann', statementId })
+    expect(h.s.nextAt).toBeNull()
+    h.run({ type: 'reportDone', playerId: 'ann', statementId, reason: 'none' })
+    h.advance(NEXT_COUNTDOWN_MS)
+    expect(h.s.phase).toBe('reveal')
+
+    h.run({ type: 'next' })
+    h.advance(NEXT_COUNTDOWN_MS)
+    expect(h.s.phase).toBe('question')
+  })
+
+  it('also leads to the final scores after the last round', () => {
+    const h = harness({ countdown: true })
+    for (let i = 0; i < settings.rounds; i++) {
+      h.answerAll('right')
+      h.run({ type: 'next' })
+      h.advance(NEXT_COUNTDOWN_MS)
+    }
+    expect(h.s).toMatchObject({ phase: 'final', nextAt: null })
+  })
+})
+
 describe('host controls', () => {
   it('pause freezes the remaining time; resume sets a new deadline', () => {
     const h = harness()
@@ -600,7 +661,7 @@ describe('random countries mode', () => {
       hostId: 'host',
       settings: { mode: 'random', cultures: [], rounds: 10, seconds: 20 },
     })
-    const run = (action: Action) => (state = reduce(state, action, ctx))
+    const run = (action: Action) => (state = reduceThroughCountdown(state, action, ctx))
     run({ type: 'join', playerId: 'ann', name: 'Ann' })
     run({ type: 'start', gameId: 'g1' })
     return {

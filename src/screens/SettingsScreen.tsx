@@ -6,6 +6,7 @@ import { CountryCount, CountryPicker, GameOptions, ModeCards } from '@/component
 import { countriesNeeded, MODE_COPY } from '@/lib/gameMode'
 import { Screen } from '@/components/Screen'
 import { StickyFooter } from '@/components/StickyFooter'
+import { InAppBrowserBanner } from '@/components/InAppBrowserBanner'
 import { Button } from '@/components/ui/button'
 import { newId } from '@/lib/id'
 import { Input } from '@/components/ui/input'
@@ -117,6 +118,8 @@ export function SettingsScreen() {
           </span>
         )}
       </header>
+
+      <InAppBrowserBanner />
 
       {step === 'mode' && (
         <ModeCards value={chosen ? settings.mode : undefined} onPick={pickMode} />

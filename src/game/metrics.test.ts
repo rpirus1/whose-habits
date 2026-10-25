@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { parseEvent, statementVersion } from '@/lib/events'
-import { createGame, currentRound, reduce } from './engine'
+import { createGame, currentRound } from './engine'
 import type { Action } from './engine'
 import { statementEvents } from './metrics'
 import { seededRandom } from './random'
-import { byId, makeBank } from './testing'
+import { byId, makeBank, reduceThroughCountdown } from './testing'
 import { REPORT_HOLD_MS } from './types'
 import type { EngineContext, GameState } from './types'
 
@@ -20,7 +20,7 @@ function play() {
     hostName: '',
     settings: { cultures: ['PL', 'NL'], rounds: 10, seconds: 20 },
   })
-  const run = (action: Action) => (s = reduce(s, action, ctx))
+  const run = (action: Action) => (s = reduceThroughCountdown(s, action, ctx))
   for (const id of ['ann', 'bob']) run({ type: 'join', playerId: id, name: id })
   run({ type: 'start', gameId })
   const answer = (choices: Record<string, string>) => {

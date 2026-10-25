@@ -12,10 +12,13 @@ import { AloneDialog } from './AloneDialog'
 import { ConnectionBanner } from './ConnectionBanner'
 import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
+import { useJoinToasts } from './useJoinToasts'
 
 export function HostRoom({ initial }: { initial: GameState }) {
   const { state, snapshot, status, dispatch } = useHostGame(initial)
   const round = currentRound(state)
+  const here = state.players.filter((p) => p.connected).length
+  useJoinToasts(state)
   // The host's phone runs the game: keep its screen on from the lobby to the end.
   useWakeLock(state.phase !== 'final')
 
@@ -56,7 +59,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
                   })
                 }
               >
-                Start game
+                Start with {here} players
               </Button>
             </StickyFooter>
           )}

@@ -11,7 +11,7 @@ export type ReportReason = 'incorrect' | 'outdated' | 'not_unique' | 'offensive'
  * playing as a guest, or anything else (a bookmark, a typed URL).
  */
 export type GameSource = 'direct' | 'lander' | 'guest_cta'
-/** 'pick': the host's countries every round. 'random': 4 new countries every round. */
+/** 'pick': the host's countries every round. 'random': 4 random countries every round. */
 export type EventGameMode = 'pick' | 'random'
 /** Why a statement was swapped for another mid-round. */
 export type ReplacedWhy = 'skip' | 'unknown'
