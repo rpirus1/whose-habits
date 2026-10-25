@@ -1,4 +1,4 @@
-// Head tags only the prerendered landing page gets: canonical, robots and JSON-LD. The shared tags
+// Head tags only the prerendered landing page gets: canonical, robots, author and JSON-LD. The shared tags
 // (title, description, Open Graph) live in index.html, so room links keep their previews.
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '../game/types'
 import { FAQ } from './content'
@@ -53,6 +53,8 @@ export function headTags(): string {
     `<link rel="canonical" href="${SITE_URL}/" />`,
     // Lets Google show the large share image and full snippets in results.
     '<meta name="robots" content="max-image-preview:large, max-snippet:-1" />',
+    // LinkedIn's Post Inspector reads the author from here.
+    `<meta name="author" content="${MAKER_NAME}" />`,
     `<script type="application/ld+json">${json}</script>`,
   ].join('\n    ')
 }
