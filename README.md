@@ -4,7 +4,7 @@ A free, phone-based party game for international friends. The host picks 2–6 o
 
 Live at https://www.whosehabits.com. The bare domain and the old `workers.dev` address redirect there (see [Deploy](#deploy)). The code still uses the old working name `culture-clash` for the repository, the Worker and the D1 database; renaming them would change those addresses, so they stay.
 
-See [docs/PLAN.md](docs/PLAN.md) for the product and technical plan and [docs/CONTENT_RULES.md](docs/CONTENT_RULES.md) for how statements are written and reviewed.
+See [docs/GAME.md](docs/GAME.md) for how the game works today (rules, flow, timings, effects), [docs/PLAN.md](docs/PLAN.md) for the original plan, and [docs/CONTENT_RULES.md](docs/CONTENT_RULES.md) for how statements are written and reviewed.
 
 ## Develop
 

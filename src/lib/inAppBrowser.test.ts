@@ -29,3 +29,11 @@ describe('androidBrowserIntent', () => {
     )
   })
 })
+
+describe('inAppBrowser on desktop', () => {
+  it('never shows the banner, even with an app name in the user agent', () => {
+    const mac = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Safari/605.1.15'
+    expect(inAppBrowser(`${mac} [FBAN/FBMacApp]`)).toBeNull()
+    expect(inAppBrowser(`${mac} Instagram`)).toBeNull()
+  })
+})

@@ -4,7 +4,8 @@
 //   lobby ──start──▶ question ⇄ pause/resume
 //                       │ timer ends / everyone answered
 //                       ▼
-//   final ◀──last── reveal ──next──▶ question      (back: view earlier reveals)
+//   final ◀──last── reveal ──next──▶ 2 s countdown ──▶ question   (back: view earlier reveals)
+//                     (pause, Back or a report cancels the countdown; Next starts it again)
 //   question ──skip / everyone "I don't know"──▶ question (replacement, same index)
 //   any ──end──▶ final ──playAgain──▶ lobby
 //   reveal ──reportOpen──▶ on hold (Next and Back wait) ──reportDone / 10 s──▶ reveal

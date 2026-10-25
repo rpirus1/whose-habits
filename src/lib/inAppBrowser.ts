@@ -2,6 +2,8 @@
 
 /** The app whose built-in browser this is, from its user agent, or null for a real browser. */
 export function inAppBrowser(userAgent: string): string | null {
+  // Phones and tablets only: a desktop browser never needs the banner.
+  if (!/Android|iPhone|iPad|iPod/i.test(userAgent)) return null
   if (/Orca-Android|MessengerForiOS|MessengerLiteForiOS/i.test(userAgent)) return 'Messenger'
   if (/Instagram/i.test(userAgent)) return 'Instagram'
   if (/FBAN|FBAV|FB_IAB/i.test(userAgent)) return 'Facebook'
