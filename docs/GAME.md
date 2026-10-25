@@ -106,6 +106,10 @@ It is not shown on desktop, nor once the game starts. Detection is by user agent
 
 ## Change log
 
+- **2026-10-25.** Fix: confetti didn't show on the live site. canvas-confetti drew in a `blob:` Web
+  Worker, which the Content Security Policy blocks; it now draws on its own canvas on the main
+  thread.
+
 - **2026-10-25.** Playtest fixes: player count on Start, join toasts, the 2-second Next
   countdown (engine `nextAt`), reveal confetti and nudges, Android haptics, the in-app browser
   banner, the secondary "Back to the last game" button, icons in How to play, and "4 random
