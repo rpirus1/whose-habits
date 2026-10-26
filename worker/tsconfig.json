@@ -8,7 +8,9 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true
   },
   "include": ["."],
   // Tests run in Node under Vitest, not in the Workers runtime.

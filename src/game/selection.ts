@@ -1,5 +1,6 @@
-import { CULTURE_CODES } from '@/content/schema'
-import type { CultureCode, Obviousness, Statement } from '@/content/schema'
+// Relative imports only: the Worker bundles this file too (worker/deck.ts).
+import { CULTURE_CODES } from '../content/schema'
+import type { CultureCode, Obviousness, Statement } from '../content/schema'
 import { shuffle } from './random'
 
 /**
@@ -61,6 +62,53 @@ export function randomOptions(
 
 /** Extra statements kept back so Skip and all-"I don't know" can be replaced. */
 export const RESERVE_SIZE = 3
+
+/**
+ * How many statements a game with these countries can use, from the statements' `fits` only.
+ * The setup screen counts with this, so the app doesn't need the statements themselves.
+ */
+export function eligibleCount(fits: Iterable<readonly CultureCode[]>, cultures: Countries) {
+  let count = 0
+  for (const f of fits) {
+    if (cultures === 'random' || f.filter((c) => cultures.includes(c)).length === 1) count++
+  }
+  return count
+}
+
+/** Reserve statements a deck carries per answer culture, for Skip and all-"I don't know". */
+export const DECK_RESERVE_PER_CULTURE = 2
+
+/**
+ * One game's statements, dealt by the Worker from the whole bank: the planned rounds plus a
+ * reserve of up to DECK_RESERVE_PER_CULTURE per answer culture. The host's engine plans the
+ * game again from this deck alone, so the bank itself never reaches the browser.
+ */
+export function dealDeck(
+  statements: Iterable<Statement>,
+  cultures: Countries,
+  rounds: number,
+  random: () => number,
+  recentIds: ReadonlySet<string> = new Set(),
+): Statement[] {
+  const eligible = new Map(eligibleStatements(statements, cultures).map((e) => [e.statement.id, e]))
+  const queue = planGame(
+    [...eligible.values()].map((e) => e.statement),
+    cultures,
+    rounds,
+    random,
+    recentIds,
+  )
+  const plan = queue.slice(0, rounds)
+  const perCulture = new Map<CultureCode, number>()
+  const reserve = queue.slice(rounds).filter((id) => {
+    const { answer } = eligible.get(id)!
+    const taken = perCulture.get(answer) ?? 0
+    if (taken >= DECK_RESERVE_PER_CULTURE) return false
+    perCulture.set(answer, taken + 1)
+    return true
+  })
+  return [...plan, ...reserve].map((id) => eligible.get(id)!.statement)
+}
 
 /** Largest round count the pool supports, so the settings screen can disable bigger options. */
 export function maxPlayableRounds(statements: Iterable<Statement>, cultures: Countries) {

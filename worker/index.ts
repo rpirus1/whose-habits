@@ -5,6 +5,8 @@
 // that matched no file get the app shell.
 // The stats page is a separate, private Worker (stats/).
 import { isPreviewHost, MAX_EVENT_BYTES, parseEvent } from '../src/lib/events'
+import { BANK } from './bank'
+import { deal, MAX_DECK_REQUEST_BYTES, parseDeckRequest } from './deck'
 import { canonicalRedirect, fromOwnPage, routeRequest, SHELL_PATH } from './routes'
 import { withinLimit } from './rateLimit'
 
@@ -13,6 +15,8 @@ interface Env {
   ASSETS: Fetcher
   /** Events per IP address (wrangler.toml). Optional so tests and older configs still run. */
   EVENT_LIMIT?: RateLimit
+  /** Decks per IP address (wrangler.toml). */
+  DECK_LIMIT?: RateLimit
 }
 
 export default {
@@ -23,6 +27,11 @@ export default {
     if (url.pathname === '/api/event') {
       return request.method === 'POST'
         ? handleEvent(request, env)
+        : new Response(null, { status: 405, headers: { Allow: 'POST' } })
+    }
+    if (url.pathname === '/api/deck') {
+      return request.method === 'POST'
+        ? handleDeck(request, env)
         : new Response(null, { status: 405, headers: { Allow: 'POST' } })
     }
     const asset = await env.ASSETS.fetch(request)
@@ -44,6 +53,30 @@ async function serveApp(request: Request, url: URL, env: Env): Promise<Response>
   return new Response(request.method === 'HEAD' ? null : shell.body, {
     status: route.status,
     headers,
+  })
+}
+
+/**
+ * One game's statements for the host's phone (worker/deck.ts). The rate limit and the own-page
+ * check make copying the bank a slow, visible job instead of one download.
+ */
+async function handleDeck(request: Request, env: Env): Promise<Response> {
+  if (!fromOwnPage(request)) return new Response(null, { status: 403 })
+  if (!(await withinLimit(env.DECK_LIMIT, request))) {
+    console.warn('deck rate-limited')
+    return new Response(null, { status: 429 })
+  }
+  const text = await request.text()
+  if (text.length > MAX_DECK_REQUEST_BYTES) return new Response(null, { status: 413 })
+  let parsed
+  try {
+    parsed = parseDeckRequest(JSON.parse(text))
+  } catch {
+    parsed = null
+  }
+  if (!parsed) return new Response(null, { status: 400 })
+  return Response.json(deal(BANK, parsed, Math.random), {
+    headers: { 'Cache-Control': 'no-store' },
   })
 }
 

@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react'
 import { Flag } from '@/components/Flag'
 import { CULTURES, MAX_CULTURES, MIN_CULTURES } from '@/content/cultures'
 import type { CultureCode } from '@/content/schema'
-import { STATEMENTS } from '@/content/statements'
-import { eligibleStatements } from '@/game/selection'
+import { POOL_FITS } from '@/content/pool'
+import { eligibleCount } from '@/game/selection'
 import { MODE_COPY, withMode } from '@/lib/gameMode'
 import { isRandom, ROUND_OPTIONS, SECONDS_OPTIONS } from '@/game/types'
 import type { GameMode, Settings } from '@/game/types'
@@ -197,7 +197,7 @@ export function GameOptions({
 }) {
   const pool =
     !isRandom(value) && value.cultures.length >= MIN_CULTURES
-      ? eligibleStatements(STATEMENTS, value.cultures).length
+      ? eligibleCount(POOL_FITS, value.cultures)
       : Infinity
 
   return (

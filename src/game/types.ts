@@ -125,6 +125,11 @@ export interface GameState {
   replay?: boolean
   /** Metrics: the host created this room via "Host your own game" after playing as a guest. */
   source?: GameSource
+  /**
+   * The statements this game was planned from: the deck the Worker dealt at Start (the app
+   * has no bank). Kept so a host refresh can carry on. Host only: never in a snapshot.
+   */
+  deck?: Statement[]
   /** Unplayed eligible statement ids, in play order. The first (rounds left) are the plan; the rest are reserve. */
   queue: string[]
   /** Statements shown this game, including replaced ones (for "recently played"). */

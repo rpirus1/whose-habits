@@ -1,8 +1,10 @@
 // The host's side of a room: runs the engine, answers guests, broadcasts snapshots,
 // and saves the full game state so a refresh rejoins the same room.
+// The game's statements come from the Worker (/api/deck): dealt while the lobby is open, kept
+// in the state as `deck` from Start.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { STATEMENT_MAP } from '@/content/statements'
-import { joinRejection, reduce } from '@/game/engine'
+import type { Statement } from '@/content/schema'
+import { countriesOf, joinRejection, reduce } from '@/game/engine'
 import type { Action } from '@/game/engine'
 import { statementEvents } from '@/game/metrics'
 import { parseGuestMessage, toSnapshot } from '@/game/protocol'
@@ -10,6 +12,8 @@ import type { HostMessage, Snapshot } from '@/game/protocol'
 import { isRandom } from '@/game/types'
 import type { EngineContext, GameState } from '@/game/types'
 import { trackOnce } from '@/lib/analytics'
+import { fetchDeck } from '@/lib/deck'
+import { newId } from '@/lib/id'
 import { saveHostGame } from '@/lib/savedRooms'
 import { keys, load, save } from '@/lib/storage'
 import { acquireRoom } from './connection'
@@ -20,18 +24,45 @@ const HEARTBEAT_MS = 5000
 /** How often the host checks the timer. */
 const TICK_MS = 250
 const RECENT_LIMIT = 150
+/** Settings can change in the lobby: deal once they settle. */
+const DEAL_DELAY_MS = 300
 
-const context = (): EngineContext => ({
+const NO_STATEMENTS: ReadonlyMap<string, Statement> = new Map()
+const lookups = new WeakMap<Statement[], ReadonlyMap<string, Statement>>()
+
+/** The engine's and the snapshots' statement lookup: the game's deck. */
+function statementsOf(deck: Statement[] | undefined): ReadonlyMap<string, Statement> {
+  if (!deck) return NO_STATEMENTS
+  let map = lookups.get(deck)
+  if (!map) {
+    map = new Map(deck.map((s) => [s.id, s]))
+    lookups.set(deck, map)
+  }
+  return map
+}
+
+const context = (statements: ReadonlyMap<string, Statement>): EngineContext => ({
   now: Date.now(),
-  statements: STATEMENT_MAP,
+  statements,
   random: Math.random,
 })
+
+/** A deck for the game these settings make, avoiding what this device played recently. */
+function requestDeck(s: GameState): Promise<Statement[]> {
+  return fetchDeck({
+    countries: countriesOf(s.settings),
+    rounds: s.settings.rounds,
+    recentIds: [...new Set([...s.shownIds, ...recentStatementIds()])].slice(0, RECENT_LIMIT),
+  })
+}
 
 export interface HostGame {
   state: GameState
   snapshot: Snapshot
   status: ConnectionStatus
   dispatch: (action: Action) => void
+  /** Gets the deck (usually dealt already) and starts the game. Rejects when it can't. */
+  start: () => Promise<void>
 }
 
 export function useHostGame(initial: GameState): HostGame {
@@ -46,14 +77,16 @@ export function useHostGame(initial: GameState): HostGame {
     seqRef.current = Math.max(seqRef.current + 1, Date.now())
     const message: HostMessage = {
       type: 'state',
-      snapshot: toSnapshot(s, STATEMENT_MAP, seqRef.current),
+      snapshot: toSnapshot(s, statementsOf(s.deck), seqRef.current),
     }
     connectionRef.current?.send(message)
   }, [])
 
   const dispatch = useCallback(
-    (action: Action) => {
-      const next = reduce(stateRef.current, action, context())
+    /** `deck`: Start's statements; other actions use the game's own. */
+    (action: Action, deck?: Statement[]) => {
+      const statements = statementsOf(deck ?? stateRef.current.deck)
+      const next = reduce(stateRef.current, action, context(statements))
       if (next === stateRef.current) return
       stateRef.current = next
       setState(next)
@@ -192,7 +225,8 @@ export function useHostGame(initial: GameState): HostGame {
   // Statement metrics: each played round, each replaced statement, and each report once its
   // hold ends (so a reporter who drops still counts). Keys stay here; events have no player ids.
   useEffect(() => {
-    for (const { key, event } of statementEvents(state, STATEMENT_MAP)) trackOnce(key, event)
+    for (const { key, event } of statementEvents(state, statementsOf(state.deck)))
+      trackOnce(key, event)
   }, [state])
 
   // Remember statements this device has shown, so the next game avoids them.
@@ -203,9 +237,38 @@ export function useHostGame(initial: GameState): HostGame {
     save(keys.recentStatements, merged)
   }, [state.shownIds])
 
+  // Deal the next game's deck while the lobby is open, so Start doesn't wait for the network.
+  // A settings change deals again; a failed deal is retried by Start.
+  const nextDeck = useRef<Promise<Statement[]> | null>(null)
+  const dealKey =
+    state.phase === 'lobby'
+      ? JSON.stringify([countriesOf(state.settings), state.settings.rounds])
+      : null
+  useEffect(() => {
+    if (!dealKey) return
+    const timer = window.setTimeout(() => {
+      const deal = requestDeck(stateRef.current)
+      nextDeck.current = deal
+      deal.catch(() => {
+        if (nextDeck.current === deal) nextDeck.current = null
+      })
+    }, DEAL_DELAY_MS)
+    return () => {
+      clearTimeout(timer)
+      nextDeck.current = null
+    }
+  }, [dealKey])
+
+  const start = useCallback(async () => {
+    const deal = nextDeck.current ?? requestDeck(stateRef.current)
+    nextDeck.current = null
+    const deck = await deal
+    dispatch({ type: 'start', gameId: newId(), recentIds: recentStatementIds() }, deck)
+  }, [dispatch])
+
   // The host renders the same snapshot guests get; seq only matters on the wire.
-  const snapshot = useMemo(() => toSnapshot(state, STATEMENT_MAP, 0), [state])
-  return { state, snapshot, status, dispatch }
+  const snapshot = useMemo(() => toSnapshot(state, statementsOf(state.deck), 0), [state])
+  return { state, snapshot, status, dispatch, start }
 }
 
 export function recentStatementIds(): string[] {

@@ -26,6 +26,10 @@ host's phone; guests render the snapshots it sends.
 - **Joining.** When someone joins, the host gets a short toast ("Anna joined") with the player's
   initial popping in. A player reconnecting doesn't count as joining.
 - **Start.** Shows once 2 players are connected, and names the count: "Start with 3 players".
+- **The game's statements.** While the lobby is open, the host's phone gets this game's statements
+  from the server: the rounds plus a few spares for skips (`/api/deck`). The app doesn't
+  contain the statement bank. If that request failed (no network), Start tries again and shows
+  "Couldn't get the habits…" when it still can't.
 
 ## A round
 
@@ -105,6 +109,10 @@ It is not shown on desktop, nor once the game starts. Detection is by user agent
   (players). iPhones have no vibration in the browser, so they get none.
 
 ## Change log
+
+- **2026-10-26.** The statement bank moved out of the app. The Worker deals each game's
+  statements (`/api/deck`) while the lobby is open; the engine plans from that deck. Same
+  rounds, order rules and skips; the bank can no longer be downloaded from the site.
 
 - **2026-10-25.** Fix: confetti didn't show on the live site. canvas-confetti drew in a `blob:` Web
   Worker, which the Content Security Policy blocks; it now draws on its own canvas on the main

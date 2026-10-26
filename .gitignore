@@ -23,9 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# Generated from content/statements.csv
+# Generated from content/statements-extended.csv by `npm run content`
 # (kept out of git: the CSV is the source of truth)
-src/content/statements.json
+worker/statements.json
+src/content/pool.json
 
 # Wrangler local state (local D1 database, caches)
 .wrangler

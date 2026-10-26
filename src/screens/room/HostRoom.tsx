@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { AppBar } from '@/components/AppBar'
 import { HostMenu } from '@/components/HostMenu'
 import { Screen } from '@/components/Screen'
@@ -7,7 +9,7 @@ import { newId } from '@/lib/id'
 import { canStart, currentRound } from '@/game/engine'
 import type { GameState } from '@/game/types'
 import { useWakeLock } from '@/hooks/useWakeLock'
-import { recentStatementIds, useHostGame } from '@/realtime/useHostGame'
+import { useHostGame } from '@/realtime/useHostGame'
 import { AloneDialog } from './AloneDialog'
 import { ConnectionBanner } from './ConnectionBanner'
 import { GameView } from './GameView'
@@ -15,7 +17,9 @@ import { LobbyView } from './LobbyView'
 import { useJoinToasts } from './useJoinToasts'
 
 export function HostRoom({ initial }: { initial: GameState }) {
-  const { state, snapshot, status, dispatch } = useHostGame(initial)
+  const { state, snapshot, status, dispatch, start } = useHostGame(initial)
+  // The deck is usually dealt already; this only shows when Start has to fetch it.
+  const [starting, setStarting] = useState(false)
   const round = currentRound(state)
   const here = state.players.filter((p) => p.connected).length
   useJoinToasts(state)
@@ -51,13 +55,17 @@ export function HostRoom({ initial }: { initial: GameState }) {
               <Button
                 size="xl"
                 className="w-full"
-                onClick={() =>
-                  dispatch({
-                    type: 'start',
-                    gameId: newId(),
-                    recentIds: recentStatementIds(),
-                  })
-                }
+                disabled={starting}
+                onClick={async () => {
+                  setStarting(true)
+                  try {
+                    await start()
+                  } catch {
+                    toast.error("Couldn't get the habits. Check your connection and try again.")
+                  } finally {
+                    setStarting(false)
+                  }
+                }}
               >
                 Start with {here} players
               </Button>

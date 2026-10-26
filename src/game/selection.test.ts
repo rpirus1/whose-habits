@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { CULTURE_CODES } from '@/content/schema'
 import { seededRandom } from './random'
 import {
+  eligibleCount,
   eligibleStatements,
   maxPlayableRounds,
   pickReplacement,
@@ -34,6 +35,18 @@ describe('eligibleStatements', () => {
   it('reports how many rounds the pool supports', () => {
     expect(maxPlayableRounds(makeBank(['PL', 'UA'], 6), ['PL', 'UA'])).toBe(12 - RESERVE_SIZE)
     expect(maxPlayableRounds([], ['PL', 'UA'])).toBe(0)
+  })
+
+  it('counts the same from fits alone (the setup screen has nothing else)', () => {
+    const bank = [slippers, nameDay, tipping]
+    for (const cultures of [['PL', 'BR'], ['PL', 'UA'], ['US', 'UA'], 'random'] as const) {
+      expect(
+        eligibleCount(
+          bank.map((s) => s.fits),
+          cultures,
+        ),
+      ).toBe(eligibleStatements(bank, cultures).length)
+    }
   })
 })
 

@@ -274,6 +274,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       const countries = countriesOf(s.settings)
       s.queue = planGame(ctx.statements.values(), countries, s.settings.rounds, ctx.random, recent)
       if (!s.queue.length) return false
+      s.deck = [...ctx.statements.values()]
       s.totalRounds = Math.min(s.settings.rounds, s.queue.length)
       s.playersAtStart = s.players.filter((p) => p.connected).length
       s.gameId = action.gameId

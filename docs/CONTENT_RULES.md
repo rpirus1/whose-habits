@@ -71,6 +71,17 @@ For internal use only; never shipped to players. Each row has one URL where the 
 4. Export the sheet as CSV (UTF-8) over `content/statements-extended.csv` and run `npm run content`. Errors name the row to fix.
 5. `ONLY_REVIEWED=1 npm run content` builds from approved rows only. Production builds do **not** set it yet: the live game ships every row, reviewed or not, until the review is finished (201 of 783 so far: PL, UA and NL).
 
+## Where statements live
+
+The bank is never sent to browsers as a whole, so it can't be copied from the site in one go.
+
+- `npm run content` (every dev start and build runs it) writes the bank to `worker/statements.json`. It's bundled into the Worker and never served as a file.
+- When the host's lobby opens, their phone asks `POST /api/deck` for one game's statements: the planned rounds plus 2 spares per answer country (for Skip and all-"I don't know"). Recently played statements come last, as before. The engine plans the game from that deck, and the host's saved game keeps it, so a refresh carries on.
+- The app only gets `src/content/pool.json`: each statement's `fits`, so the setup screen can count how many statements a mix of countries has.
+- `/api/deck` takes 10 requests a minute per IP address and only from our own pages. Copying the bank takes dozens of decks, which shows in Workers Logs.
+- `npm run build` fails if any statement's note shows up in `dist/` (except the lander's samples).
+- Updating statements doesn't change: edit the CSV, run `npm run content`, push. The deploy updates the Worker's bank; games already running keep their deck. In local dev, `npm run dev` answers `/api/deck` itself (`vite.config.ts`).
+
 ## Report button
 
 Players can report a statement at the reveal and pick a reason (incorrect, outdated, not unique, offensive). Only the statement id and the reason are logged; the private stats site lists them. Review reports before each content update.

@@ -61,7 +61,7 @@ You can open it in Google Sheets or Excel, edit it, export it back to CSV and co
 `npm run content` (and every build) runs `scripts/build-statements.ts`, which:
 
 - validates the file (unique ids, known culture codes, obviousness 1 to 3, text length, empty notes) and fails with row numbers;
-- writes `src/content/statements.json`, keeping only the fields the game needs;
+- writes `worker/statements.json` (the bank the Worker deals decks from, see below) and `src/content/pool.json` (each statement's `fits`, for the setup screen's counts);
 - prints coverage per country, topic and obviousness, plus the reviewed count.
 
 Config flag `ONLY_REVIEWED`: off during development, on for the public launch.
@@ -87,7 +87,7 @@ Config flag `ONLY_REVIEWED`: off during development, on for the public launch.
 
 After every change, the host broadcasts a **public snapshot** of the current state. It also re-sends it when someone sends `hello`. Snapshots are small (under 2 KB), and they make reconnecting trivial: whoever (re)joins asks once and is in sync.
 
-The question snapshot does **not** include the correct answer. The answer arrives only in the reveal snapshot. (Known trade-off: the answers are in the JS bundle. Accepted for a friends' game.)
+The question snapshot does **not** include the correct answer. The answer arrives only in the reveal snapshot. (Until 26 Oct 2026 the whole bank, answers included, was in the JS bundle. Now the Worker deals each game's statements from `/api/deck`: see "Where statements live" in `docs/CONTENT_RULES.md`.)
 
 ### Messages (`src/game/protocol.ts`)
 
@@ -180,7 +180,7 @@ content/statements.csv
 scripts/build-statements.ts
 functions/api/event.ts
 src/
-  content/   cultures.ts, statements.json (generated)
+  content/   cultures.ts, pool.json (generated: fits only)
   game/      types.ts, engine.ts, selection.ts, scoring.ts, protocol.ts
   realtime/  supabase.ts, connection.ts, clock.ts, useHostGame.ts, useGuestGame.ts
   screens/   Home, Settings, Join, Lobby, Question, Reveal, Final

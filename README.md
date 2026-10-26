@@ -14,18 +14,18 @@ cp .env.example .env.local   # then fill in the Supabase URL and publishable key
 npm run dev                  # also reachable from phones on the same Wi-Fi
 ```
 
-| Script                                         | What it does                                                                                |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `npm run dev`                                  | Compile statements, start Vite                                                              |
-| `npm run dev:api`                              | The Worker (site + analytics API) with a local D1 database (port 8788; Vite proxies `/api`) |
-| `npm run db:migrate:local`                     | Create or update the local D1 tables (run once)                                             |
-| `npm run db:migrate`                           | Apply new migrations to the live D1 database (before deploying code that needs them)        |
-| `npm run metrics:local` / `npm run metrics`    | Success-signal queries (`scripts/metrics.sql`) on local or live D1                          |
-| `npm run stats:local` / `npm run stats:deploy` | The private stats page (`stats/`) on localhost with local D1, or deploy it                  |
-| `npm run content`                              | Validate `content/statements-extended.csv` and write `src/content/statements.json`          |
-| `npm test`                                     | Unit tests (Vitest)                                                                         |
-| `npm run build`                                | Content + type check + production build                                                     |
-| `npm run lint` / `npm run format`              | Oxlint / Prettier                                                                           |
+| Script                                         | What it does                                                                                         |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                  | Compile statements, start Vite                                                                       |
+| `npm run dev:api`                              | The Worker (site + analytics API) with a local D1 database (port 8788; Vite proxies `/api`)          |
+| `npm run db:migrate:local`                     | Create or update the local D1 tables (run once)                                                      |
+| `npm run db:migrate`                           | Apply new migrations to the live D1 database (before deploying code that needs them)                 |
+| `npm run metrics:local` / `npm run metrics`    | Success-signal queries (`scripts/metrics.sql`) on local or live D1                                   |
+| `npm run stats:local` / `npm run stats:deploy` | The private stats page (`stats/`) on localhost with local D1, or deploy it                           |
+| `npm run content`                              | Validate `content/statements-extended.csv`; write the bank for the Worker (`worker/statements.json`) |
+| `npm test`                                     | Unit tests (Vitest)                                                                                  |
+| `npm run build`                                | Content + type check + production build                                                              |
+| `npm run lint` / `npm run format`              | Oxlint / Prettier                                                                                    |
 
 ## Editing statements
 
