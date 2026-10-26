@@ -32,7 +32,7 @@ import {
   ROUND_OPTIONS,
   SECONDS_OPTIONS,
 } from './types'
-import type { GameSource, ReplacedWhy } from '@/lib/events'
+import type { GameSource } from '@/lib/events'
 import type {
   Choice,
   EngineContext,
@@ -244,7 +244,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
           changed = true
         }
       }
-      return closeIfEveryoneAnswered(s, ctx) || changed
+      return closeIfEveryoneAnswered(s) || changed
     }
 
     case 'answer': {
@@ -264,7 +264,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
         return false
       if (round.answers[player.id]?.choice === action.choice) return false
       round.answers[player.id] = { choice: action.choice, at: ctx.now }
-      closeIfEveryoneAnswered(s, ctx)
+      closeIfEveryoneAnswered(s)
       return true
     }
 
@@ -364,7 +364,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
 
     case 'skip': {
       if (s.phase !== 'question' || s.viewing !== null || s.waitingForPlayers) return false
-      replaceStatement(s, ctx, 'skip')
+      replaceStatement(s, ctx)
       return true
     }
 
@@ -391,7 +391,7 @@ function apply(s: GameState, action: Action, ctx: EngineContext): boolean {
       }
       const round = currentRound(s)
       if (round && !round.result) delete round.answers[player.id]
-      closeIfEveryoneAnswered(s, ctx)
+      closeIfEveryoneAnswered(s)
       return true
     }
 
@@ -503,8 +503,8 @@ function pushRound(s: GameState, statementId: string, index: number, ctx: Engine
   s.pausedByBack = false
 }
 
-/** Skip or everyone "I don't know": swap in a reserve statement at the same round index. */
-function replaceStatement(s: GameState, ctx: EngineContext, why: ReplacedWhy) {
+/** The host's Skip: swap in a reserve statement at the same round index. */
+function replaceStatement(s: GameState, ctx: EngineContext) {
   const round = s.rounds.at(-1)!
   const roundsLeft = s.totalRounds - (round.index + 1)
   const replaced = ctx.statements.get(round.statementId)!
@@ -521,20 +521,19 @@ function replaceStatement(s: GameState, ctx: EngineContext, why: ReplacedWhy) {
     closeRound(s)
     return
   }
-  ;(s.replaced ??= []).push({ statementId: round.statementId, why })
+  ;(s.replaced ??= []).push({ statementId: round.statementId, why: 'skip' })
   const [statementId] = s.queue.splice(at, 1)
   s.rounds.pop()
   pushRound(s, statementId, round.index, ctx)
 }
 
-function closeIfEveryoneAnswered(s: GameState, ctx: EngineContext): boolean {
+function closeIfEveryoneAnswered(s: GameState): boolean {
   const round = currentRound(s)
   if (s.phase !== 'question' || s.paused || !round) return false
   const expected = answeringPlayers(s, round)
   if (!expected.length || !expected.every((p) => round.answers[p.id])) return false
-  if (expected.every((p) => round.answers[p.id].choice === 'unknown'))
-    replaceStatement(s, ctx, 'unknown')
-  else closeRound(s)
+  // Everyone on "I don't know" still gets the reveal (0 points): the answer is the fun part.
+  closeRound(s)
   return true
 }
 

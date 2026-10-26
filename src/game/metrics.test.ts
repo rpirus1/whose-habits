@@ -68,18 +68,23 @@ describe('statementEvents', () => {
     expect(parseEvent(first.event)).toEqual(first.event)
   })
 
-  it('records statements replaced by Skip and by everyone "I don\'t know"', () => {
+  it('records statements replaced by Skip, but not rounds where nobody knew', () => {
     const g = play()
     const skipped = currentRound(g.s)!.statementId
     g.run({ type: 'skip' })
-    const unknown = currentRound(g.s)!.statementId
+    const skippedAgain = currentRound(g.s)!.statementId
+    g.run({ type: 'skip' })
+    const nobodyKnew = currentRound(g.s)!.statementId
     g.answer({ host: 'unknown', ann: 'unknown', bob: 'unknown' })
     const replaced = events(g.s).filter((e) => e.event.type === 'statement_replaced')
     expect(replaced.map((e) => e.event)).toMatchObject([
       { statementId: skipped, why: 'skip' },
-      { statementId: unknown, why: 'unknown' },
+      { statementId: skippedAgain, why: 'skip' },
     ])
     expect(new Set(replaced.map((e) => e.key)).size).toBe(2)
+    // Revealed like any round, so it reaches the stats as a round result.
+    expect(g.s.phase).toBe('reveal')
+    expect(currentRound(g.s)!.statementId).toBe(nobodyKnew)
   })
 
   it('sends reports when their hold ends, with hold time and the reporter count', () => {

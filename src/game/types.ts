@@ -101,7 +101,7 @@ export interface Report {
   doneAt?: number
 }
 
-/** Metrics: a statement swapped mid-round, by Skip or because everyone chose "I don't know". */
+/** Metrics: a statement the host swapped mid-round with Skip. */
 export interface Replaced {
   statementId: string
   why: ReplacedWhy

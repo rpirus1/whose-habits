@@ -294,15 +294,17 @@ describe('question and reveal', () => {
 })
 
 describe('replacement', () => {
-  it('replaces the statement when everyone picks "I don\'t know"', () => {
+  it('reveals the statement with 0 points when everyone picks "I don\'t know"', () => {
     const h = harness()
     const first = h.round
     h.answerAll('unknown')
-    expect(h.s.phase).toBe('question')
+    expect(h.s.phase).toBe('reveal')
     expect(h.round.index).toBe(0)
-    expect(h.round.statementId).not.toBe(first.statementId)
-    expect(h.round.answers).toEqual({})
-    expect(h.s.shownIds).toEqual([first.statementId, h.round.statementId])
+    expect(h.round.statementId).toBe(first.statementId)
+    expect(h.round.result).toMatchObject({ correctIds: [], bonusId: null })
+    expect(h.s.players.map((p) => p.score)).toEqual([0, 0, 0])
+    expect(h.s.shownIds).toEqual([first.statementId])
+    expect(h.s.replaced ?? []).toEqual([])
   })
 
   it('reveals normally when only some pick "I don\'t know"', () => {

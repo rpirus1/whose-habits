@@ -121,9 +121,15 @@ export function aggregateStatements(
         else if (choice === 'unknown') s.unknown += n
         else s.wrong[choice] = (s.wrong[choice] ?? 0) + n
       }
+      // Since 26 Oct 2026 a round where everyone chose "I don't know" is revealed, not swapped.
+      const answered = Object.values(split).reduce<number>(
+        (t, n) => t + (typeof n === 'number' ? n : 0),
+        0,
+      )
+      if (answered > 0 && split.unknown === answered) s.allUnknown++
     } else if (row.type === 'statement_replaced') {
       if (d.why === 'skip') s.skips++
-      else s.allUnknown++
+      else s.allUnknown++ // why 'unknown': builds before 26 Oct 2026
     } else if (row.type === 'report') {
       const reason = (REASONS as readonly string[]).includes(String(d.reason))
         ? (d.reason as Reason)

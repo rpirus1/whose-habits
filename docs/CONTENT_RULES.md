@@ -76,7 +76,7 @@ For internal use only; never shipped to players. Each row has one URL where the 
 The bank is never sent to browsers as a whole, so it can't be copied from the site in one go.
 
 - `npm run content` (every dev start and build runs it) writes the bank to `worker/statements.json`. It's bundled into the Worker and never served as a file.
-- When the host's lobby opens, their phone asks `POST /api/deck` for one game's statements: the planned rounds plus 2 spares per answer country (for Skip and all-"I don't know"). Recently played statements come last, as before. The engine plans the game from that deck, and the host's saved game keeps it, so a refresh carries on.
+- When the host's lobby opens, their phone asks `POST /api/deck` for one game's statements: the planned rounds plus 2 spares per answer country (for the host's Skip). Recently played statements come last, as before. The engine plans the game from that deck, and the host's saved game keeps it, so a refresh carries on.
 - The app only gets `src/content/pool.json`: each statement's `fits`, so the setup screen can count how many statements a mix of countries has.
 - `/api/deck` takes 10 requests a minute per IP address and only from our own pages. Copying the bank takes dozens of decks, which shows in Workers Logs.
 - `npm run build` fails if any statement's note shows up in `dist/` (except the lander's samples).

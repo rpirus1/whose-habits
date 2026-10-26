@@ -60,7 +60,7 @@ export function randomOptions(
   return CULTURE_CODES.filter((c) => c === answer || others.includes(c))
 }
 
-/** Extra statements kept back so Skip and all-"I don't know" can be replaced. */
+/** Extra statements kept back so the host's Skip can be replaced. */
 export const RESERVE_SIZE = 3
 
 /**
@@ -75,7 +75,7 @@ export function eligibleCount(fits: Iterable<readonly CultureCode[]>, cultures: 
   return count
 }
 
-/** Reserve statements a deck carries per answer culture, for Skip and all-"I don't know". */
+/** Reserve statements a deck carries per answer culture, for the host's Skip. */
 export const DECK_RESERVE_PER_CULTURE = 2
 
 /**

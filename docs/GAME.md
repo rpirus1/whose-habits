@@ -38,15 +38,18 @@ host's phone; guests render the snapshots it sends.
    - Players who join mid-question wait for the next round.
    - Answers arriving up to 0.5 s after the deadline still count (network delay).
 2. **The round closes** when the timer runs out or everyone has answered.
-   - If everyone tapped "I don't know", the habit is swapped for a reserve one at the same round
-     number. The host can also skip a habit from the host menu.
+   - If everyone tapped "I don't know", the round is revealed as usual and everyone gets 0.
+   - The host can skip a habit from the host menu: it's swapped for a reserve one at the same
+     round number, with a fresh timer.
 3. **Reveal.** The answer, a short fact, how the room split, and each player's own result:
    - **Right:** "Correct!" with "+1" or "+2" popping in, and confetti in the theme colours
      (orchid, sunflower, green). The fastest right answer gets a bonus point and a richer burst.
    - **Wrong:** "Not quite", what they picked, and a nudge: "Nobody got this one.", "Only 1 of 5
      got it." (when half or fewer got it) or "Next one's yours!".
    - **No answer:** the same nudge.
-   - **"I don't know":** "Now you do.", and the fact's lightbulb lights up once.
+   - **"I don't know":** "You didn't know" / "Now you do.", and the fact's lightbulb lights up
+     once. When everyone who answered tapped it: "Nobody knew this one" / "Now you all do." (and
+     "Nobody knew this one." as the nudge for anyone who didn't answer).
    - Anyone can report a habit (pop-up with reasons); see [Holds](#holds).
 4. **Next.** The host taps "Next habit" (or "See final scores" after the last round).
    - A **2-second countdown** starts (`NEXT_COUNTDOWN_MS`), so players can finish reading.
@@ -113,6 +116,11 @@ It is not shown on desktop, nor once the game starts. Detection is by user agent
 - **2026-10-26.** The statement bank moved out of the app. The Worker deals each game's
   statements (`/api/deck`) while the lobby is open; the engine plans from that deck. Same
   rounds, order rules and skips; the bank can no longer be downloaded from the site.
+
+- **2026-10-26.** When everyone taps "I don't know", the habit is revealed (0 points, "Nobody
+  knew this one") instead of silently swapped for a reserve one. Only the host's Skip swaps now,
+  so `statement_replaced` events carry `why: 'skip'`; `'unknown'` still parses for older builds.
+  The stats count "nobody knew" from revealed rounds' splits, plus those older events.
 
 - **2026-10-25.** Fix: confetti didn't show on the live site. canvas-confetti drew in a `blob:` Web
   Worker, which the Content Security Policy blocks; it now draws on its own canvas on the main

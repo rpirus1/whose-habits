@@ -46,7 +46,7 @@ New events (`src/lib/events.ts`, all anonymous):
 | Event                | Sent by                 | Fields                                                                                                  |
 | -------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------- |
 | `round_result`       | host, after each reveal | `statementId`, `v`, `answer`, `split`                                                                   |
-| `statement_replaced` | host                    | `statementId`, `v`, `why`: `skip` or `unknown`                                                          |
+| `statement_replaced` | host                    | `statementId`, `v`, `why`: `skip` (`unknown` only from builds before 26 Oct 2026)                       |
 | `lander_click`       | lander                  | `target`: `host_header`, `host_hero`, `host_footer`, `join_code` or `rejoin`. No game id                |
 | `join_step`          | guest                   | `step`: `opened`, `named`, `joined` or `final`. Only `final` has a game id; the room code is never sent |
 
