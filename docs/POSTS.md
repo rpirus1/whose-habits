@@ -22,7 +22,19 @@ Attachment: a screen recording of a round.
 >
 > Have you started a similar journey? How’s it going?
 
-Results (fill in after a week): impressions, reactions, comments, visits and games from the post.
+Results (day 1): 259 impressions, 29 members reached (95% in-network), 0 reactions, 1 comment.
+
+Learnings:
+
+- Reach, not just content: only 29 of 538 followers saw it. Autoplaying video counts repeat views, so 259 impressions overstates it. With no reactions in the first hour, LinkedIn stopped showing it to more people.
+- Vertical video turns the post into a full-screen card and the text into a 2-line caption. The first line ("Recently my day-to-day…") didn’t say what this is.
+- The ask took too much effort (play a game with 5+ friends, then comment). Nothing could be done in 5 seconds.
+- Two stories in one post: a game for friends and AI-building reflections for PMs. Each audience got half a post.
+- Next time: one story per post; a 4:5 image or text-only; a question people can answer in a comment in 5 seconds; link in the first comment; ask 5–10 friends directly to look in the first hour; reply to every comment.
+
+## 2. Next: "Guess the habit" (draft idea)
+
+One habit as a 4:5 image card, no link in the post. Ask people to guess the country in the comments; reveal the answer and the note in a comment the next day, with the game link. Can become a weekly series.
 
 ## Ideas for next posts
 
