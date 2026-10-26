@@ -62,6 +62,18 @@ describe('aggregateStatements', () => {
     })
   })
 
+  it('counts "nobody knew" from revealed rounds and from older swap events', () => {
+    const [s] = aggregateStatements(
+      [
+        round('pl-001', { unknown: 3 }, 'PL'),
+        round('pl-001', { PL: 1, unknown: 2 }, 'PL'),
+        replaced('pl-001', 'unknown'),
+      ],
+      catalog,
+    )
+    expect(s).toMatchObject({ id: 'pl-001', shown: 2, allUnknown: 2, skips: 0 })
+  })
+
   it('flags offensive at once, then 2+ reasoned reports, then suspicious unreviewed rows', () => {
     const rows = aggregateStatements(
       [

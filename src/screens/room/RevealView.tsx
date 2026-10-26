@@ -210,7 +210,9 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
     : choice === undefined
       ? ['No answer this time', cheer(reveal)]
       : choice === 'unknown'
-        ? ["You didn't know", 'Now you do.']
+        ? nobodyKnew(reveal)
+          ? ['Nobody knew this one', 'Now you all do.']
+          : ["You didn't know", 'Now you do.']
         : ['Not quite', `You picked ${getCulture(choice).name}. ${cheer(reveal)}`]
 
   return (
@@ -235,10 +237,17 @@ function MyResult({ reveal, meId }: { reveal: PublicReveal; meId: string }) {
   )
 }
 
+/** Everyone who answered chose "I don't know" (the round is still revealed, for 0 points). */
+function nobodyKnew(reveal: PublicReveal) {
+  const choices = Object.values(reveal.choices)
+  return choices.length > 0 && choices.every((c) => c === 'unknown')
+}
+
 /** After a miss: how the room did, when that helps; otherwise a nudge for the next round. */
 function cheer(reveal: PublicReveal) {
   const answered = Object.keys(reveal.choices).length
   const got = reveal.correctIds.length
+  if (nobodyKnew(reveal)) return 'Nobody knew this one.'
   if (got === 0) return 'Nobody got this one.'
   if (got * 2 <= answered) return `Only ${got} of ${answered} got it.`
   return 'Next one’s yours!'

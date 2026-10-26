@@ -13,7 +13,11 @@ export type ReportReason = 'incorrect' | 'outdated' | 'not_unique' | 'offensive'
 export type GameSource = 'direct' | 'lander' | 'guest_cta'
 /** 'pick': the host's countries every round. 'random': 4 random countries every round. */
 export type EventGameMode = 'pick' | 'random'
-/** Why a statement was swapped for another mid-round. */
+/**
+ * Why a statement was swapped for another mid-round. Only 'skip' is sent now; 'unknown'
+ * (everyone chose "I don't know") came from builds before 26 Oct 2026, which swapped those
+ * rounds instead of revealing them. Still parsed, so old tabs' events aren't dropped.
+ */
 export type ReplacedWhy = 'skip' | 'unknown'
 /** The lander buttons we count. */
 export type LanderTarget = 'host_header' | 'host_hero' | 'host_footer' | 'join_code' | 'rejoin'
