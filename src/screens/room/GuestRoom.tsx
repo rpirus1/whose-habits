@@ -24,7 +24,7 @@ import { useRoomCheck } from '@/realtime/useRoomCheck'
 import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
 
-export function GuestRoom({ roomCode }: { roomCode: string }) {
+export function GuestRoom({ roomCode, onMoved }: { roomCode: string; onMoved: () => void }) {
   const [identity, setIdentity] = useState(() => loadGuestIdentity(roomCode))
   // Join funnel, step 1: opened a room link without having joined it on this device before.
   // The room code only goes into the local "sent" key, never into the event.
@@ -73,6 +73,7 @@ export function GuestRoom({ roomCode }: { roomCode: string }) {
       roomCode={roomCode}
       identity={identity}
       onLeft={() => setIdentity({ ...identity, removed: 'left' })}
+      onMoved={onMoved}
     />
   )
 }
@@ -241,10 +242,12 @@ function GuestGame({
   roomCode,
   identity,
   onLeft,
+  onMoved,
 }: {
   roomCode: string
   identity: GuestIdentity
   onLeft: () => void
+  onMoved: () => void
 }) {
   const { snapshot, status, hostOnline, clockOffset, myAnswer, answer, leave, report } =
     useGuestGame(roomCode, identity)
@@ -310,7 +313,17 @@ function GuestGame({
         </p>
       )}
       {snapshot.phase === 'lobby' ? (
-        <LobbyView snapshot={snapshot} meId={identity.playerId} isHost={false} />
+        <LobbyView
+          snapshot={snapshot}
+          meId={identity.playerId}
+          isHost={false}
+          // The saved identity: it also has the host id this device learned.
+          handoff={{
+            roomCode,
+            role: { guest: loadGuestIdentity(roomCode) ?? identity },
+            onMoved,
+          }}
+        />
       ) : (
         <GameView
           snapshot={snapshot}

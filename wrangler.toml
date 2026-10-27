@@ -38,6 +38,12 @@ run_worker_first = [
   "!/logo.svg",
   "!/og-image.png",
   "!/manifest.webmanifest",
+  # Carries a room moved out of an in-app browser (src/lib/handoff.ts) in its query: names and
+  # the game. Kept off the Worker so they never reach its request logs. The assets layer
+  # redirects /continue.html to /continue, so both are listed.
+  "!/continue",
+  "!/continue.html",
+  "!/continue.js",
 ]
 
 [[d1_databases]]

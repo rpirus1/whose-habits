@@ -109,11 +109,29 @@ browser. There the share sheet is missing and the tab is easy to lose, which end
 everyone if it's the host's. So on the lander (above the title), the setup screen and the lobby,
 a banner says "You're in Instagram's browser" with:
 
-- **Android:** Open in browser (hands the page to the default browser) and Copy link.
-- **iPhone:** "Tap ⋯ and choose Open in browser", and Copy link.
+- **Android:** Open in browser (hands the page to the default browser).
+- **iPhone:** "Tap ⋯ and choose Open in browser". Pages can't open Safari themselves, so the
+  game can't be carried over: on the host's screens it adds "Do it before friends join: the
+  game can't move later."
+- A close button (×) hides it for the rest of the visit (session storage).
 
 It is not shown on desktop, nor once the game starts. Detection is by user agent
-(`src/lib/inAppBrowser.ts`).
+(`src/lib/inAppBrowser.ts`); in development, `?inapp=instagram` (`&ios=1` for an iPhone)
+pretends to be Instagram's browser for the tab, `?inapp=off` stops it.
+
+**Moving a room (Android, lobby).** The app's browser and the phone's browser keep separate
+storage, so a plain link would make the host join their own game as a guest, and a guest join
+again as a second player. In the lobby, "Open in browser" carries this phone's role along
+(`src/lib/handoff.ts`): the host's whole game, or the guest's player id and name.
+
+- It rides in the query of `/continue.html`, a static page that skips the Worker, so names
+  never reach its request logs. The page parks it in local storage and opens the room, which
+  applies it: once, within 2 minutes, never over a room that browser already has (except a stray
+  guest entry when the host arrives).
+- The app's browser stops at the tap: "You're playing in your browser now", with "Open in
+  browser" again (for a cancelled "leaving the app" prompt) and "Go home". So there's never a
+  second host. If the app refuses to open the browser and loads the page in place, that browser
+  simply carries on.
 
 ## Lander shortcuts
 
@@ -131,6 +149,11 @@ It is not shown on desktop, nor once the game starts. Detection is by user agent
   (players). iPhones have no vibration in the browser, so they get none.
 
 ## Change log
+
+- **2026-10-27.** In-app browsers: "Open in browser" in the lobby now moves the host (or guest)
+  to the phone's browser instead of joining there as a new player; the app's browser shows
+  "You're playing in your browser now". The banner loses Copy link and gets a close button;
+  iPhone hosts are told to switch before friends join.
 
 - **2026-10-27.** The name screen checks that someone is hosting the code before a guest joins:
   "Ruslan's game · 3 players", or "No game with this code is running right now" after 4 s, with
