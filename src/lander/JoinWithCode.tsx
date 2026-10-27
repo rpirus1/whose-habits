@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,16 @@ export function JoinWithCode() {
   const [checked, setInvalid] = useState<boolean | null>(null)
   const invalid =
     checked ?? (hydrated && new URLSearchParams(location.search).get('join') === 'invalid')
+  // "Try another code" from a room with no game running: the code back in the field, selected,
+  // so a typo is quick to fix. After hydration, so the prerendered markup matches.
+  useEffect(() => {
+    const input = inputRef.current
+    const code = new URLSearchParams(location.search).get('code')
+    if (!hydrated || !input || !code) return
+    input.value = formatTypedCode(code)
+    input.focus()
+    input.select()
+  }, [hydrated])
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()

@@ -16,6 +16,23 @@ host's phone; guests render the snapshots it sends.
   Defaults: 10 rounds, 20 seconds.
 - **Invite players** creates the room and opens the lobby.
 
+## Joining (`/r/<code>`)
+
+- **Code on the lander.** "Join with a code" only checks the shape (12 letters and numbers, no
+  look-alikes such as i, l, o, 0, 1); a bad shape shows an error under the field.
+- **Name screen.** While a new guest types their name, their phone listens on the room's channel
+  for the host (in presence as `role: 'host'`, and its broadcast every 5 s). It doesn't join the
+  room's presence yet, so the host sees nobody until they tap Join.
+  - **Found:** a line above the name field: "Ruslan's game · 3 players" (plus "in progress" during
+    a round). Before the first broadcast it says "Game found".
+  - **Nothing after 4 s** (`MISSING_AFTER_MS`): "No game with this code is running right now",
+    "Check the code, or ask the host to open the game on their phone.", with "Try another code"
+    (the lander, with the code filled in and selected) and "Go home". It keeps listening: when the
+    host's phone comes back, the name form returns by itself.
+  - There's no server list of rooms, so "missing" can also mean the host's phone is locked.
+- **Rejoining** (this device was in the room before) skips the check; the room screen's own
+  messages cover a host who isn't answering.
+
 ## Lobby
 
 - **Host:** a QR code and the room link, with Share (where the phone's share sheet exists) and
@@ -112,6 +129,11 @@ It is not shown on desktop, nor once the game starts. Detection is by user agent
   (players). iPhones have no vibration in the browser, so they get none.
 
 ## Change log
+
+- **2026-10-27.** The name screen checks that someone is hosting the code before a guest joins:
+  "Ruslan's game · 3 players", or "No game with this code is running right now" after 4 s, with
+  "Try another code". New `join_step` value `missing` (once per room and device), shown under the
+  stats page's "Guests joining" funnel.
 
 - **2026-10-26.** The statement bank moved out of the app. The Worker deals each game's
   statements (`/api/deck`) while the lobby is open; the engine plans from that deck. Same

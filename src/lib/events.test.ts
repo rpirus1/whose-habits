@@ -156,6 +156,10 @@ describe('statement, lander and join events', () => {
       type: 'join_step',
       step: 'named',
     })
+    expect(parseEvent({ type: 'join_step', step: 'missing', gameId })).toEqual({
+      type: 'join_step',
+      step: 'missing',
+    })
     expect(parseEvent({ type: 'join_step', step: 'final', gameId })).toEqual({
       type: 'join_step',
       step: 'final',
