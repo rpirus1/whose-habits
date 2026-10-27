@@ -1,0 +1,6 @@
+[
+  { "id": "it-007", "options": ["IT", "MX", "BR", "FR"] },
+  { "id": "nl-007", "options": ["US", "NL", "PL", "FR"] },
+  { "id": "kr-003", "options": ["US", "TR", "KR", "BR"] },
+  { "id": "ua-001", "options": ["NL", "BR", "TR", "UA"] }
+]
