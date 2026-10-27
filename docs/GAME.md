@@ -110,9 +110,9 @@ everyone if it's the host's. So on the lander (above the title), the setup scree
 a banner says "You're in Instagram's browser" with:
 
 - **Android:** Open in browser (hands the page to the default browser).
-- **iPhone:** "Tap ⋯ and choose Open in browser". Pages can't open Safari themselves, so the
-  game can't be carried over: on the host's screens it adds "Do it before friends join: the
-  game can't move later."
+- **iPhone:** "Tap ⋯ and choose Open in browser, so the game doesn't get lost." Pages can't open
+  Safari themselves, so the game can't be carried over: on the host's screens it adds "Do it
+  before friends join."
 - A close button (×) hides it for the rest of the visit (session storage).
 
 It is not shown on desktop, nor once the game starts. Detection is by user agent

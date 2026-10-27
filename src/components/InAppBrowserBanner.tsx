@@ -57,9 +57,11 @@ export function InAppBrowserBanner({
         <div className="pr-8 text-sm leading-snug">
           <p className="font-medium">You’re in {app}’s browser</p>
           <p className="text-muted-foreground">
-            Open the game in your phone’s browser, so it doesn’t get lost.
-            {!android && ' Tap ⋯ and choose Open in browser.'}
-            {!android && host && ' Do it before friends join: the game can’t move later.'}
+            {android
+              ? 'Open the game in your phone’s browser, so it doesn’t get lost.'
+              : 'Tap ⋯ and choose Open in browser, so the game doesn’t get lost.'}
+            {/* iPhones can't carry the game over (lib/handoff.ts is Android only). */}
+            {!android && host && ' Do it before friends join.'}
           </p>
         </div>
         {android && (
