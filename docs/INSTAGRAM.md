@@ -30,7 +30,36 @@ Rules for picking habits:
 - **Schedule** in Meta Business Suite (free, on the web) or with Instagram's own "Schedule" option under Advanced settings. Nothing to post by hand on the day.
 - **Posting day (10 minutes):** reply to comments in the first hour. Optionally share the post to your Story with a Quiz sticker (4 flags); it takes 1 minute and Stories reach followers better than the feed.
 
-Optional extras, only when there's something real:
+## Reels
+
+Feed posts mostly reach followers; Reels are how strangers find the account. Every quiz also gets a short Reel (about 13 seconds): the game screen with the timer running, a tap on a wrong country, the reveal ("Not quite"), then a closing screen that sends people to the profile.
+
+- Render with `npm run reels` in `docs/brand/instagram/` (first time: `npm install` there; it uses your Chrome and a bundled ffmpeg). The videos land in `reels/`.
+- The `wrong` field in `posts.json` is the country "I" pick. Choose a plausible guess, not a silly one.
+- The video has no sound: add a trending track in Instagram when posting (Reels with music reach further).
+- Post the Reel a few days after the carousel, or use **Trial Reels** (shown only to non-followers) to test it first.
+- Caption: "I got this one wrong 🙈 Would you? Guess in the comments." plus the usual hashtags.
+
+## Getting followers (free, about 15 minutes a week)
+
+On posting day, in this order:
+
+1. **Comment on 3–5 bigger accounts** in the niche (expats in the Netherlands, culture and "you know you're Dutch when" meme pages, language-learning and travel-fact accounts), from the Whose Habits account, within 30 minutes of their post. Say something specific or funny that adds to the post ("In Italy it'd be Friday the 17th 😅"). No links, no "check out my page", never the same comment twice: that gets flagged as spam.
+2. **Share the post to Stories** with a Quiz sticker.
+3. **DM it to 2–3 friends** from that country. DM shares are one of the strongest signals for Instagram.
+4. **Reply to every comment** with a question back, so the thread keeps going.
+
+Once, or now and then:
+
+- Share the intro on your personal Story; use "Invite friends" in the profile menu.
+- **Collab posts:** ask an international friend or a small expat/language account to co-post a habit from their country (Instagram's Collab feature puts it on both profiles). Ideally with one line of their own: "As a Ukrainian, yes, we really do this".
+- Tag the location (Amsterdam). Add the Instagram handle to LinkedIn and your email signature.
+
+Never: buying followers, follow/unfollow, engagement pods. They bring fake followers and Instagram limits the account's reach.
+
+## Extras
+
+Only when there's something real:
 
 - A photo or short clip from an actual game night (the most authentic content you have).
 - A milestone ("100 games played") once the numbers exist (see LAUNCH.md, step 3).

@@ -1,0 +1,13 @@
+{
+  "name": "whose-habits-instagram",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "slides": "node make.mjs",
+    "reels": "node reels.mjs"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "puppeteer-core": "^24.10.0"
+  }
+}

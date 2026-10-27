@@ -2,66 +2,10 @@
 // Habit text and note come from content/statements-extended.csv; a post can override them
 // with "text" / "note". Usage: node docs/brand/instagram/make.mjs [id ...]
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
-import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
-
-const here = dirname(fileURLToPath(import.meta.url))
-const root = join(here, '../../..')
-const flags = join(
-  dirname(createRequire(join(root, 'package.json')).resolve('country-flag-icons/package.json')),
-  '1x1',
-)
-const CHROME = [
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-].find(existsSync)
-
-const NAMES = {
-  PL: 'Poland',
-  UA: 'Ukraine',
-  NL: 'The Netherlands',
-  BR: 'Brazil',
-  MX: 'Mexico',
-  US: 'United States',
-  TR: 'Türkiye',
-  IT: 'Italy',
-  FR: 'France',
-  KR: 'South Korea',
-}
-
-const dataUri = (svg) => `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
-const flag = (code) => dataUri(readFileSync(join(flags, `${code}.svg`), 'utf8'))
-const logo = dataUri(readFileSync(join(root, 'public/logo.svg'), 'utf8'))
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
-const quotes = (s) =>
-  esc(s)
-    .replace(/"([^"]*)"/g, '“$1”')
-    .replace(/(^|\s)'([^']*)'/g, '$1‘$2’')
-    .replace(/'/g, '’')
-
-function statements() {
-  const t = readFileSync(join(root, 'content/statements-extended.csv'), 'utf8')
-  const rows = []
-  let r = [],
-    f = '',
-    q = false
-  for (let i = 0; i < t.length; i++) {
-    const c = t[i]
-    if (q) {
-      if (c === '"' && t[i + 1] === '"') ((f += '"'), i++)
-      else if (c === '"') q = false
-      else f += c
-    } else if (c === '"') q = true
-    else if (c === ',') (r.push(f), (f = ''))
-    else if (c === '\n') (r.push(f), rows.push(r), (r = []), (f = ''))
-    else if (c !== '\r') f += c
-  }
-  const head = rows.shift()
-  return new Map(rows.map((x) => [x[0], Object.fromEntries(head.map((k, i) => [k, x[i]]))]))
-}
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { CHROME, NAMES, flag, here, logo, posts, quotes, statements } from './shared.mjs'
 
 const CSS = `
 *{box-sizing:border-box;margin:0}
@@ -156,7 +100,7 @@ const jobs = []
 if (!only.length || only.includes('intro'))
   intro.forEach((h, i) => jobs.push([`intro-${i + 1}`, h]))
 const bank = statements()
-for (const p of JSON.parse(readFileSync(join(here, 'posts.json'), 'utf8'))) {
+for (const p of posts()) {
   if (only.length && !only.includes(p.id)) continue
   const s = { ...bank.get(p.id), ...p }
   if (!s.text) throw new Error(`No statement ${p.id}`)
