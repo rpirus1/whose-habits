@@ -129,8 +129,9 @@ function JoinView({
   const [name, setName] = useState(() => load<string>(keys.lastName) ?? '')
   const trimmed = name.trim()
   // Is anyone hosting this code right now? Checked while they type, so it costs no wait.
-  const check = useRoomCheck(roomCode, playerId)
+  const { check, checkAgain } = useRoomCheck(roomCode, playerId)
   const missing = check.status === 'missing'
+  const stopped = missing && check.stopped === true
   // Join funnel: a dead code (mistyped, or the host's phone is off). Once per room and device.
   useEffect(() => {
     if (missing) trackOnce(`missing:${roomCode}`, { type: 'join_step', step: 'missing' })
@@ -147,15 +148,23 @@ function JoinView({
             Check the code, or ask the host to open the game on their phone.
           </p>
         </div>
-        <p className="text-muted-foreground text-sm">
-          <span
-            className="bg-primary mr-2 inline-block size-2 animate-pulse rounded-full align-middle"
-            aria-hidden
-          />
-          Still looking. The game shows up here as soon as it's back.
-        </p>
+        {!stopped && (
+          <p className="text-muted-foreground text-sm">
+            <span
+              className="bg-primary mr-2 inline-block size-2 animate-pulse rounded-full align-middle"
+              aria-hidden
+            />
+            Still looking. The game shows up here as soon as it's back.
+          </p>
+        )}
         <div className="flex flex-col gap-2">
-          <Button asChild size="xl">
+          {/* After 10 minutes it stops listening; the guest starts it again by hand. */}
+          {stopped && (
+            <Button size="xl" onClick={checkAgain}>
+              Check again
+            </Button>
+          )}
+          <Button asChild size="xl" variant={stopped ? 'secondary' : 'default'}>
             <Link to={`/?code=${roomCode}#join`}>Try another code</Link>
           </Button>
           <Button asChild size="xl" variant="secondary">

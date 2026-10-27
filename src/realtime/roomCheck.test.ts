@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ConnectionStatus } from './connection'
-import { MISSING_AFTER_MS, watchRoom, type Listenable, type RoomCheck } from './roomCheck'
+import {
+  GIVE_UP_AFTER_MS,
+  MISSING_AFTER_MS,
+  watchRoom,
+  type Listenable,
+  type RoomCheck,
+} from './roomCheck'
 
 /** A stand-in for RoomConnection that the test drives by hand. */
 function fakeConnection() {
@@ -102,6 +108,33 @@ describe('watchRoom', () => {
     f.broadcast({ type: 'hello', playerId: 'x', name: 'Eve' })
     f.broadcast({ type: 'state', snapshot: { players: 'all' } })
     vi.advanceTimersByTime(MISSING_AFTER_MS)
+    expect(last()).toEqual({ status: 'missing' })
+  })
+
+  it('gives up after 10 minutes of no game, and stops listening', () => {
+    const f = fakeConnection()
+    watchRoom(f.connection, (c) => seen.push(c))
+    f.connect()
+    vi.advanceTimersByTime(MISSING_AFTER_MS)
+    expect(last()).toEqual({ status: 'missing' })
+    vi.advanceTimersByTime(GIVE_UP_AFTER_MS - 1000)
+    expect(last()).toEqual({ status: 'missing' })
+    vi.advanceTimersByTime(1000)
+    expect(last()).toEqual({ status: 'missing', stopped: true })
+    const count = seen.length
+    f.host(true)
+    vi.advanceTimersByTime(5000)
+    expect(seen).toHaveLength(count)
+  })
+
+  it('restarts the 10 minutes when the host shows up in between', () => {
+    const f = fakeConnection()
+    watchRoom(f.connection, (c) => seen.push(c))
+    f.connect()
+    vi.advanceTimersByTime(GIVE_UP_AFTER_MS - 1000)
+    f.host(true)
+    f.host(false)
+    vi.advanceTimersByTime(MISSING_AFTER_MS + 2000)
     expect(last()).toEqual({ status: 'missing' })
   })
 

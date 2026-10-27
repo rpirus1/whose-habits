@@ -28,7 +28,9 @@ host's phone; guests render the snapshots it sends.
   - **Nothing after 4 s** (`MISSING_AFTER_MS`): "No game with this code is running right now",
     "Check the code, or ask the host to open the game on their phone.", with "Try another code"
     (the lander, with the code filled in and selected) and "Go home". It keeps listening: when the
-    host's phone comes back, the name form returns by itself.
+    host's phone comes back, the name form returns by itself. After 10 minutes
+    (`GIVE_UP_AFTER_MS`) it stops listening, so a forgotten tab doesn't hold a realtime
+    connection, and offers "Check again".
   - There's no server list of rooms, so "missing" can also mean the host's phone is locked.
 - **Rejoining** (this device was in the room before) skips the check; the room screen's own
   messages cover a host who isn't answering.

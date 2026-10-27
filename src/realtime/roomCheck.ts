@@ -10,10 +10,13 @@ export type RoomCheck =
   | { status: 'checking' }
   /** Details come from the host's last broadcast; presence alone has none. */
   | { status: 'found'; hostName?: string; players?: number; phase?: Phase }
-  | { status: 'missing' }
+  /** stopped: gave up listening (GIVE_UP_AFTER_MS); the guest can ask to check again. */
+  | { status: 'missing'; stopped?: true }
 
 /** After connecting: long enough for presence to sync, short enough to feel like an answer. */
 export const MISSING_AFTER_MS = 4000
+/** A tab left open on "no game" shouldn't hold a realtime connection forever. */
+export const GIVE_UP_AFTER_MS = 10 * 60_000
 /** A broadcast counts as "the host is there" for two heartbeats (the host sends one every 5 s). */
 const BROADCAST_FRESH_MS = 12_000
 
@@ -25,9 +28,13 @@ export interface Listenable {
   onMessage(listener: (payload: unknown) => void): () => void
 }
 
-/** Calls onChange whenever the answer changes. Returns a function that stops watching. */
+/**
+ * Calls onChange whenever the answer changes. Returns a function that stops watching. After
+ * GIVE_UP_AFTER_MS of "missing" in a row it stops by itself and reports { stopped: true }.
+ */
 export function watchRoom(connection: Listenable, onChange: (check: RoomCheck) => void) {
   let connectedAt: number | null = null
+  let missingSince: number | null = null
   let lastBroadcast: {
     at: number
     details: Omit<Extract<RoomCheck, { status: 'found' }>, 'status'>
@@ -44,6 +51,12 @@ export function watchRoom(connection: Listenable, onChange: (check: RoomCheck) =
         : connectedAt !== null && now - connectedAt >= MISSING_AFTER_MS
           ? { status: 'missing' }
           : { status: 'checking' }
+    missingSince = check.status === 'missing' ? (missingSince ?? now) : null
+    if (missingSince !== null && now - missingSince >= GIVE_UP_AFTER_MS) {
+      stop()
+      onChange({ status: 'missing', stopped: true })
+      return
+    }
     const key = JSON.stringify(check)
     if (key !== last) {
       last = key
@@ -73,10 +86,11 @@ export function watchRoom(connection: Listenable, onChange: (check: RoomCheck) =
   // Time alone changes the answer (the wait runs out, a broadcast goes stale).
   const tick = setInterval(evaluate, 500)
 
-  return () => {
+  function stop() {
     offStatus()
     offPresence()
     offMessage()
     clearInterval(tick)
   }
+  return stop
 }
