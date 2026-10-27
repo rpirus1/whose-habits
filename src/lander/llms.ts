@@ -4,7 +4,7 @@
 import { CULTURES, getCulture, MAX_CULTURES, MIN_CULTURES } from '../content/cultures'
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '../game/types'
 import { FAQ, SAMPLES, STEPS } from './content'
-import { FEEDBACK_EMAIL, LINKEDIN_URL, MAKER_NAME } from './contact'
+import { FEEDBACK_EMAIL, INSTAGRAM_URL, LINKEDIN_URL, MAKER_NAME } from './contact'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './site'
 
 export function llmsTxt(): string {
@@ -43,6 +43,7 @@ ${FAQ.map(({ q, a }) => `### ${q}\n\n${a}`).join('\n\n')}
 
 - [${SITE_NAME}](${SITE_URL}/): the home page, with the rules, examples and FAQ
 - [Host a game](${SITE_URL}/new): start a room and share its QR code or link
+- [${SITE_NAME} on Instagram](${INSTAGRAM_URL}): the game's Instagram
 - [${MAKER_NAME} on LinkedIn](${LINKEDIN_URL}): the maker
 - Feedback and questions: ${FEEDBACK_EMAIL}
 `

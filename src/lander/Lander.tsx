@@ -31,7 +31,7 @@ import { FAQ, HERO_QUESTION, SAMPLES, STEPS } from './content'
 import { CountryCarousel } from './CountryCarousel'
 import { FlipCard } from './FlipCard'
 import { JoinWithCode } from './JoinWithCode'
-import { COFFEE_URL, FEEDBACK_EMAIL, LINKEDIN_URL } from './contact'
+import { COFFEE_URL, FEEDBACK_EMAIL, INSTAGRAM_URL, LINKEDIN_URL } from './contact'
 import { useHydrated } from './useHydrated'
 import './lander.css'
 
@@ -74,8 +74,8 @@ export function Lander() {
         <HowToPlay />
         <WhyItsDifferent />
         <Samples />
-        <FaqSection />
         <About />
+        <FaqSection />
       </main>
 
       <Footer />
@@ -156,7 +156,7 @@ function Hero() {
         {/* The Host button and the join pill share one width: full on phones, 21rem on desktop. */}
         <div className="flex w-full max-w-md flex-col gap-6 md:w-[21rem]">
           <div className="flex flex-col gap-2">
-            <Button asChild size="xl" className="w-full">
+            <Button asChild size="xl" className="lander-pulse w-full">
               <Link
                 to="/new?from=lander"
                 onClick={() => track({ type: 'lander_click', target: 'host_hero' })}
@@ -578,13 +578,20 @@ function Footer() {
           </ul>
         </section>
 
-        <p className="text-muted-foreground">
-          Feedback:{' '}
-          <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline">
-            {FEEDBACK_EMAIL}
-          </a>
-          <br />© 2026 Ruslan Pirus. The statements and game content: all rights reserved.
-        </p>
+        <div className="text-muted-foreground space-y-4">
+          <p>
+            Feedback:{' '}
+            <a href={`mailto:${FEEDBACK_EMAIL}`} className="text-foreground underline">
+              {FEEDBACK_EMAIL}
+            </a>
+            <br />
+            Instagram:{' '}
+            <ExternalLink href={INSTAGRAM_URL} className="text-foreground underline">
+              @whosehabits
+            </ExternalLink>
+          </p>
+          <p>© 2026 Ruslan Pirus. The statements and game content: all rights reserved.</p>
+        </div>
       </div>
     </footer>
   )

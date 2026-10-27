@@ -129,3 +129,31 @@ html:not(.js) .flip button {
   filter: blur(24px);
   transform: translate(3%, 6%);
 }
+
+/* The hero's Host button: a soft ring pulses out of it a few times after the page loads, then
+   stops (under 5 seconds, so it needs no pause control: WCAG 2.2.2). A pseudo-element, so the
+   focus ring stays untouched. No pulse with reduced motion. */
+.lander-pulse {
+  position: relative;
+}
+.lander-pulse::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: lander-pulse 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) 0.6s 3 both;
+}
+@keyframes lander-pulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 14px color-mix(in oklch, var(--primary) 0%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lander-pulse::after {
+    animation: none;
+  }
+}
