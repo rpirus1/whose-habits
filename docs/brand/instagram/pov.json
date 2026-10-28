@@ -1,0 +1,46 @@
+[
+  {
+    "name": "pov-1",
+    "hook": "POV: game night with your international friends",
+    "id": "br-016",
+    "fact": "Dia dos Namorados is on 12 June. In February, Brazil is busy with Carnival.",
+    "players": [
+      {
+        "name": "Marco",
+        "from": "IT",
+        "face": "😏",
+        "vote": "FR",
+        "say": "France, obviously",
+        "react": "😱",
+        "after": "WHAT"
+      },
+      {
+        "name": "Daan",
+        "from": "NL",
+        "face": "😎",
+        "vote": "IT",
+        "say": "Italy. 100%",
+        "react": "🤯",
+        "after": "No way"
+      },
+      {
+        "name": "Emma",
+        "from": "US",
+        "face": "🤓",
+        "vote": "FR",
+        "say": "France!",
+        "react": "😳",
+        "after": "Wait…"
+      },
+      {
+        "name": "Ana",
+        "from": "BR",
+        "face": "😶",
+        "vote": "BR",
+        "say": "…",
+        "react": "😌",
+        "after": "Told you"
+      }
+    ]
+  }
+]

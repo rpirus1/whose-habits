@@ -5,7 +5,8 @@
   "scripts": {
     "slides": "node make.mjs",
     "reels": "node reels.mjs",
-    "speed": "node speed.mjs"
+    "speed": "node speed.mjs",
+    "pov": "node pov.mjs"
   },
   "devDependencies": {
     "ffmpeg-static": "^5.2.0",
