@@ -40,6 +40,18 @@ Feed posts mostly reach followers; Reels are how strangers find the account. Eve
 - Post the Reel a few days after the carousel, or use **Trial Reels** (shown only to non-followers) to test it first.
 - Caption: "I got this one wrong 🙈 Would you? Guess in the comments." plus the usual hashtags.
 
+### Reel formats
+
+The first two game-play Reels (one slow habit, 15 s) reached mostly non-followers (85%) but got few likes, no comments, no follows. The opening frame was a static screen, and nothing asked for a 5-second reply. Formats to test, one at a time:
+
+1. **Speed round** (`npm run speed`, `speed.json`): "Can you get 3/3? ⏱️", 3 habits with a 3-second countdown each, the answer flashes green with a reaction, then "How many did you get? Comment your score". A habit is on screen from the first frame. Fast cuts make people rewatch; the score is an easy comment.
+2. **POV: game night with international friends**: 4 players (emoji faces with flags) vote at the same time, the split bars fill up, the "obvious" country is wrong and the group reacts. Shows the game is social, which is the point of it.
+3. **Painting reaction**: the reveal followed by a public-domain painting with a caption (e.g. Munch's The Scream: "Me finding out Friday the 13th is fine in Italy"). Classic-art memes are popular with 25–44, and paintings by artists who died over 70 years ago are free to use (Wikimedia Commons marks them "public domain").
+
+Legal rules for memes: no screenshots of films, TV or celebrities and no stock photos of popular meme templates (they're copyrighted). Use public-domain art, our own graphics, Noto emoji (open licence), and Instagram's own music and GIF stickers, added in the Instagram editor (licensed for use there).
+
+Measure each Reel after 2 days: views, average watch time and "skip rate" in Insights, comments, shares, follows. Keep the format that wins.
+
 ## Getting followers (free, about 15 minutes a week)
 
 On posting day, in this order:
@@ -155,3 +167,4 @@ Slides live in `docs/brand/instagram/`. To make the next batch, add posts to `po
 ## Log
 
 - 2026-10-27: account set up; plan and first batch made.
+- 2026-10-28: 2 game-play Reels: 148 and 172 views (85% non-followers), 5 and 3 likes, 0 comments, 0 follows. Intro carousel: 503 views, 11 likes. Audience 25–44. Next: speed-round Reel.

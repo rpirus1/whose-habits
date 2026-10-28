@@ -1,0 +1,10 @@
+[
+  {
+    "name": "speed-1",
+    "rounds": [
+      { "id": "kr-001", "options": ["US", "KR", "IT", "TR"], "react": "Wait, what? 🤯" },
+      { "id": "fr-008", "options": ["NL", "PL", "MX", "FR"], "react": "Bowl gang 🥣" },
+      { "id": "tr-012", "options": ["TR", "UA", "BR", "KR"], "react": "Tea’s over ☕" }
+    ]
+  }
+]

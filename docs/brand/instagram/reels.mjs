@@ -2,14 +2,9 @@
 // with a "wrong" pick: the game's question screen with the timer running, a tap on the wrong
 // country, the reveal, then a closing screen. Usage: npm run reels [-- id ...]
 // --stills saves 4 PNGs per post to out/ instead. Needs `npm install` in this folder (puppeteer-core drives your Chrome; ffmpeg-static encodes).
-import { spawn } from 'node:child_process'
-import { mkdirSync } from 'node:fs'
-import { join } from 'node:path'
-import ffmpeg from 'ffmpeg-static'
-import puppeteer from 'puppeteer-core'
-import { CHROME, NAMES, flag, here, logo, posts, quotes, statements } from './shared.mjs'
+import { NAMES, flag, logo, posts, quotes, statements } from './shared.mjs'
+import { encode, only, withBrowser } from './video.mjs'
 
-const FPS = 30
 const LENGTH = 15 // seconds
 const TAP = 3.5 // the tap on the wrong country
 const REVEAL = 6.0 // question → reveal
@@ -139,52 +134,14 @@ window.render = (t) => {
 </script></body></html>`
 }
 
-async function render(name, page) {
-  if (stills) {
-    // Quick check: one PNG per scene in out/ instead of a video.
-    for (const t of [1, 3.4, 7.6, 12.5]) {
-      await page.evaluate((t) => window.render(t), t)
-      await page.screenshot({ path: join(here, 'out', `${name}-${t}.png`) })
-    }
-    return console.log(`out/${name}-*.png`)
-  }
-  const out = join(here, 'reels', `${name}.mp4`)
-  const enc = spawn(
-    ffmpeg,
-    ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', `${FPS}`, '-i', '-'].concat(
-      ['-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p'],
-      ['-movflags', '+faststart', out],
-    ),
-    { stdio: ['pipe', 'inherit', 'inherit'] },
-  )
-  const done = new Promise((ok, fail) => enc.on('close', (code) => (code ? fail(code) : ok())))
-  for (let f = 0; f < LENGTH * FPS; f++) {
-    await page.evaluate((t) => window.render(t), f / FPS)
-    const frame = await page.screenshot({ type: 'jpeg', quality: 95 })
-    if (!enc.stdin.write(frame)) await new Promise((ok) => enc.stdin.once('drain', ok))
-  }
-  enc.stdin.end()
-  await done
-  console.log(`reels/${name}.mp4`)
-}
-
-const stills = process.argv.includes('--stills')
-const only = process.argv.slice(2).filter((a) => a !== '--stills')
 const bank = statements()
-mkdirSync(join(here, stills ? 'out' : 'reels'), { recursive: true })
-const browser = await puppeteer.launch({ executablePath: CHROME, headless: true })
-try {
+await withBrowser(async (open) => {
   for (const p of posts()) {
     if (!p.wrong || (only.length && !only.includes(p.id))) continue
     const s = { ...bank.get(p.id), ...p }
     if (p.wrong === s.fits || !p.options.includes(p.wrong)) throw new Error(`${p.id}: bad "wrong"`)
-    const page = await browser.newPage()
-    await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 })
-    await page.setContent(html(s, p.options, p.wrong), { waitUntil: 'networkidle0' })
-    await page.evaluate(() => document.fonts.ready)
-    await render(p.id, page)
+    const page = await open(html(s, p.options, p.wrong))
+    await encode(page, p.id, LENGTH, [1, 3.9, 8, 13])
     await page.close()
   }
-} finally {
-  await browser.close()
-}
+})
