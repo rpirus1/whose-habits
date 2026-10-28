@@ -2,15 +2,15 @@
   {
     "name": "pov-1",
     "hook": "POV: game night with your international friends",
-    "id": "br-016",
-    "fact": "Dia dos Namorados is on 12 June. In February, Brazil is busy with Carnival.",
+    "id": "tr-022",
+    "fact": "Whoever steps first is said to have the last word in the marriage.",
     "players": [
       {
         "name": "Marco",
         "from": "IT",
         "face": "😏",
-        "vote": "FR",
-        "say": "France, obviously",
+        "vote": "MX",
+        "say": "Mexico, for sure",
         "react": "😱",
         "after": "WHAT"
       },
@@ -18,8 +18,8 @@
         "name": "Daan",
         "from": "NL",
         "face": "😎",
-        "vote": "IT",
-        "say": "Italy. 100%",
+        "vote": "BR",
+        "say": "Brazil. 100%",
         "react": "🤯",
         "after": "No way"
       },
@@ -27,16 +27,16 @@
         "name": "Emma",
         "from": "US",
         "face": "🤓",
-        "vote": "FR",
-        "say": "France!",
+        "vote": "IT",
+        "say": "Italy?",
         "react": "😳",
         "after": "Wait…"
       },
       {
-        "name": "Ana",
-        "from": "BR",
+        "name": "Elif",
+        "from": "TR",
         "face": "😶",
-        "vote": "BR",
+        "vote": "TR",
         "say": "…",
         "react": "😌",
         "after": "Told you"
