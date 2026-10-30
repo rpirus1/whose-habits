@@ -38,6 +38,8 @@ One habit as a 4:5 image card, no link in the post. Ask people to guess the coun
 
 ## Ideas for next posts
 
+- **First users (customer acquisition), on hold until there are more games:** N real games completed since launch (7 on 2026-10-30; use the real count), some players likely from Instagram (posting on a personal account again after years), and most games use "Random countries", a mode added hours before launch (23 Oct). Check the mode share on the stats page before posting; referrers aren't tracked yet. Ask: "Where did your first users come from?"
+
 - **Working with a team of agents:** a multi-agent setup feels like a team, but no small talk, human interaction or random jokes ("I could add an agent for that, but I won't").
 - **Building got easier, feedback got harder:** coming up with ideas and setting up a feedback loop with real users is now the hard part.
 - **What the first game nights taught me:** real numbers (players, finish rate, "play again?"), with counts next to the percentages (LAUNCH.md, step 3).
