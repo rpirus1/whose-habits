@@ -110,7 +110,7 @@ export interface DashboardNumbers {
     rejoin: number
     roomsFromLander: number
   }
-  join: { opened: number; named: number; joined: number; final: number }
+  join: { opened: number; named: number; joined: number; final: number; missing: number }
   weeks: WeekRow[]
 }
 
@@ -158,7 +158,7 @@ export function dashboardNumbers(
     hostButtons: { header: 0, hero: 0, footer: 0 },
     joinCode: 0,
     rejoin: 0,
-    join: { opened: 0, named: 0, joined: 0, final: 0 },
+    join: { opened: 0, named: 0, joined: 0, final: 0, missing: 0 },
   }
 
   for (const row of rows) {
@@ -217,7 +217,8 @@ export function dashboardNumbers(
           d.step === 'opened' ||
           d.step === 'named' ||
           d.step === 'joined' ||
-          d.step === 'final'
+          d.step === 'final' ||
+          d.step === 'missing'
         ) {
           n.join[d.step]++
         }
@@ -591,5 +592,6 @@ ${funnel([
   { label: 'got in', n: d.join.joined },
   { label: 'reached the final screen', n: d.join.final },
 ])}
+<p class="hint">Also: ${d.join.missing} opened a code with no game running (mistyped, or the host's phone was off).</p>
 <details><summary>All numbers (the metrics.sql tables)</summary>${renderSections(details)}</details>`
 }

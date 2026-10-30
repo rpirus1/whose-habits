@@ -119,7 +119,7 @@ export function SettingsScreen() {
         )}
       </header>
 
-      <InAppBrowserBanner />
+      <InAppBrowserBanner host />
 
       {step === 'mode' && (
         <ModeCards value={chosen ? settings.mode : undefined} onPick={pickMode} />

@@ -16,7 +16,7 @@ import { GameView } from './GameView'
 import { LobbyView } from './LobbyView'
 import { useJoinToasts } from './useJoinToasts'
 
-export function HostRoom({ initial }: { initial: GameState }) {
+export function HostRoom({ initial, onMoved }: { initial: GameState; onMoved: () => void }) {
   const { state, snapshot, status, dispatch, start } = useHostGame(initial)
   // The deck is usually dealt already; this only shows when Start has to fetch it.
   const [starting, setStarting] = useState(false)
@@ -49,6 +49,7 @@ export function HostRoom({ initial }: { initial: GameState }) {
             meId={state.hostId}
             isHost
             onKick={(p) => dispatch({ type: 'kick', playerId: p.id })}
+            handoff={{ roomCode: state.roomCode, role: { host: state }, onMoved }}
           />
           {canStart(state) && (
             <StickyFooter>

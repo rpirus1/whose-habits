@@ -34,6 +34,7 @@ describe('dashboardNumbers', () => {
     row('lander_click', { target: 'host_hero' }),
     row('join_step', { step: 'opened' }),
     row('join_step', { step: 'final' }, 'g1'),
+    row('join_step', { step: 'missing' }),
   ]
   const d = dashboardNumbers(rows, { now, filters: all })
 
@@ -47,6 +48,7 @@ describe('dashboardNumbers', () => {
       replays: 1,
       roomsFromCta: 1,
       lander: { host: 1, roomsFromLander: 1 },
+      join: { opened: 1, named: 0, joined: 0, final: 1, missing: 1 },
     })
   })
 

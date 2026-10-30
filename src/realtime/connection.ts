@@ -18,10 +18,13 @@ export class RoomConnection {
   onlineIds: string[] = []
   /** False until the first presence sync; before that, onlineIds is not meaningful. */
   presenceSynced = false
+  /** Someone in the room tracks { role: 'host' }: the host's phone is online. */
+  hostOnline = false
 
   private client: RealtimeClient
   private channel: RealtimeChannel
-  private meta: Record<string, unknown> = {}
+  /** Null until track(): until then this device only listens and isn't in the room's presence. */
+  private meta: Record<string, unknown> | null = null
   private messageListeners = new Set<Listener<unknown>>()
   private presenceListeners = new Set<Listener<string[]>>()
   private statusListeners = new Set<Listener<ConnectionStatus>>()
@@ -38,13 +41,15 @@ export class RoomConnection {
         for (const l of this.messageListeners) l(payload)
       })
       .on('presence', { event: 'sync' }, () => {
-        this.onlineIds = Object.keys(this.channel.presenceState())
+        const state = this.channel.presenceState<{ role?: string }>()
+        this.onlineIds = Object.keys(state)
+        this.hostOnline = Object.values(state).some((metas) => metas.some((m) => m.role === 'host'))
         this.presenceSynced = true
         for (const l of this.presenceListeners) l(this.onlineIds)
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          void this.channel.track(this.meta)
+          if (this.meta) void this.channel.track(this.meta)
           this.setStatus('connected')
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           // The client keeps retrying; the UI shows "reconnecting" meanwhile.

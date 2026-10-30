@@ -46,6 +46,12 @@ export const keys = {
   hostGame: (roomCode: string) => `host:${roomCode}`,
   /** { playerId, name, hostId } on a guest's device, per room. */
   guest: (roomCode: string) => `guest:${roomCode}`,
+  /** This in-app browser handed the room to the phone's browser (lib/handoff.ts). */
+  moved: (roomCode: string) => `moved:${roomCode}`,
+  /** A room handed over from an in-app browser, waiting for the room screen (public/continue.js). */
+  handoff: 'handoff',
+  /** The in-app browser banner was closed (session storage). */
+  inAppBannerClosed: 'inAppBannerClosed',
   /** Last name typed, to prefill the next join or settings screen. */
   lastName: 'lastName',
   /** Last settings the host used. */

@@ -16,6 +16,25 @@ host's phone; guests render the snapshots it sends.
   Defaults: 10 rounds, 20 seconds.
 - **Invite players** creates the room and opens the lobby.
 
+## Joining (`/r/<code>`)
+
+- **Code on the lander.** "Join with a code" only checks the shape (12 letters and numbers, no
+  look-alikes such as i, l, o, 0, 1); a bad shape shows an error under the field.
+- **Name screen.** While a new guest types their name, their phone listens on the room's channel
+  for the host (in presence as `role: 'host'`, and its broadcast every 5 s). It doesn't join the
+  room's presence yet, so the host sees nobody until they tap Join.
+  - **Found:** a line above the name field: "Ruslan's game · 3 players" (plus "in progress" during
+    a round). Before the first broadcast it says "Game found".
+  - **Nothing after 4 s** (`MISSING_AFTER_MS`): "No game with this code is running right now",
+    "Check the code, or ask the host to open the game on their phone.", with "Try another code"
+    (the lander, with the code filled in and selected) and "Go home". It keeps listening: when the
+    host's phone comes back, the name form returns by itself. After 10 minutes
+    (`GIVE_UP_AFTER_MS`) it stops listening, so a forgotten tab doesn't hold a realtime
+    connection, and offers "Check again".
+  - There's no server list of rooms, so "missing" can also mean the host's phone is locked.
+- **Rejoining** (this device was in the room before) skips the check; the room screen's own
+  messages cover a host who isn't answering.
+
 ## Lobby
 
 - **Host:** a QR code and the room link, with Share (where the phone's share sheet exists) and
@@ -90,11 +109,29 @@ browser. There the share sheet is missing and the tab is easy to lose, which end
 everyone if it's the host's. So on the lander (above the title), the setup screen and the lobby,
 a banner says "You're in Instagram's browser" with:
 
-- **Android:** Open in browser (hands the page to the default browser) and Copy link.
-- **iPhone:** "Tap ⋯ and choose Open in browser", and Copy link.
+- **Android:** Open in browser (hands the page to the default browser).
+- **iPhone:** "Tap ⋯ and choose Open in browser, so the game doesn't get lost." Pages can't open
+  Safari themselves, so the game can't be carried over: on the host's screens it adds "Do it
+  before friends join."
+- A close button (×) hides it for the rest of the visit (session storage).
 
 It is not shown on desktop, nor once the game starts. Detection is by user agent
-(`src/lib/inAppBrowser.ts`).
+(`src/lib/inAppBrowser.ts`); in development, `?inapp=instagram` (`&ios=1` for an iPhone)
+pretends to be Instagram's browser for the tab, `?inapp=off` stops it.
+
+**Moving a room (Android, lobby).** The app's browser and the phone's browser keep separate
+storage, so a plain link would make the host join their own game as a guest, and a guest join
+again as a second player. In the lobby, "Open in browser" carries this phone's role along
+(`src/lib/handoff.ts`): the host's whole game, or the guest's player id and name.
+
+- It rides in the query of `/continue.html`, a static page that skips the Worker, so names
+  never reach its request logs. The page parks it in local storage and opens the room, which
+  applies it: once, within 2 minutes, never over a room that browser already has (except a stray
+  guest entry when the host arrives).
+- The app's browser stops at the tap: "You're playing in your browser now", with "Open in
+  browser" again (for a cancelled "leaving the app" prompt) and "Go home". So there's never a
+  second host. If the app refuses to open the browser and loads the page in place, that browser
+  simply carries on.
 
 ## Lander shortcuts
 
@@ -112,6 +149,16 @@ It is not shown on desktop, nor once the game starts. Detection is by user agent
   (players). iPhones have no vibration in the browser, so they get none.
 
 ## Change log
+
+- **2026-10-27.** In-app browsers: "Open in browser" in the lobby now moves the host (or guest)
+  to the phone's browser instead of joining there as a new player; the app's browser shows
+  "You're playing in your browser now". The banner loses Copy link and gets a close button;
+  iPhone hosts are told to switch before friends join.
+
+- **2026-10-27.** The name screen checks that someone is hosting the code before a guest joins:
+  "Ruslan's game · 3 players", or "No game with this code is running right now" after 4 s, with
+  "Try another code". New `join_step` value `missing` (once per room and device), shown under the
+  stats page's "Guests joining" funnel.
 
 - **2026-10-26.** The statement bank moved out of the app. The Worker deals each game's
   statements (`/api/deck`) while the lobby is open; the engine plans from that deck. Same

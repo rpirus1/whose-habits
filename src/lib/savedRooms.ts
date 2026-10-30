@@ -110,9 +110,27 @@ function allSavedRooms(now: number): SavedRoom[] {
   return rooms.sort((a, b) => b.savedAt - a.savedAt)
 }
 
+/**
+ * This browser handed the room to the phone's own browser (see lib/handoff.ts). The room screen
+ * then only points there, so this copy can't come back as a second host or player. The game
+ * stays saved here, so "Open in browser" can carry it again if the first try didn't get through.
+ */
+export function markMovedToBrowser(roomCode: string) {
+  save(keys.moved(roomCode), { savedAt: Date.now(), value: true } satisfies Saved<true>)
+}
+
+export function movedToBrowser(roomCode: string): boolean {
+  return Boolean(fresh(load<Saved<true>>(keys.moved(roomCode))))
+}
+
+export function clearMovedToBrowser(roomCode: string) {
+  remove(keys.moved(roomCode))
+}
+
 /** Removes expired or unreadable room entries. Run once at startup. */
 export function pruneSavedRooms(now = Date.now()) {
-  for (const key of [...listKeys(keys.hostGame('')), ...listKeys(keys.guest(''))]) {
+  const all = [keys.hostGame(''), keys.guest(''), keys.moved('')].flatMap((k) => listKeys(k))
+  for (const key of all) {
     if (!fresh(load<Saved<unknown>>(key), now)) remove(key)
   }
 }

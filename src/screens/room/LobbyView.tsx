@@ -1,6 +1,6 @@
 import { Shuffle } from 'lucide-react'
 import { CultureList } from '@/components/CultureList'
-import { InAppBrowserBanner } from '@/components/InAppBrowserBanner'
+import { InAppBrowserBanner, type RoomHandoff } from '@/components/InAppBrowserBanner'
 import { MODE_COPY } from '@/lib/gameMode'
 import { isRandom } from '@/game/types'
 import { PlayerList } from '@/components/PlayerList'
@@ -15,11 +15,14 @@ export function LobbyView({
   meId,
   isHost,
   onKick,
+  handoff,
 }: {
   snapshot: Snapshot
   meId: string
   isHost: boolean
   onKick?: (player: PublicPlayer) => void
+  /** What the in-app browser banner's "Open in browser" carries to the phone's browser. */
+  handoff?: RoomHandoff
 }) {
   const me = snapshot.players.find((p) => p.id === meId)
   const { cultures, rounds, seconds } = snapshot.settings
@@ -27,7 +30,7 @@ export function LobbyView({
 
   return (
     <div className={cn('flex flex-col gap-6', enterScreen)}>
-      <InAppBrowserBanner />
+      <InAppBrowserBanner host={isHost} room={handoff} />
       {isHost ? (
         <QrShare roomCode={snapshot.roomCode} />
       ) : (

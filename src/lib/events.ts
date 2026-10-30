@@ -21,8 +21,12 @@ export type EventGameMode = 'pick' | 'random'
 export type ReplacedWhy = 'skip' | 'unknown'
 /** The lander buttons we count. */
 export type LanderTarget = 'host_header' | 'host_hero' | 'host_footer' | 'join_code' | 'rejoin'
-/** A guest's way into a room: opened the link, typed a name, got in, reached the final screen. */
-export type JoinStep = 'opened' | 'named' | 'joined' | 'final'
+/**
+ * A guest's way into a room: opened the link, typed a name, got in, reached the final screen.
+ * 'missing': on the name screen, no host was found for the code (mistyped, or the host's phone
+ * was off). Not a funnel step: a side exit, since the guest may still get in once the host is back.
+ */
+export type JoinStep = 'opened' | 'named' | 'joined' | 'final' | 'missing'
 
 export type AnalyticsEvent = EventBody & {
   /** Sent from a developer's device (localhost or ?test=1); the queries leave these out. */
@@ -113,7 +117,7 @@ export function statementVersion(s: { text: string; fits: readonly string[] }): 
 
 const REPORT_REASONS = ['incorrect', 'outdated', 'not_unique', 'offensive', 'none'] as const
 const LANDER_TARGETS = ['host_header', 'host_hero', 'host_footer', 'join_code', 'rejoin'] as const
-const JOIN_STEPS = ['opened', 'named', 'joined', 'final'] as const
+const JOIN_STEPS = ['opened', 'named', 'joined', 'final', 'missing'] as const
 const ID = /^[0-9a-f-]{36}$/
 const STATEMENT_ID = /^[a-z]{2}-\d{3}$/
 const CULTURE = /^[A-Z]{2}$/

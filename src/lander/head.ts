@@ -2,7 +2,7 @@
 // (title, description, Open Graph) live in index.html, so room links keep their previews.
 import { MAX_PLAYERS, MIN_PLAYERS_TO_START } from '../game/types'
 import { FAQ } from './content'
-import { LINKEDIN_URL, MAKER_NAME } from './contact'
+import { INSTAGRAM_URL, LINKEDIN_URL, MAKER_NAME } from './contact'
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from './site'
 
 export function structuredData() {
@@ -30,6 +30,7 @@ export function structuredData() {
         },
         inLanguage: 'en',
         isAccessibleForFree: true,
+        sameAs: [INSTAGRAM_URL],
         offers: { '@type': 'Offer', price: 0, priceCurrency: 'EUR' },
         author: { '@type': 'Person', name: MAKER_NAME, sameAs: [LINKEDIN_URL] },
       },
