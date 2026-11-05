@@ -44,7 +44,7 @@ Added 2026-10-22. From Ruslan, via the main chat. **Done:** the link is on the l
 ### Serve statements per game from the Worker
 
 Stop shipping the whole statement database to every browser. Today all statements, with their answers and notes, ship in one public JS file (`SettingsForm-*.js`, about 250 KB). Anyone can download the full set in seconds, and a guest can look up answers during a game.
-Added 2026-10-23. From the security audit in the Bugs chat. Start planned for Monday 2026-10-26.
+Added 2026-10-23. From the security audit in the Bugs chat. **Done (r22, 2026-10-26):** the bank is bundled in the Worker (`worker/statements.json`) and `POST /api/deck` deals each game's rounds plus 2 spares per country, rate-limited to 10 decks a minute per IP. The app only ships `src/content/pool.json` (which countries each statement fits, for the setup counts), and the build fails if a statement note ends up in `dist/`. See "Where statements live" in `docs/CONTENT_RULES.md`.
 
 - Keep the database inside the Worker (bundled module, D1 or KV), not in `dist/`. The host's `/new` asks the Worker for one game's statements (the chosen countries, N rounds) and gets only those.
 - Rate-limit that endpoint per IP and per day, so collecting the whole set takes hundreds of games instead of one download.
@@ -54,7 +54,7 @@ Added 2026-10-23. From the security audit in the Bugs chat. Start planned for Mo
 ### Plant traceable statements in the set
 
 Add a handful of statements with unique, deliberate wording (or small factual quirks) that wouldn't appear anywhere else. If the set turns up in another game or dataset, they prove it was copied. Pairs with the new LICENSE and `content/NOTICE.md` (all rights reserved, EU database right).
-Added 2026-10-23. From the security audit in the Bugs chat. Start planned for Monday 2026-10-26.
+Added 2026-10-23. From the security audit in the Bugs chat. Not started yet; now unblocked, since the bank no longer ships in the app (r22).
 
 - Keep the list of traps private, not in the public repo.
 - Rough size: under an hour, once the content is in a private place (depends on the item above).
@@ -114,4 +114,4 @@ Added 2026-10-19. From Ruslan.
 ### Undecided edge cases from PLAN.md
 
 The open questions in [PLAN.md, section 9](PLAN.md): back pressed during a question, host leaving for good, disconnects mid-question, cultures changed in the lobby, two tabs with the same playerId, late joiners, everyone but the host leaving, ties in the ranking and first-correct bonus, settings leaving too few statements, a room link opened after the game ended, and the message when Supabase limits are hit.
-Added 2026-10-19. From the brief (PLAN.md).
+Added 2026-10-19. From the brief (PLAN.md). Partly done: everyone but the host leaving holds the game ("You need someone else to continue", see `docs/GAME.md`, Holds), and a room link or code with no game running now says so before the name form (r24, 2026-10-27).

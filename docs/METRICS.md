@@ -26,14 +26,26 @@ percentage. A stated "yes" is weaker evidence than an actual replay, which is wh
 
 ## Status
 
-| Step                                  | State                                                                          |
-| ------------------------------------- | ------------------------------------------------------------------------------ |
-| 1. Test flag, migration 0002, queries | Done. One-vote-per-game waits for `FinalView.tsx`                              |
-| 2. Replay flag                        | Done                                                                           |
-| 3. Guest → host                       | `/new?from=cta` → `source` done. The CTA link itself waits for `FinalView.tsx` |
-| 4. Web Analytics                      | To do (dashboard setting, no code)                                             |
-| 5. Join funnel                        | Waits for the room-screen session                                              |
-| 6. Stats page                         | Moved to a private Worker behind Cloudflare Access (see step 6 for setup)      |
+Updated 2026-11-05 (main at r26).
+
+| Step                                  | State                                                                                                      |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 1. Test flag, migration 0002, queries | Done, including one vote per game (`trackOnce` key `vote:${gameId}` in `FinalView.tsx`)                    |
+| 2. Replay flag                        | Done                                                                                                       |
+| 3. Guest → host                       | Done: the final screen's "Host your own game" links to `/new?from=cta`                                     |
+| 4. Web Analytics                      | To do (dashboard setting, no code). Until then we can't say where players come from                        |
+| 5. Join funnel                        | Done as one `join_step` event: `opened`, `named`, `joined`, `final`, plus `missing` (no game running, r24) |
+| 6. Stats page                         | Live: private Worker behind Cloudflare Access (version `713b754e`, deployed 2026-10-27 from r24)           |
+
+### Numbers so far
+
+The game went live on www.whosehabits.com on 2026-10-23; the first LinkedIn post was 2026-10-26.
+
+- **7 completed games** (real players, not tests), read from the stats page by Ruslan in early November.
+- Other headline numbers (games with 5+ players, player finish rate, "play again?" votes, replays, Random vs
+  picked countries, guest → host) are on the stats page. Copy them here with their counts when they're used in a
+  post or the case study, e.g. "5 of 7 games (71%)", never a percentage alone.
+- Source of players: unknown until Web Analytics (step 4) is on. Don't claim a channel brought players.
 
 Migration 0002 is applied to live D1 (2026-10-19), and the 13 playtest events from that day are marked `test = 1`.
 
@@ -154,7 +166,5 @@ Locally: `npm run stats:local` serves the page at `http://localhost:8790` from t
 
 ## Coordination
 
-Another session is editing `src/components/HostPanel.tsx`, `src/components/PlayerList.tsx` and
-`src/screens/room/*`. Steps 1 (queries, test flag, migration), 2, the `/new` half of 3, 4 and 6 don't touch those
-files and can start now. The `FinalView.tsx` changes (one vote per game, CTA link) and the funnel events in the room
-screens are batched together after that work is merged.
+The room-screen work this plan waited on has landed, and the `FinalView.tsx` changes and funnel events with it.
+Only step 4 (Web Analytics) is left, and it's a dashboard setting. The Metrics chat owns this file.
