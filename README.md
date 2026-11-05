@@ -2,7 +2,7 @@
 
 A free, phone-based party game for international friends. The host picks 2–6 of 10 countries (or lets the game pick at random), friends join by link or QR code, and everyone guesses which country each everyday habit belongs to.
 
-Live at https://www.whosehabits.com. The bare domain and the old `workers.dev` address redirect there (see [Deploy](#deploy)). The code still uses the old working name `culture-clash` for the repository, the Worker and the D1 database; renaming them would change those addresses, so they stay.
+Live at https://www.whosehabits.com. The bare domain and the old `workers.dev` address redirect there (see [Deploy](#deploy)). The repository is [rpirus1/whose-habits](https://github.com/rpirus1/whose-habits) (renamed from `culture-clash` on 2026-11-05; GitHub redirects the old address). The Worker, the stats Worker and the D1 database keep the old working name `culture-clash`: renaming them would change their addresses, so they stay.
 
 See [docs/GAME.md](docs/GAME.md) for how the game works today (rules, flow, timings, effects), [docs/PLAN.md](docs/PLAN.md) for the original plan, and [docs/CONTENT_RULES.md](docs/CONTENT_RULES.md) for how statements are written and reviewed.
 
